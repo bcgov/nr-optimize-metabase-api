@@ -1,0 +1,11 @@
+name: compliance
+description: |
+  This document is used to track a projects PIA and STRA
+  compliance.
+spec:
+  - name: PIA
+    status: COMPLETED
+    last-updated: '2021-06-01T08:28:00.000Z'
+  - name: STRA
+    status: COMPLETED
+    last-updated: '2020-06-09T08:52:00.000Z'
