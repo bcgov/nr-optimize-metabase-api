@@ -1,0 +1,21 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: send_usage_graph",
+            "type": "python",
+            "request": "launch",
+            "program": "send-usage-emails\\send_usage_graph.py",
+            "args": [
+                "-i", "C:/TEMP/data/inputcsvs",
+                "-r", "2021-05_H_Drive_NRM_Usage.csv",
+                "-f", "C:/TEMP/data/output",
+                "-e", "C:/TEMP/data/excluded_idirs.csv"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}

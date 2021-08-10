@@ -1,0 +1,7 @@
+python-dotenv==0.17.1
+seaborn==0.11.1
+pyad==0.6.0
+pywin32==301
+xlrd==2.0.1
+openpyxl==3.0.7
+pandas==1.2.4
