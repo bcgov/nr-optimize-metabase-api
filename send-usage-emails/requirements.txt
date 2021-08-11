@@ -1,7 +1,9 @@
 python-dotenv==0.17.1
 seaborn==0.11.1
+setuptools==57.4.0
+future==0.18.2
 pyad==0.6.0
-pypiwin32==223
+pywin32=227
 xlrd==2.0.1
 openpyxl==3.0.7
 pandas==1.2.4
