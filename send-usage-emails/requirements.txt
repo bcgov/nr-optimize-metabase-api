@@ -1,6 +1,6 @@
 python-dotenv==0.17.1
 seaborn==0.11.1
-pywin32==301
+pywin32==300
 pyad==0.6.0
 xlrd==2.0.1
 openpyxl==3.0.7
