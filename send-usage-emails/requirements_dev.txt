@@ -2,7 +2,4 @@ flake8==3.9.2
 flake8-use-fstring==1.1
 black==21.6b0
 python-dotenv==0.17.1
-seaborn==0.11.1
-pyad==0.6.0
-xlrd==2.0.1
-openpyxl==3.0.7
+psycopg2==2.9.1
