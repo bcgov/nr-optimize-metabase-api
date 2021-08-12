@@ -21,10 +21,9 @@ import pyad.adquery
 import constants
 import sys
 import smtplib
-import calendar
-import argparse
-import glob
-import time
+# import calendar
+# import glob
+# import time
 import os
 import pandas as pd
 import seaborn as sns
@@ -36,37 +35,7 @@ from email.mime.image import MIMEImage
 from email.mime.text import MIMEText
 
 q = pyad.adquery.ADQuery()
-f = open("error_log.csv", "w")
-f.write("Timestamp,IDIR,Error"+"\n")
-f.close()
-
-
-# combine previous two months csv's to one file for generating graphs
-def combine_csvs(input_directory, dest_directory):
-    frames = []
-    # grab all the .csv files in the input directory (the ones that start with <yyyy-mm>_H_Drive_NRM_Usage)
-    csv_names = pd.DataFrame()
-    for file_name in glob.glob(os.path.join(input_directory, "*.csv")):
-        frame = pd.read_csv(file_name, low_memory=False)
-        csv_names = pd.concat([csv_names, frame], axis=0)
-
-        # drop displayname and ministry columns (if this line interferes with email script portion, it can be removed)
-        frame1 = frame.drop(["displayname", "ministry"], axis=1)
-
-        # drop soft deleted home drives from dataframe
-        frame1 = frame1[frame1.idir != "Soft deleted Home Drives"]
-
-        # remove the header row -- assumes it's the first
-        frame1 = frame1[1:]
-        frames.append(frame1)
-    # merge the datasets together, add headers back in
-    # if dropped columns are added back in, remember to add them to combined.columns below)
-    combined = pd.concat(frames)
-    combined.columns = ["idir", "datausage", "date"]
-    # export to file
-    combined.to_csv(
-        os.path.join(dest_directory, 'H_Drive_NRM_Usage_Report.csv'), header=True, index=False
-    )
+q.default_ldap_server = "nlbdns.bcgov"
 
 
 # update a user dictionary with AD information
@@ -161,16 +130,6 @@ def generate_graph(idir, dest_directory, prev_month, current_month):
     # Save the plot to file
     plt.savefig(os.path.join(dest_directory, 'graph.png'))
     # plt.show()  # Show the plot
-
-
-# get the users usage for each month
-def get_usage(idir, users):
-    print(users)
-    print(idir)
-    df_new = users[users["idir"].str.contains(idir)]
-    print(df_new)
-
-    # print('found:'+str(idir))
 
 
 # send email to user with previously generated graph
@@ -290,94 +249,33 @@ def send_email(
 
 
 def main(argv):
-    # take a single input directory argument in
-    # take a single file destination argument in
-    # print ('Number of arguments:', len(sys.argv), 'arguments.')
-    # print ('Argument List:', str(sys.argv))
+    user = get_ad_info("pplatten")
+    allAttributesFound = user["all_ad_attributes_found"]
+    print(f"All attributes found? {allAttributesFound}")
 
-    input_directory = ""
-    dest_directory = ""
-    exclude_list = ""
-    users = []
-
-    syntaxcmd = "Insufficient number of commands passed: combine_hdrive_reports.py -i <input_directory> -r <recent_csv> -f <dest_directory> -e <exclude_list>"
-    if len(sys.argv) < 3:
-        print(syntaxcmd)
-        sys.exit(1)
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-i",
-        "--input",
-        dest="input_directory",
-        required=True,
-        help="path to directory containing usage reports",
-        metavar="string",
-        type=str,
-    )
-    parser.add_argument(
-        "-r",
-        "--recent_csv",
-        dest="recent_csv",
-        required=True,
-        help="the most recent usage report file name",
-        metavar="string",
-        type=str,
-    )
-    parser.add_argument(
-        "-f",
-        "--file",
-        dest="dest_directory",
-        required=True,
-        help="path to directory containing output file",
-        metavar="string",
-        type=str,
-    )
-    parser.add_argument(
-        "-e",
-        "--exclude_list",
-        dest="exclude_list",
-        required=True,
-        help="list of excluded idirs",
-        metavar="string",
-        type=str,
-    )
-
-    args = parser.parse_args()
-    input_directory = args.input_directory
-    recent_csv = args.recent_csv
-    dest_directory = args.dest_directory
-    exclude_list = args.exclude_list
-
-    combine_csvs(input_directory, dest_directory)
-
-    users = pd.read_csv(
-        os.path.join(input_directory, recent_csv), low_memory=False
-    )
-
-    dict_of_users = users.to_dict('records')
-
-    # import exclusion list for opted out users
-    excluded_idirs = pd.read_csv(exclude_list, low_memory=False)["idir"].values.tolist()
+    # users = {}
+    # get a dictionary of user > usage: {date/data usage}, name, from H Drive Usage
 
     # remove excluded idirs from dict_of_users
-    dict_of_users = [user for user in dict_of_users if user["idir"] not in excluded_idirs]
+    # dict_of_users = [user for user in dict_of_users if user["idir"] not in excluded_idirs]
 
     # explicitly define users for testing so as to not spam all users in the usage report list
+    """
     if constants.USE_DEBUG_IDIR.upper() == 'TRUE':
         dict_of_users = [user for user in dict_of_users if user["idir"] == constants.DEBUG_IDIR]
 
-    # get current month and subtract 1 month from it to get previous month and set current month to be equal to it.
-    # This ensures that if it is sent on the first of the new month that the email states the correct months for the data
-    cur_month_number = datetime.now().month
-    cur_month_number = cur_month_number - 1
-    if cur_month_number == 0:
-        cur_month_number = 12
-    prev_month_number = cur_month_number - 1
-    if prev_month_number == 0:
-        prev_month_number = 12
-    # convert current and previous month numbers to text
-    current_month = calendar.month_name[cur_month_number]
-    prev_month = calendar.month_name[prev_month_number]
+        # get current month and subtract 1 month from it to get previous month and set current month to be equal to it.
+        # This ensures that if it is sent on the first of the new month that the email states the correct months for the data
+        cur_month_number = datetime.now().month
+        cur_month_number = cur_month_number - 1
+        if cur_month_number == 0:
+            cur_month_number = 12
+        prev_month_number = cur_month_number - 1
+        if prev_month_number == 0:
+            prev_month_number = 12
+        # convert current and previous month numbers to text
+        current_month = calendar.month_name[cur_month_number]
+        prev_month = calendar.month_name[prev_month_number]
 
     for user in dict_of_users:
         user = get_ad_info(user)
@@ -427,10 +325,8 @@ def main(argv):
             )
         else:
             time.sleep(2)
-    # delete the left over graph from last user in list
-    os.remove(os.path.join(dest_directory, "graph.png"))
-    # delete the csv file that was generated for graph creation
-    os.remove(os.path.join(dest_directory, "H_Drive_NRM_Usage_Report.csv"))
+
+    """
 
 
 if __name__ == "__main__":
