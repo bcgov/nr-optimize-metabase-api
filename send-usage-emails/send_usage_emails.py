@@ -17,7 +17,7 @@
 # example:  send_usage_graph_v2.py -i J:\Scripts\Python\Data -f J:\Scripts\Python\Data\Output -e J:\Scripts\Python\Data\Lists
 # -------------------------------------------------------------------------------
 
-import pyad.adquery
+# import pyad.adquery
 import constants
 import sys
 import smtplib
@@ -28,15 +28,15 @@ import psycopg2
 # import os
 # import matplotlib.pyplot as plt
 
-from datetime import datetime
+# from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 # from email.mime.image import MIMEImage
 from email.mime.text import MIMEText
 
-q = pyad.adquery.ADQuery()
+# q = pyad.adquery.ADQuery()
 # q.default_ldap_server = "ldaps://plywood.idir.bcgov:636"
 
-
+"""
 # update a user dictionary with AD information
 def get_ad_info(user):
     idir = user["idir"]
@@ -63,6 +63,7 @@ def get_ad_info(user):
         f.write(datetime.now().isoformat()+","+user["idir"]+","+error_message+"\n")
         f.close()
     return user
+"""
 
 
 # send email to user with previously generated graph
