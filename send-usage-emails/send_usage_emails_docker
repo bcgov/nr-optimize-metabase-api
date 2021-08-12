@@ -1,4 +1,4 @@
-FROM debian:wheezy
+FROM docker-remote.artifacts.developer.gov.bc.ca/alpine:3.14
 WORKDIR /src
 COPY ["*", "./"]
 RUN apk add --no-cache python3 py3-pip && \
