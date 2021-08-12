@@ -1,6 +1,7 @@
 FROM docker-remote.artifacts.developer.gov.bc.ca/alpine:3.14
 WORKDIR /src
 COPY ["*", "./"]
-RUN apk add --no-cache python3 py3-pip && \
+RUN dpkg --add-architecture i386 && apt-get update && apt-get install --assume-yes wine && apt-get install wine32 --assume-yes wine32 && \
+    apk add --no-cache python3 py3-pip && \
     pip install -r requirements.txt
 ENTRYPOINT ["python3", "send_usage_emails.py"]
