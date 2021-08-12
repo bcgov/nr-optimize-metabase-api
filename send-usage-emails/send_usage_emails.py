@@ -202,6 +202,16 @@ def main(argv):
         db_version = cur.fetchone()
         print(db_version)
 
+        print('H Drive data from the last two months:')
+        sql_expression = "SELECT idir, datausage, date FROM hdriveusage WHERE (date_trunc('month',"
+        + "CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now() AS timestamp) + "
+        + "(INTERVAL '-2 month')) AS timestamp)) AND date_trunc('month', CAST(now() AS timestamp))"
+        + " AND idir <> 'Soft deleted Home Drives') ORDER BY idir ASC;"
+        cur.execute(sql_expression)
+        all_results = cur.fetchall()
+        for result in all_results:
+            print(result)
+
     # close the communication with the PostgreSQL
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
