@@ -21,21 +21,20 @@ import pyad.adquery
 import constants
 import sys
 import smtplib
+import psycopg2
 # import calendar
 # import glob
 # import time
-import os
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
+# import os
+# import matplotlib.pyplot as plt
 
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
-from email.mime.image import MIMEImage
+# from email.mime.image import MIMEImage
 from email.mime.text import MIMEText
 
 q = pyad.adquery.ADQuery()
-q.default_ldap_server = "nlbdns.bcgov"
+# q.default_ldap_server = "ldaps://plywood.idir.bcgov:636"
 
 
 # update a user dictionary with AD information
@@ -64,72 +63,6 @@ def get_ad_info(user):
         f.write(datetime.now().isoformat()+","+user["idir"]+","+error_message+"\n")
         f.close()
     return user
-
-
-# create and save graph
-def generate_graph(idir, dest_directory, prev_month, current_month):
-
-    df = pd.read_csv(os.path.join(dest_directory, "H_Drive_NRM_Usage_Report.csv"))
-    df = df[df["idir"].isin([idir])]
-    counts = df["idir"].count()
-
-    # Select plot theme
-    sns.set()
-    sns.set_theme(style="whitegrid")
-    fig = plt.figure()
-    ax1 = plt.axes()
-
-    # Create a colour array
-    colors = ["#e3a82b", "#234075"]
-
-    # Set custom colour palette
-    sns.set_palette(sns.color_palette(colors))
-
-    # Build bar chart
-    sns.barplot(
-        data=df,
-        x="date",
-        y="datausage",
-        hue="date",
-        ci=None,
-        dodge=False,
-        alpha=0.9,
-        estimator=min,
-    )
-
-    # Apply labels, legends and alignments
-    plt.title(str(idir) + " - H: Drive Data Usage", fontsize=14)
-    plt.ylabel("Data size (GB)", fontsize=10)
-    x_axis = ax1.axes.get_xaxis()
-    x_axis.set_visible(False)
-    if counts == 1:
-        plt.legend(
-            title="Month",
-            fontsize="small",
-            fancybox=True,
-            framealpha=1,
-            shadow=True,
-            bbox_to_anchor=(1.01, 1),
-            labels=[current_month],
-            borderaxespad=0,
-        )
-    elif counts > 1:
-        plt.legend(
-            title="Month",
-            fontsize="small",
-            fancybox=True,
-            framealpha=1,
-            shadow=True,
-            bbox_to_anchor=(1.01, 1),
-            labels=[prev_month, current_month],
-            borderaxespad=0,
-        )
-    caption = " "
-    fig.text(0.5, 0.01, caption, ha="center")
-    plt.tight_layout()
-    # Save the plot to file
-    plt.savefig(os.path.join(dest_directory, 'graph.png'))
-    # plt.show()  # Show the plot
 
 
 # send email to user with previously generated graph
@@ -229,7 +162,7 @@ def send_email(
     # According to RFC 2046, the last part of a multipart message, in this case
     # the HTML message, is best and preferred.
     msg.attach(body)
-
+    """
     # open image and read as binary
     fp = open(os.path.join(dest_directory, "graph.png"), "rb")
     msgImage = MIMEImage(fp.read())
@@ -238,21 +171,44 @@ def send_email(
     # define the image's ID as referenced above
     msgImage.add_header("Content-ID", "<image1>")
     msg.attach(msgImage)
-
+    """
     # send the message via local SMTP server.
     s = smtplib.SMTP(constants.SMTP_SERVER)
     # sendmail function takes 3 arguments: sender's address, recipient's address
     # and message to send - here it is sent as one string.
 
-    s.sendmail(sender, recipient, msg.as_string())
+    # s.sendmail(sender, recipient, msg.as_string())
     s.quit()
 
 
 def main(argv):
-    user = get_ad_info("pplatten")
-    allAttributesFound = user["all_ad_attributes_found"]
-    print(f"All attributes found? {allAttributesFound}")
+    conn = None
+    try:
+        # Open a connection
+        conn = psycopg2.connect(
+            host="postgresql",
+            database="metabase",
+            user=constants.POSTGRES_USER,
+            password=constants.POSTGRES_PASSWORD
+        )
+        # create a cursor
+        cur = conn.cursor()
 
+        # execute a statement
+        print('PostgreSQL database version:')
+        cur.execute('SELECT version()')
+    # display the PostgreSQL database server version
+        db_version = cur.fetchone()
+        print(db_version)
+
+    # close the communication with the PostgreSQL
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if conn is not None:
+            conn.close()
+            print('Database connection closed.')
     # users = {}
     # get a dictionary of user > usage: {date/data usage}, name, from H Drive Usage
 
