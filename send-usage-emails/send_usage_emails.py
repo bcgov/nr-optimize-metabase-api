@@ -212,8 +212,37 @@ def main(argv):
         """
         cur.execute(sql_expression)
         all_results = cur.fetchall()
+        data = {}
         for result in all_results:
-            print(result)
+            idir = result[0]
+            gb = result[1]
+            datetime = result[2]
+            print(f"IDIR: {idir}")
+            print(f"GB: {gb}")
+            print(f"Datetime: {datetime}")
+            print(f"IDIR: {idir}, GB: {gb}, Datetime: {datetime}")
+            if idir not in data:
+                data[idir] = {
+                    "idir": idir,
+                    "samples": [
+                        {
+                            "gb": gb,
+                            "datetime": datetime
+                        }
+                    ]
+                }
+            else:
+                data[idir]["samples"].append({
+                    "gb": gb,
+                    "datetime": datetime
+                })
+        for entry in data:
+            idir = entry["idir"]
+            print(f"IDIR: {idir}")
+            for sample in entry["samples"]:
+                gb = sample["gb"]
+                datetime = sample["datetime"]
+                print(f"GB: {gb}, Datetime: {datetime}")
 
     # close the communication with the PostgreSQL
         cur.close()
