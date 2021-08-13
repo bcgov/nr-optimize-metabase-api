@@ -297,7 +297,7 @@ def send_idir_email(idir, data):
     last_month_gb = last_month_sample["gb"]
     last_month_cost = get_gb_cost(last_month_gb)
     month_before_last_sample = None
-    if len(samples > 1):
+    if len(samples) > 1:
         month_before_last_sample = samples[len(samples)-2]
         month_before_last_name = month_before_last_sample["month"]
         month_before_last_gb = month_before_last_sample["gb"]
