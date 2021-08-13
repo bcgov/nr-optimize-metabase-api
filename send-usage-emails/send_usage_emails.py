@@ -290,6 +290,7 @@ def send_idir_email(idir, data):
     idir_info = data[idir]
     samples = idir_info["samples"]
     name = idir_info["name"]
+    recipient = idir_info["email"]
     msg = MIMEMultipart("related")
     # last_month is the most recent reporting month
     last_month_sample = samples[len(samples)-1]
@@ -305,7 +306,7 @@ def send_idir_email(idir, data):
 
     msg["Subject"] = f"Your H: Drive Usage Report for {last_month_name}"
     msg["From"] = "IITD.Optimize@gov.bc.ca"
-    msg["To"] = idir_info["email"]
+    msg["To"] = recipient
 
     html_intro = f"""
     <html><head></head><body><p>
@@ -364,6 +365,7 @@ def send_idir_email(idir, data):
     msg.attach(MIMEText(html, "html"))
     s = smtplib.SMTP(constants.SMTP_SERVER)
     s.quit()
+    print(f"Email sent to {recipient}.")
 
 
 def main(argv):
