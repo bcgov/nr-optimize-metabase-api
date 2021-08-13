@@ -294,14 +294,14 @@ def send_idir_email(idir, data):
     # last_month is the most recent reporting month
     last_month_sample = samples[len(samples)-1]
     last_month_num = last_month_sample["month"]
-    last_month_name = calendar.month[last_month_num]
+    last_month_name = calendar.month_name[last_month_num]
     last_month_gb = last_month_sample["gb"]
     last_month_cost = get_gb_cost(last_month_gb)
     month_before_last_sample = None
     if len(samples > 1):
         month_before_last_sample = samples[len(samples)-2]
         month_before_last_num = month_before_last_sample["month"]
-        month_before_last_name = calendar.month[month_before_last_num]
+        month_before_last_name = calendar.month_name[month_before_last_num]
         month_before_last_gb = month_before_last_sample["gb"]
         month_before_last_cost = get_gb_cost(month_before_last_gb)
 
