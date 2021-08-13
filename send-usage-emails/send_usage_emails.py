@@ -177,8 +177,7 @@ def send_email(
     s = smtplib.SMTP(constants.SMTP_SERVER)
     # sendmail function takes 3 arguments: sender's address, recipient's address
     # and message to send - here it is sent as one string.
-
-    # s.sendmail(sender, recipient, msg.as_string())
+    s.sendmail(sender, recipient, msg.as_string())
     s.quit()
 
 
