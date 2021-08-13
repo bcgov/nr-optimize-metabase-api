@@ -18,6 +18,7 @@
 # -------------------------------------------------------------------------------
 
 # import pyad.adquery
+from os import urandom
 import constants
 import sys
 import smtplib
@@ -183,6 +184,8 @@ def send_email(
 
 
 def get_sample(gb, sample_datetime: datetime):
+    if constants.USE_DEBUG_IDIR.upper() == "TRUE":
+        gb = round(urandom.uniform(0, 5), 3)
     return {
         "gb": gb,
         "sample_datetime": sample_datetime,
