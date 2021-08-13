@@ -252,12 +252,13 @@ def get_hdrive_data():
                     "idir": idir,
                     "samples": [
                         get_sample(gb, sample_datetime)
-                    ]
+                    ],
+                    "email": "peter.platten@gov.bc.ca",
+                    "name": "Peter Platten"
                 }
             else:
                 data[idir]["samples"].append(get_sample(gb, sample_datetime))
         for idir in data:
-            print(f"IDIR: {idir}")
             # sort the samples
             data[idir]["samples"].sort(
                 key=lambda s: s["sample_datetime"]
@@ -265,11 +266,6 @@ def get_hdrive_data():
             if constants.USE_DEBUG_IDIR.upper() == "TRUE":
                 data[idir]["samples"][0]["gb"] = 12.456
                 data[idir]["samples"][1]["gb"] = 16.543
-            # print the samples
-            for sample in data[idir]["samples"]:
-                gb = sample["gb"]
-                sample_datetime = sample["sample_datetime"]
-                print(f"GB: {gb}, Datetime: {sample_datetime}")
 
     # close the communication with the PostgreSQL
         cur.close()
@@ -283,11 +279,107 @@ def get_hdrive_data():
     return data
 
 
+def get_gb_cost(gb):
+    cost = (gb - 1.5) * 2.7
+    if cost > 0:
+        return cost
+    return 0
+
+
+def send_idir_email(idir, data):
+    idir_info = data[idir]
+    samples = idir_info["samples"]
+    name = idir_info["name"]
+    msg = MIMEMultipart("related")
+    # last_month is the most recent reporting month
+    last_month_sample = samples[len(samples)-1]
+    last_month_num = last_month_sample["month"]
+    last_month_name = calendar.month[last_month_num]
+    last_month_gb = last_month_sample["gb"]
+    last_month_cost = get_gb_cost(last_month_gb)
+    month_before_last_sample = None
+    if len(samples > 1):
+        month_before_last_sample = samples[len(samples)-2]
+        month_before_last_num = month_before_last_sample["month"]
+        month_before_last_name = calendar.month[month_before_last_num]
+        month_before_last_gb = month_before_last_sample["gb"]
+        month_before_last_cost = get_gb_cost(month_before_last_gb)
+
+    msg["Subject"] = f"Your H: Drive Usage Report for {last_month_name}"
+    msg["From"] = "IITD.Optimize@gov.bc.ca"
+    msg["To"] = idir_info["email"]
+
+    html_intro = f"""
+    <html><head></head><body><p>
+        Hi {name}!<br><br>
+
+        The Optimization Team is making personalized H: Drive Usage Reports available
+         to NRM users by email on a monthly basis.<br><br>
+
+        H: Drive usage information is provided mid-month from the OCIO.
+        Below, you will find a graph highlighting your H: Drive usage for {last_month_name}"""
+    if month_before_last_sample is not None:
+        html_intro = html_intro + f" and {month_before_last_name}"
+    html_snapshot_taken = f""".
+    At the time the data usage snapshot was taken, your H: Drive size was {last_month_gb}
+    GB, costing your Ministry ${last_month_cost} for the month of {last_month_name}."""
+    if month_before_last_sample is not None:
+        html_snapshot_taken = html_snapshot_taken + f"""
+        In {month_before_last_name}, you used {month_before_last_gb}GB at a cost of
+        ${month_before_last_cost}.
+        """
+    html_img = """<br><br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">"""
+    html_img = html_img
+    html_why_important = """
+    <br><br>
+    <b>Why is My Data Usage Important?</b><br>
+    Data storage on the H: Drive is expensive and billed at $2.70 per GB, per month.
+    This communication is meant to raise awareness and encourage you to proactively keep costs down.<br>
+    <br>
+    <b>Did the size of your H:Drive go up this month?</b><br>
+    Here are 3 simple actions to help you reduce your storage expense "footprint":
+    <ol>
+        <li>Delete duplicate files and old drafts (time suggested: 5-10 mins)</li>
+        <li><a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info#Emptyyourrecycling">Empty</a>
+        your Recycle Bin (time suggested: 1 min)</li>
+        <li><a href="https://intranet.gov.bc.ca/iit/onedrive/onedriveinfo?">Move</a> your files to OneDrive (time suggested: 20 mins)</li>
+    </ol>
+    """
+    html_footer = """
+    <br><br>
+    More suggestions on how to reduce can be found on our
+    <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">StorageTips and Information page</a>.<br>
+    <br>
+    We welcome your questions, comments, and ideas! Connect with us at IITD.Optimize@gov.bc.ca.<br>
+    <br>
+    Signed,<br>
+    Your Friendly Neighbourhood Optimization Team<br>
+    (Chris, Hannah, Heather, Joseph, Kristal, Lolanda, and Peter)<br>
+    <br>
+    <br>
+    </p>
+    <p style="font-size: 10px">If you do not wish to receive these emails, please reply with the subject line "unsubscribe".</p>
+    </body>
+    </html>
+    """
+    html = (html_intro + html_snapshot_taken + html_why_important + html_footer)
+    msg.attach(MIMEText(html, "html"))
+    s = smtplib.SMTP(constants.SMTP_SERVER)
+    s.quit()
+
+
 def main(argv):
     data = get_hdrive_data()
-    data = data
     if data is None:
         return
+    for idir in data:
+        # print the samples
+        for sample in data[idir]["samples"]:
+            gb = sample["gb"]
+            sample_datetime = sample["sample_datetime"]
+            month = sample["month"]
+            print(f"GB: {gb}, Datetime: {sample_datetime}, Month: {month}")
+        send_idir_email(idir, data)
     # users = {}
     # get a dictionary of user > usage: {date/data usage}, name, from H Drive Usage
 
