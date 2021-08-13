@@ -1,7 +1,7 @@
 FROM docker-remote.artifacts.developer.gov.bc.ca/alpine:3.14
 WORKDIR /src
 COPY ["*", "./"]
-ADD repositories /src
+ADD repositories /etc/apk/repositories
 RUN apk add --no-cache python3 py3-pip postgresql-libs && \
     apk add --update python python-dev gfortran py-pip build-base py-numpy@community && \
     apk add --no-cache --virtual .build-deps gcc python3-dev musl-dev postgresql-dev && \
