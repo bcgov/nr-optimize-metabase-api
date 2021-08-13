@@ -177,7 +177,7 @@ def send_email(
     s = smtplib.SMTP(constants.SMTP_SERVER)
     # sendmail function takes 3 arguments: sender's address, recipient's address
     # and message to send - here it is sent as one string.
-    s.sendmail(sender, recipient, msg.as_string())
+    # s.sendmail(sender, recipient, msg.as_string())
     s.quit()
 
 
@@ -363,6 +363,7 @@ def send_idir_email(idir, data):
     html = (html_intro + html_snapshot_taken + html_why_important + html_footer)
     msg.attach(MIMEText(html, "html"))
     s = smtplib.SMTP(constants.SMTP_SERVER)
+    s.sendmail(msg["From"], recipient, msg.as_string())
     s.quit()
     print(f"Email sent to {recipient}.")
 
