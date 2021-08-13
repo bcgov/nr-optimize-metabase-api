@@ -217,9 +217,6 @@ def main(argv):
             idir = result[0]
             gb = result[1]
             datetime = result[2]
-            print(f"IDIR: {idir}")
-            print(f"GB: {gb}")
-            print(f"Datetime: {datetime}")
             print(f"IDIR: {idir}, GB: {gb}, Datetime: {datetime}")
             if idir not in data:
                 data[idir] = {
@@ -236,10 +233,9 @@ def main(argv):
                     "gb": gb,
                     "datetime": datetime
                 })
-        for entry in data:
-            idir = entry["idir"]
+        for idir in data:
             print(f"IDIR: {idir}")
-            for sample in entry["samples"]:
+            for sample in data[idir]["samples"]:
                 gb = sample["gb"]
                 datetime = sample["datetime"]
                 print(f"GB: {gb}, Datetime: {datetime}")
