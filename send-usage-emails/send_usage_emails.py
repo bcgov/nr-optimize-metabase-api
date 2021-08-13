@@ -279,7 +279,7 @@ def get_hdrive_data():
 
 
 def get_gb_cost(gb):
-    cost = (gb - 1.5) * 2.7
+    cost = round(2(gb - 1.5) * 2.7, 2)
     if cost > 0:
         return cost
     return 0
@@ -323,7 +323,7 @@ def send_idir_email(idir, data):
     GB, costing your Ministry ${last_month_cost} for the month of {last_month_name}."""
     if month_before_last_sample is not None:
         html_snapshot_taken = html_snapshot_taken + f"""
-        In {month_before_last_name}, you used {month_before_last_gb}GB at a cost of
+        In {month_before_last_name}, you used {month_before_last_gb} GB at a cost of
         ${month_before_last_cost}.
         """
     html_img = """<br><br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">"""
