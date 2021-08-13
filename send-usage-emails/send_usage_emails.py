@@ -22,13 +22,13 @@ import constants
 import sys
 import smtplib
 import psycopg2
-# import calendar
+import calendar
 # import glob
 # import time
 # import os
 # import matplotlib.pyplot as plt
 
-# from datetime import datetime
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 # from email.mime.image import MIMEImage
 from email.mime.text import MIMEText
@@ -182,6 +182,14 @@ def send_email(
     s.quit()
 
 
+def get_sample(gb, sample_datetime: datetime):
+    return {
+        "gb": gb,
+        "sample_datetime": sample_datetime,
+        "month": calendar.month_name[sample_datetime.month]
+    }
+
+
 def main(argv):
     conn = None
     try:
@@ -216,29 +224,27 @@ def main(argv):
         for result in all_results:
             idir = result[0]
             gb = result[1]
-            datetime = result[2]
-            print(f"IDIR: {idir}, GB: {gb}, Datetime: {datetime}")
+            sample_datetime = result[2]
             if idir not in data:
                 data[idir] = {
                     "idir": idir,
                     "samples": [
-                        {
-                            "gb": gb,
-                            "datetime": datetime
-                        }
+                        get_sample(gb, sample_datetime)
                     ]
                 }
             else:
-                data[idir]["samples"].append({
-                    "gb": gb,
-                    "datetime": datetime
-                })
+                data[idir]["samples"].append(get_sample(gb, sample_datetime))
         for idir in data:
             print(f"IDIR: {idir}")
+            # sort the samples
+            data[idir]["samples"] = data[idir]["samples"].sort(
+                key=lambda s: s["sample_datetime"]
+            )
+            # print the samples
             for sample in data[idir]["samples"]:
                 gb = sample["gb"]
-                datetime = sample["datetime"]
-                print(f"GB: {gb}, Datetime: {datetime}")
+                sample_datetime = sample["sample_datetime"]
+                print(f"GB: {gb}, Datetime: {sample_datetime}")
 
     # close the communication with the PostgreSQL
         cur.close()
