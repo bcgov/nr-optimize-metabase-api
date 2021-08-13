@@ -237,7 +237,7 @@ def main(argv):
         for idir in data:
             print(f"IDIR: {idir}")
             # sort the samples
-            data[idir]["samples"] = data[idir]["samples"].sort(
+            data[idir]["samples"].sort(
                 key=lambda s: s["sample_datetime"]
             )
             # print the samples
