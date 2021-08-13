@@ -18,7 +18,6 @@
 # -------------------------------------------------------------------------------
 
 # import pyad.adquery
-from os import urandom
 import constants
 import sys
 import smtplib
@@ -184,8 +183,6 @@ def send_email(
 
 
 def get_sample(gb, sample_datetime: datetime):
-    if constants.USE_DEBUG_IDIR.upper() == "TRUE":
-        gb = round(urandom.uniform(0, 5), 3)
     return {
         "gb": gb,
         "sample_datetime": sample_datetime,
@@ -193,8 +190,27 @@ def get_sample(gb, sample_datetime: datetime):
     }
 
 
-def main(argv):
+def send_error_email(error_message):
+    msg = MIMEMultipart("related")
+    msg["Subject"] = "Script failure"
+    msg["From"] = "IITD.Optimize@gov.bc.ca"
+    msg["To"] = "IITD.Optimize@gov.bc.ca"
+    if constants.USE_DEBUG_IDIR.upper() == "TRUE":
+        msg["To"] = "peter.platten@gov.bc.ca"
+    html = (
+        """<html><head></head><body><p>
+        A scheduled script has failed to complete. Error Message:<br />"""
+        + str(error_message)
+        + """</p></body></html>"""
+    )
+    msg.attach(MIMEText(html, "html"))
+    s = smtplib.SMTP(constants.SMTP_SERVER)
+    s.quit()
+
+
+def get_hdrive_data():
     conn = None
+    data = None
     try:
         # Open a connection
         conn = psycopg2.connect(
@@ -246,6 +262,9 @@ def main(argv):
             data[idir]["samples"].sort(
                 key=lambda s: s["sample_datetime"]
             )
+            if constants.USE_DEBUG_IDIR.upper() == "TRUE":
+                data[idir]["samples"][0]["gb"] = 12.456
+                data[idir]["samples"][1]["gb"] = 16.543
             # print the samples
             for sample in data[idir]["samples"]:
                 gb = sample["gb"]
@@ -256,10 +275,19 @@ def main(argv):
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
+        send_error_email(error)
     finally:
         if conn is not None:
             conn.close()
             print('Database connection closed.')
+    return data
+
+
+def main(argv):
+    data = get_hdrive_data()
+    data = data
+    if data is None:
+        return
     # users = {}
     # get a dictionary of user > usage: {date/data usage}, name, from H Drive Usage
 
