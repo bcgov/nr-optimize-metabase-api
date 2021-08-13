@@ -223,6 +223,9 @@ def main(argv):
         data = {}
         for result in all_results:
             idir = result[0]
+            if constants.USE_DEBUG_IDIR.upper() == "TRUE":
+                if idir != constants.DEBUG_IDIR:
+                    continue
             gb = result[1]
             sample_datetime = result[2]
             if idir not in data:
