@@ -1,4 +1,4 @@
-FROM docker-remote.artifacts.developer.gov.bc.ca/alpine:3.14
+FROM python:3.6-alpine
 WORKDIR /src
 COPY ["*", "./"]
 RUN apk add g++ jpeg-dev zlib-dev libjpeg make
