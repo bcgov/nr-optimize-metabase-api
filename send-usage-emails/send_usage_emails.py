@@ -71,7 +71,7 @@ def get_ad_info(user):
 def get_sample(gb: float, sample_datetime: datetime):
 
     # Calculate and Format $ cost by GB
-    cost = round(2(gb - 1.5) * 2.7, 2)
+    cost = round((gb - 1.5) * 2.7, 2)
     if cost < 0:
         cost = 0
 
