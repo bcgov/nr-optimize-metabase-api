@@ -69,10 +69,17 @@ def get_ad_info(user):
 
 # Get a simple formatted "sample" object
 def get_sample(gb: float, sample_datetime: datetime):
+
+    # Calculate and Format $ cost by GB
+    cost = round(2(gb - 1.5) * 2.7, 2)
+    if cost < 0:
+        cost = 0
+
     return {
         "gb": gb,
         "sample_datetime": sample_datetime,
-        "month": calendar.month_name[sample_datetime.month]
+        "month": calendar.month_name[sample_datetime.month],
+        "cost": cost
     }
 
 
@@ -167,14 +174,6 @@ def get_hdrive_data():
     return data
 
 
-# Calculate and Format $ cost by GB
-def get_gb_cost(gb):
-    cost = round(2(gb - 1.5) * 2.7, 2)
-    if cost > 0:
-        return cost
-    return 0
-
-
 # Generate an graph image's bytes using idir info
 def get_graph_bytes(idir_info):
     samples = idir_info["samples"]
@@ -232,18 +231,22 @@ def send_idir_email(idir_info):
     name = idir_info["name"]
     recipient = idir_info["email"]
     msg = MIMEMultipart("related")
+
     # last_month is the most recent reporting month
+    # month_before_last is the month before last_month
+    # copy out values for use in fstrings
     last_month_sample = samples[len(samples)-1]
     last_month_name = last_month_sample["month"]
     last_month_gb = last_month_sample["gb"]
-    last_month_cost = get_gb_cost(last_month_gb)
+    last_month_cost = last_month_sample["cost"]
     month_before_last_sample = None
     if len(samples) > 1:
         month_before_last_sample = samples[len(samples)-2]
         month_before_last_name = month_before_last_sample["month"]
         month_before_last_gb = month_before_last_sample["gb"]
-        month_before_last_cost = get_gb_cost(month_before_last_gb)
+        month_before_last_cost = last_month_sample["cost"]
 
+    # build email content and metadata
     msg["Subject"] = f"Your H: Drive Usage Report for {last_month_name}"
     msg["From"] = "IITD.Optimize@gov.bc.ca"
     msg["To"] = recipient
@@ -301,21 +304,25 @@ def send_idir_email(idir_info):
     </html>
     """
     msgImage = MIMEImage(get_graph_bytes(idir_info))
-    # define the image's ID as referenced above
     msgImage.add_header("Content-ID", "<image1>")
     msg.attach(msgImage)
     html = (html_intro + html_snapshot_taken + html_img + html_why_important + html_footer)
+
+    # attach and send email
     msg.attach(MIMEText(html, "html"))
     s = smtplib.SMTP(constants.SMTP_SERVER)
     s.sendmail(msg["From"], recipient, msg.as_string())
     s.quit()
+
+    # log send complete
     print(f"Email sent to {recipient}.")
 
 
 def main(argv):
-    # get a dictionary of { idir : {
+    # get a dictionary, format:
+    # { idir : {
     #       name, email, idir, samples : [{
-    #           gb, sample_datetime, month
+    #           gb, sample_datetime, month, cost
     #       }]
     #   }
     # }
@@ -324,7 +331,7 @@ def main(argv):
         return
 
     for idir in data:
-        # print the samples
+        # print the samples for development
         for sample in data[idir]["samples"]:
             gb = sample["gb"]
             sample_datetime = sample["sample_datetime"]
@@ -332,6 +339,7 @@ def main(argv):
             print(f"GB: {gb}, Datetime: {sample_datetime}, Month: {month}")
         # send email to user
         send_idir_email(data[idir])
+        # follow smtp server guidelines of max 30 emails/minute
         time.sleep(2)
 
 
