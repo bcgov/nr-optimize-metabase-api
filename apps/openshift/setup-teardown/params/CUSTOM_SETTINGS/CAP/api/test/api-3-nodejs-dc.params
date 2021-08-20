@@ -1,0 +1,9 @@
+NAME=cap-eagle-api
+GROUP_NAME=cap-eagle-epic
+APPLICATION_DOMAIN=cap-eagle-test.pathfinder.gov.bc.ca
+MINIO_HOST=cap-eagle-api-minio-oabrei-test.pathfinder.gov.bc.ca
+MINIO_SECRET_NAME=cap-eagle-api-minio-keys
+DATABASE_SERVICE_NAME=cap-eagle-api-mongodb
+APP_IMAGE_NAME=cap-eagle-api
+APP_IMAGE_NAMESPACE=oabrei-test
+APP_DEPLOYMENT_TAG=test

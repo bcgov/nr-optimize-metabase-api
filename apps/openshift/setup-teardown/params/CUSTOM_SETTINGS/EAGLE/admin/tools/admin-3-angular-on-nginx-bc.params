@@ -1,0 +1,3 @@
+NAME=eagle-admin
+ANGULAR_BUILDER_IMAGE=eagle-admin-angular-builder
+NGINX_RUNTIME_IMAGE=eagle-admin-nginx-runtime

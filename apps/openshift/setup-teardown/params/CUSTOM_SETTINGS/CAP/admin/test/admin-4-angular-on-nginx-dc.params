@@ -1,0 +1,7 @@
+NAME=cap-eagle-admin
+GROUP_NAME=cap-eagle-epic
+IMAGE_NAMESPACE=oabrei-test
+APPLICATION_DOMAIN=cap-eagle-test.pathfinder.gov.bc.ca
+TAG_NAME=test
+REMOTE_API_PATH=https://cap-eagle-test.pathfinder.gov.bc.ca/api
+REMOTE_PUBLIC_PATH=https://cap-eagle-test.pathfinder.gov.bc.ca

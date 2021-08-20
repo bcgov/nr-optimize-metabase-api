@@ -1,0 +1,106 @@
+@NonCPS
+import groovy.json.JsonOutput
+import java.util.regex.Pattern
+
+/*
+ * Sends a rocket chat notification
+ */
+def notifyRocketChat(text, url) {
+    def rocketChatURL = url
+    def message = text.replaceAll(~/\'/, "")
+    def payload = JsonOutput.toJson([
+      "username":"Jenkins",
+      "icon_url":"https://wiki.jenkins.io/download/attachments/2916393/headshot.png",
+      "text": message
+    ])
+
+    sh("curl -X POST -H 'Content-Type: application/json' --data \'${payload}\' ${rocketChatURL}")
+}
+
+
+/*
+ * Updates the global pastBuilds array: it will iterate recursively
+ * and add all the builds prior to the current one that had a result
+ * different than 'SUCCESS'.
+ */
+def buildsSinceLastSuccess(previousBuild, build) {
+  if ((build != null) && (build.result != 'SUCCESS')) {
+    pastBuilds.add(build)
+    buildsSinceLastSuccess(pastBuilds, build.getPreviousBuild())
+  }
+}
+
+/*
+ * Generates a string containing all the commit messages from
+ * the builds in pastBuilds.
+ */
+@NonCPS
+def getChangeLog(pastBuilds) {
+  def log = ""
+  for (int x = 0; x < pastBuilds.size(); x++) {
+    for (int i = 0; i < pastBuilds[x].changeSets.size(); i++) {
+      def entries = pastBuilds[x].changeSets[i].items
+      for (int j = 0; j < entries.length; j++) {
+        def entry = entries[j]
+        log += "* ${entry.msg} by ${entry.author} \n"
+      }
+    }
+  }
+  return log;
+}
+
+def bddBrowserStack() {
+  openshift.withCluster() {
+    openshift.withProject() {
+      podTemplate(label: 'bdd-browserstack', name: 'bdd-browserstack', serviceAccount: 'jenkins', cloud: 'openshift', containers: [
+        containerTemplate(
+          name: 'jnlp',
+          image: 'registry.access.redhat.com/openshift3/jenkins-slave-maven-rhel7:v3.9',
+          resourceRequestCpu: '500m',
+          resourceLimitCpu: '1000m',
+          resourceRequestMemory: '1Gi',
+          resourceLimitMemory: '2Gi',
+          workingDir: '/tmp',
+          command: '',
+          args: '${computer.jnlpmac} ${computer.name}',
+        )
+      ]) {
+        node('bdd-browserstack') {
+          checkout scm
+          dir('functional-tests') {
+            try {
+              // todo add env file for test users?
+              sh("oc extract secret/bdd-browserstack --to=${env.WORKSPACE} --confirm")
+              echo "Starting Functional Tests"
+              sh './gradlew remoteChromeTest'
+            } catch (error) {
+              throw error
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+def CHANGELOG = "No new changes"
+def IMAGE_HASH = "latest"
+
+pipeline {
+  agent any
+  options {
+    disableResume()
+  }
+  stages {
+    stage('BDD Tests') {
+      steps{
+        script {
+          echo "Runnning BDD Tests"
+          echo "Build: ${BUILD_ID}"
+          def result = bddBrowserStack()
+        }
+      }
+    }
+  }
+}
+

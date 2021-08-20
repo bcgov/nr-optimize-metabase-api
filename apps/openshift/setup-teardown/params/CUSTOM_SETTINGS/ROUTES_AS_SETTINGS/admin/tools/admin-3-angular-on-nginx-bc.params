@@ -1,0 +1,3 @@
+NAME=routes-as-settings-admin
+ANGULAR_BUILDER_IMAGE=routes-as-settings-admin-angular-builder
+NGINX_RUNTIME_IMAGE=routes-as-settings-admin-nginx-runtime

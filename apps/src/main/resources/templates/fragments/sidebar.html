@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+<nav th:fragment="sidebar" class="dashboard-sidebar sidebar">
+    <div class="sidebar-sticky">
+        <div class="sidebar-top">
+            <p class="text-right">
+                <span class="hide-side" title="Collapse sidebar">
+                    <i class="fas fa-chevron-left"></i><i class="fas fa-chevron-left"></i>
+                </span>
+                <span class="show-side" title="Expand sidebar">
+                    <i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i>
+                </span>
+            </p>
+            <hr>
+        </div>
+
+        <h6 class="sidebar-heading px-3 mt-4 mb-1 text-muted">
+            <span>MY DASHBOARDS</span>
+        </h6>
+        <ul class="nav flex-column">
+            <li class="nav-item" th:each="dash : ${dashboards}">
+                <a class="nav-link active" th:href="@{/sec/dashboard/{dashId}(dashId=${dash.metabaseId})}">
+                    <i class="far fa-chart-bar"></i>
+                    <i class="withtitle far fa-chart-bar" th:title="${dash.displayName}"></i>
+                    <span th:text="${dash.displayName}"></span>
+                </a>
+            </li>
+        </ul>
+
+        <h6 class="sidebar-heading px-3 mt-4 mb-1 text-muted">
+            <span>MORE</span>
+        </h6>
+        <hr class="section-split">
+        <ul class="nav flex-column mb-2">
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/sec/user}">
+                    <i class="far fa-user"></i>
+                    <i class="withtitle far fa-user" title="User"></i>
+                    <span>User</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/sec/about}">
+                    <i class="far fa-question-circle"></i>
+                    <i class="withtitle far fa-question-circle" title="About"></i>
+                    <span>About</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"
+                   th:href="@{/sec/contact}">
+                    <i class="far fa-envelope"></i>
+                    <i class="withtitle far fa-envelope" title="Contact"></i>
+                    <span>Contact</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+</body>
+
+</html>

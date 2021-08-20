@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/dashboardLayout">
+<head>
+</head>
+
+<body>
+
+<div layout:fragment="content" class="main-content">
+<h1>Welcome <span th:text="${#authentication.principal.getName()}"></span></h1>
+    <p>Please access the Dashboards you have available to you under "MY DASHBOARDS" on the left-hand side menu.</p>
+    <p>If you do not see a Dashboard you need to access to in the menu, please request access to get approved via the Contact link</p>
+</div>
+
+</body>
+</html>

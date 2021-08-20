@@ -1,0 +1,7 @@
+NAME=demo-eagle-admin
+GROUP_NAME=demo-eagle-epic
+IMAGE_NAMESPACE=noexist-tools
+APPLICATION_DOMAIN=demo-eagle-noexist-dev.pathfinder.gov.bc.ca
+TAG_NAME=dev
+REMOTE_API_PATH=https://demo-eagle-noexist-dev.pathfinder.gov.bc.ca/api
+REMOTE_PUBLIC_PATH=https://demo-eagle-noexist-dev.pathfinder.gov.bc.ca

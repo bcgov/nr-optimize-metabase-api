@@ -1,0 +1,3 @@
+NAME=cap-eagle-public
+ANGULAR_BUILDER_IMAGE=cap-eagle-public-angular-builder
+NGINX_RUNTIME_IMAGE=cap-eagle-public-nginx-runtime

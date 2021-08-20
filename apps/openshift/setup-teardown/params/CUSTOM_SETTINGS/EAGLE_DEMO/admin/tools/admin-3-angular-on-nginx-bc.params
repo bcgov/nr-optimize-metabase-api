@@ -1,0 +1,3 @@
+NAME=demo-eagle-admin
+ANGULAR_BUILDER_IMAGE=demo-eagle-admin-angular-builder
+NGINX_RUNTIME_IMAGE=demo-eagle-admin-nginx-runtime

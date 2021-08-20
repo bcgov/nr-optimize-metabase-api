@@ -1,0 +1,3 @@
+NAME=cap-eagle-admin-angular-builder
+GIT_REPO_URL=https://github.com/bcgov/cap-eagle-admin
+GIT_REPO_BRANCH=develop

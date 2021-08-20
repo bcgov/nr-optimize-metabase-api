@@ -1,0 +1,49 @@
+{
+    "version": "0.2.0",
+    "configurations": [         
+        {
+            "name": "Python: constants_example",
+            "type": "python",
+            "request": "launch",
+            "program": "C:/bitbucket/optimize-metabase-api/scripts/constants_example.py",
+            "args": [],
+            "console": "integratedTerminal"
+        },  
+        {
+            "name": "Python: clean_incremental_data",
+            "type": "python",
+            "request": "launch",
+            "program": "C:/bitbucket/optimize-metabase-api/scripts/clean_incremental_data.py",
+            "args": [
+                "-i", "C:/TEMP/data"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: clean_expense_report_csv",
+            "type": "python",
+            "request": "launch",
+            "program": "C:/bitbucket/optimize-metabase-api/scripts/clean_expense_report_csv.py",
+            "args": [
+                "-i", "C:/TEMP/data/Hosting Services Expense Report.txt",
+                "-c", "C:/TEMP/data/OptimizeLookupCategories.csv",
+                "-t", "Recovery Period",
+                "-s", "Service Name"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: send_usage_graph_v2",
+            "type": "python",
+            "request": "launch",
+            "program": "C:/bitbucket/optimize-metabase-api/scripts/send_usage_graph_v2.py",
+            "args": [
+                "-i", "C:/TEMP/data/inputcsvs",
+                "-r", "2021-05_H_Drive_NRM_Usage.csv",
+                "-f", "C:/TEMP/data/output",
+                "-e", "C:/TEMP/data/excluded_idirs.csv"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}

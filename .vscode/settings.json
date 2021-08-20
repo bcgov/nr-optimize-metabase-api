@@ -1,0 +1,10 @@
+{
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": [
+        "--max-line-length=175",
+        "--extend-ignore=E203"
+    ],
+    "python.formatting.provider": "black",
+    "python.pythonPath": "${workspaceFolder}/ve/Scripts/python.exe"
+}

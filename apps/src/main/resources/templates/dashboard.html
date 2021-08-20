@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/dashboardLayout">
+<head>
+</head>
+
+<body>
+
+<div layout:fragment="content">
+<iframe
+        id="metabaseDashboard"
+        th:src="${iframeUrl}"
+        frameborder="0"
+        allowtransparency
+        width="100%"
+        scrolling="no"
+></iframe>
+
+<!-- Metabase iFrame resizer scripts -->
+<script src="https://metabase-domo-domo.pathfinder.gov.bc.ca/app/iframeResizer.js"></script>
+<script type="text/javascript" defer>iFrameResize({checkOrigin: false}, '#metabaseDashboard')</script>
+</div>
+
+</body>
+</html>
