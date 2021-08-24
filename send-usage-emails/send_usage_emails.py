@@ -68,8 +68,8 @@ def get_ad_info(user):
 
 
 # Get a simple formatted "sample" object
-def get_sample(gb: float, sample_datetime: datetime):
-
+def get_sample(gb, sample_datetime: datetime):
+    gb = float(gb)
     # Calculate and Format $ cost by GB
     cost = round((gb - 1.5) * 2.7, 2)
     if cost < 0:
@@ -99,6 +99,7 @@ def send_error_email(error_message):
     )
     msg.attach(MIMEText(html, "html"))
     s = smtplib.SMTP(constants.SMTP_SERVER)
+    s.sendmail(msg["From"],msg["To"],msg.as_string())
     s.quit()
 
 
@@ -109,7 +110,8 @@ def get_hdrive_data():
     try:
         # Open a connection
         conn = psycopg2.connect(
-            host="postgresql",
+            # host="postgresql",
+            host="localhost",
             database="metabase",
             user=constants.POSTGRES_USER,
             password=constants.POSTGRES_PASSWORD
