@@ -338,7 +338,9 @@ def main(argv):
             month = sample["month"]
             print(f"GB: {gb}, Datetime: {sample_datetime}, Month: {month}")
         # send email to user
-        send_idir_email(data[idir])
+        print(idir)
+        if idir == "PPLATTEN":
+            send_idir_email(data[idir])
         # follow smtp server guidelines of max 30 emails/minute
         time.sleep(2)
 
