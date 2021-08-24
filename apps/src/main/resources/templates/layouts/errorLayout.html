@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+yy<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout" class="fill-height-sm">
+<head>
+    <div th:replace="fragments/imports :: head"></div>
+    <title>Error</title>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<main role="main">
+    <div class="container-fluid">
+
+        <div class="jumbotron">
+            <div class="container">
+                <div layout:fragment="content"></div>
+            </div>
+        </div>
+    </div> <!-- /container-fluid-->
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<div th:replace="fragments/imports :: scripts"></div>
+</body>
+</html>

@@ -1,0 +1,3 @@
+NAME=eagle-admin-angular-builder
+GIT_REPO_URL=https://github.com/bcgov/eagle-admin
+GIT_REPO_BRANCH=develop

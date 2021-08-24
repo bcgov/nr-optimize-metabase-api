@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" class="fill-height-sm">
+<head>
+    <div th:replace="fragments/imports :: head"></div>
+    <title>DOMO Metabase Viewer</title>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<main role="main">
+    <div class="container-fluid">
+
+        <div class="jumbotron">
+            <div class="container">
+                <h1 class="display-3">DOMO Metabase Viewer</h1>
+                <p>This portal allows you to access Metabase dashboards containing Ministry cost analysis information.
+                    As the information is proprietary you must request access (will be granted to your IDIR account) to
+                    view. If you do not already have access please click Request Access below to send email the Common
+                    Services team.</p>
+                <p><a class="btn btn-bcgold btn-lg" href="/sec/dashboard" role="button">Log In Now »</a></p>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>Other Common Services team applications:</h2>
+
+            <hr>
+            <!-- Example row of columns -->
+            <div class="row">
+                <div class="col-md-4">
+                    <h3>GETOK</h3>
+                    <p>For requesting access to and gathering information about IIT common services.</p>
+                    <p><a class="btn btn-secondary" href="https://github.com/bcgov/nr-get-token" role="button">View
+                        details »</a></p>
+                </div>
+                <div class="col-md-4">
+                    <h3>CHES</h3>
+                    <p>A hosted messaging service API providing email, sheduling, and mail-merge functionalies.</p>
+                    <p><a class="btn btn-secondary" href="https://github.com/bcgov/common-hosted-email-service"
+                          role="button">View details »</a></p>
+                </div>
+                <div class="col-md-4">
+                    <h3>MSSC</h3>
+                    <p>Showcasing messaging service common services and providing an interface to bulk send mail merged
+                        emails.</p>
+                    <p><a class="btn btn-secondary" href="https://github.com/bcgov/nr-messaging-service-showcase/"
+                          role="button">View details »</a></p>
+                </div>
+            </div>
+
+        </div>
+    </div> <!-- /container-fluid-->
+</main>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<div th:replace="fragments/imports :: scripts"></div>
+</body>
+</html>

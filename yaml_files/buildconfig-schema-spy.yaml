@@ -1,0 +1,92 @@
+﻿kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: >
+      {"apiVersion":"build.openshift.io/v1","kind":"BuildConfig","metadata":{"annotations":{},"labels":{"app":"schema-spy","buildconfig":"schema-spy"},"name":"schema-spy","namespace":"15be76-tools"},"spec":{"output":{"to":{"kind":"ImageStreamTag","name":"schema-spy:latest"}},"source":{"contextDir":"","git":{"ref":"master","uri":"https://github.com/bcgov/SchemaSpy.git"},"type":"Git"},"strategy":{"dockerStrategy":{"from":{"kind":"DockerImage","name":"docker-remote.artifacts.developer.gov.bc.ca/adoptopenjdk/openjdk11:jdk-11.0.3_7-alpine"},"pullSecret":{"name":"artifactory-creds"}},"type":"Docker"},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange"}]}}
+  selfLink: /apis/build.openshift.io/v1/namespaces/15be76-tools/buildconfigs/schema-spy
+  resourceVersion: '1082350756'
+  name: schema-spy
+  uid: 0838a768-a6cc-48c7-80bc-a72cb4d1b4a8
+  creationTimestamp: '2021-05-25T18:47:48Z'
+  managedFields:
+    - manager: oc
+      operation: Update
+      apiVersion: build.openshift.io/v1
+      time: '2021-05-25T18:47:48Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:kubectl.kubernetes.io/last-applied-configuration': {}
+          'f:labels':
+            .: {}
+            'f:app': {}
+            'f:buildconfig': {}
+        'f:spec':
+          'f:output':
+            'f:to':
+              .: {}
+              'f:kind': {}
+              'f:name': {}
+          'f:runPolicy': {}
+          'f:source':
+            'f:git':
+              .: {}
+              'f:ref': {}
+              'f:uri': {}
+            'f:type': {}
+          'f:strategy':
+            'f:dockerStrategy':
+              .: {}
+              'f:from':
+                .: {}
+                'f:kind': {}
+                'f:name': {}
+              'f:pullSecret':
+                .: {}
+                'f:name': {}
+            'f:type': {}
+          'f:triggers': {}
+    - manager: openshift-apiserver
+      operation: Update
+      apiVersion: build.openshift.io/v1
+      time: '2021-05-25T18:47:48Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          'f:lastVersion': {}
+  namespace: 15be76-tools
+  labels:
+    app: schema-spy
+    buildconfig: schema-spy
+spec:
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'schema-spy:latest'
+  resources: {}
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  strategy:
+    type: Docker
+    dockerStrategy:
+      from:
+        kind: DockerImage
+        name: >-
+          docker-remote.artifacts.developer.gov.bc.ca/adoptopenjdk/openjdk11:jdk-11.0.3_7-alpine
+      pullSecret:
+        name: artifactory-creds
+  postCommit: {}
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/bcgov/SchemaSpy.git'
+      ref: master
+  triggers:
+    - type: ConfigChange
+  runPolicy: Serial
+status:
+  lastVersion: 1

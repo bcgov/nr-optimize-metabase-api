@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html layout:decorator="layouts/dashboardLayout" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+
+<body>
+
+<div class="main-content" layout:fragment="content">
+    <h1 class="text-success"><i class="fas fa-check-circle"></i> Contact Sent</span></h1>
+    <p>Your request has been sent to the NR Common Service team.</p>
+    <p>If required, the tracking number for this message is <strong th:text="${txId}"></strong></p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<body>
+<header th:fragment="header">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="https://www2.gov.bc.ca">
+                <img class="img-fluid d-none d-md-block" th:src="@{/images/bcid-logo-rev-en.svg}"
+                     width="181" height="44" alt="B.C. Government Logo">
+                <img class="img-fluid d-md-none" th:src="@{/images/bcid-symbol-rev.svg}" width="64"
+                     height="44" alt="B.C. Government Logo">
+            </a>
+            <div class="navbar-brand">
+                DOMO Metabase Viewer
+            </div>
+            <div sec:authorize="not isAuthenticated()">
+                <a class="btn btn-bcgold my-2 my-sm-0" href="/sec/dashboard">Log In</a>
+            </div>
+            <div sec:authorize="isAuthenticated()">
+                <ul class="navbar-nav px-3">
+                    <li class="nav-item text-nowrap">
+                        <a th:href="@{/sec/user}" class="profile-link">
+                            <i class="fas fa-user"></i> <span th:text="${#authentication.principal.getName()}"></span>
+                        </a>&nbsp; | &nbsp;
+                        <a class="btn btn-sm btn-bcgold my-2 my-sm-0" href="/logout">Log Out</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+</body>
+</html>

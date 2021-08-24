@@ -1,0 +1,7 @@
+NAME=routes-as-settings-public
+GROUP_NAME=routes-as-settings
+IMAGE_NAMESPACE=oabrei-dev
+APPLICATION_DOMAIN=cap-eagle-dev.pathfinder.gov.bc.ca
+TAG_NAME=dev
+REMOTE_API_PATH=https://routes-as-settings-dev.pathfinder.gov.bc.ca/api/public
+REMOTE_ADMIN_PATH=https://routes-as-settings-dev.pathfinder.gov.bc.ca/admin/

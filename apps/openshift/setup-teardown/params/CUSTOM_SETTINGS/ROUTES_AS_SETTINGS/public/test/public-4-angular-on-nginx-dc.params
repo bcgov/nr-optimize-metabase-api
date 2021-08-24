@@ -1,0 +1,7 @@
+NAME=routes-as-settings-public
+GROUP_NAME=routes-as-settings
+IMAGE_NAMESPACE=oabrei-test
+APPLICATION_DOMAIN=routes-as-settings-test.pathfinder.gov.bc.ca
+TAG_NAME=test
+REMOTE_API_PATH=https://routes-as-settings-test.pathfinder.gov.bc.ca/api/public
+REMOTE_ADMIN_PATH=https://routes-as-settings-test.pathfinder.gov.bc.ca/admin/

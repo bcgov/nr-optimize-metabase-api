@@ -1,0 +1,96 @@
+/* ---------------------------------------------------------
+ Variables (remember don't work in ie11, so unused at the moment)
+----------------------------------------------------------*/
+:root {
+}
+/* ------------------------------------------- /Variables */
+
+
+/* ---------------------------------------------------------
+ Header
+----------------------------------------------------------*/
+header {
+    margin-bottom: 60px;
+}
+
+header .profile-link {
+     color:white;
+     text-decoration:none;
+}
+
+header .profile-link:hover, header .profile-link:active {
+    color:white;
+    text-decoration:underline;
+}
+
+header nav {
+    color: white;
+}
+/* ---------------------------------------------- /Header */
+
+
+/* ---------------------------------------------------------
+ Sidebar Nav
+----------------------------------------------------------*/
+nav.dashboard-sidebar {
+   background-color: #e5e5e5;
+   height: 100%;
+   position: fixed;
+   float: left;
+   overflow-x: hidden;
+   width: 250px;
+}
+
+nav.dashboard-sidebar ul {
+    padding-left: 15px;
+}
+
+/* Show/hide button area */
+.sidebar-top hr {
+    padding-top: 2px;
+}
+.sidebar-top p {
+    padding-right: 8px;
+    margin-top: 25px;
+    margin-bottom: 4px;
+}
+
+/* Sidebar in collapsed mode */
+.dashboard-sidebar-collapsed {
+    width: 45px !important;
+}
+.show-side,
+hr.section-split,
+i.withtitle,
+.dashboard-sidebar-collapsed ul i:not(.withtitle),
+.dashboard-sidebar-collapsed .hide-side,
+.dashboard-sidebar-collapsed .sidebar-heading,
+.dashboard-sidebar-collapsed .nav-link span {
+    display: none;
+}
+.dashboard-sidebar-collapsed ul i.withtitle,
+.dashboard-sidebar-collapsed .show-side,
+.dashboard-sidebar-collapsed hr.section-split {
+    display: block;
+}
+nav.dashboard-sidebar.dashboard-sidebar-collapsed ul {
+    padding-left: 0px;
+    font-size: 22px;
+}
+/* ------------------------------------------ /Sidebar nav */
+
+
+/* ---------------------------------------------------------
+ Main content
+----------------------------------------------------------*/
+.dashboard-body {
+    margin-left: 250px;
+}
+.dashboard-body.sidebar-collapsed {
+    margin-left: 45px;
+}
+
+.main-content {
+    padding: 75px;
+}
+/* --------------------------------------- /Main content */

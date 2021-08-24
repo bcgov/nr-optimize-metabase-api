@@ -1,0 +1,9 @@
+NAME=eagle-api
+GROUP_NAME=eagle-epic
+APPLICATION_DOMAIN=eagle-noexist-dev.pathfinder.gov.bc.ca
+MINIO_HOST=eagle-api-minio-noexist-dev.pathfinder.gov.bc.ca
+MINIO_SECRET_NAME=eagle-api-minio-keys
+DATABASE_SERVICE_NAME=eagle-api-mongodb
+APP_IMAGE_NAME=eagle-api
+APP_IMAGE_NAMESPACE=noexist-tools
+APP_DEPLOYMENT_TAG=dev

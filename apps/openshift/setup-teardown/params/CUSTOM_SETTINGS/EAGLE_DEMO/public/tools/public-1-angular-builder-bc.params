@@ -1,0 +1,3 @@
+NAME=demo-eagle-public-angular-builder
+GIT_REPO_URL=https://github.com/bcgov/eagle-public
+GIT_REPO_BRANCH=EAR-Feature

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<th:block th:fragment="head">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no"
+          charset="UTF-8"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+          crossorigin="anonymous">
+
+    <!-- Fontawesome CSS -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+          integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+
+
+    <!-- Project CSS -->
+    <link th:href="@{/css/bcgov-bootstrap-theme.min.css}" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon"
+          th:href="@{/images/bcid-apple-touch-icon.png}" sizes="180x180">
+    <link rel="icon" th:href="@{/images/bcid-favicon-32x32.png}"
+          sizes="32x32" type="image/png">
+    <link rel="icon" th:href="@{/images/bcid-favicon-16x16.png}"
+          sizes="16x16" type="image/png">
+    <link rel="manifest" th:href="@{/images/manifest.json}">
+    <link rel="mask-icon" th:href="@{/images/bcid-apple-icon.svg}"
+          color="#036">
+    <link rel="icon" th:href="@{/images/bcid-favicon-32x32.png}">
+    <meta name="theme-color" content="#036">
+
+</th:block>
+
+<th:block th:fragment="scripts">
+    <!-- JQuery and Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+    <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous"></script>
+    <script
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+    <script>
+		// enable popovers and tooltips everywhere
+		$(function() {
+		    $('[data-toggle="popover"]').popover()
+		})
+		$(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    <script>
+        $(document).ready(function(){
+          // had this implemented with CSS variables instead but stupid stupid IE11...
+          $(".hide-side").on("click", function(){
+            $("nav.dashboard-sidebar").addClass("dashboard-sidebar-collapsed");
+            $(".dashboard-body").addClass("sidebar-collapsed");
+          });
+          $(".show-side").on("click", function(){
+            $("nav.dashboard-sidebar").removeClass("dashboard-sidebar-collapsed");
+            $(".dashboard-body").removeClass("sidebar-collapsed");
+          });
+        });
+    </script>
+</th:block>
+<body>
+</body>
+</html>
