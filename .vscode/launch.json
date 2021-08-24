@@ -36,10 +36,10 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: send_usage_graph",
+            "name": "Python: send_usage_emails",
             "type": "python",
             "request": "launch",
-            "program": "send-usage-emails\\send_usage_graph.py",
+            "program": "send-usage-emails\\send_usage_emails.py",
             "args": [
                 "-i", "C:/TEMP/data/inputcsvs",
                 "-r", "2021-05_H_Drive_NRM_Usage.csv",

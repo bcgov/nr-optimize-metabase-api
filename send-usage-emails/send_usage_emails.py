@@ -18,7 +18,7 @@
 # -------------------------------------------------------------------------------
 
 # import pyad.adquery
-import constants
+import send_usage_emails_constants as constants
 import sys
 import smtplib
 import psycopg2
