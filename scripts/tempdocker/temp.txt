@@ -1,0 +1,1 @@
+The tempdocker folder needs a file inside or it will cause openshift builds to fail.
