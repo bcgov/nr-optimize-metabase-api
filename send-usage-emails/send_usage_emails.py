@@ -25,12 +25,12 @@ import psycopg2
 import calendar
 # import glob
 import time
-import os
-import matplotlib.pyplot as plt
+# import os
+# import matplotlib.pyplot as plt
 
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
-from email.mime.image import MIMEImage
+# from email.mime.image import MIMEImage
 from email.mime.text import MIMEText
 
 
@@ -174,6 +174,7 @@ def get_hdrive_data():
     return data
 
 
+"""
 # Generate an graph image's bytes using idir info
 def get_graph_bytes(idir_info):
     samples = idir_info["samples"]
@@ -223,6 +224,7 @@ def get_graph_bytes(idir_info):
     fp.close()
 
     return image_bytes
+"""
 
 
 # Send an email to the user containing usage information
@@ -303,9 +305,9 @@ def send_idir_email(idir_info):
     </body>
     </html>
     """
-    msgImage = MIMEImage(get_graph_bytes(idir_info))
-    msgImage.add_header("Content-ID", "<image1>")
-    msg.attach(msgImage)
+    # msgImage = MIMEImage(get_graph_bytes(idir_info))
+    # msgImage.add_header("Content-ID", "<image1>")
+    # msg.attach(msgImage)
     html = (html_intro + html_snapshot_taken + html_img + html_why_important + html_footer)
 
     # attach and send email
