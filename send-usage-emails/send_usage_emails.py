@@ -91,15 +91,16 @@ def send_error_email(error_message):
     msg["To"] = "IITD.Optimize@gov.bc.ca"
     if constants.USE_DEBUG_IDIR.upper() == "TRUE":
         msg["To"] = "peter.platten@gov.bc.ca"
+        msg["From"] = "peter.platten@gov.bc.ca"
     html = (
         """<html><head></head><body><p>
-        A scheduled script has failed to complete. Error Message:<br />"""
+        The scheduled script send_usage_emails.py has failed to complete. Error Message:<br />"""
         + str(error_message)
         + """</p></body></html>"""
     )
     msg.attach(MIMEText(html, "html"))
     s = smtplib.SMTP(constants.SMTP_SERVER)
-    s.sendmail(msg["From"],msg["To"],msg.as_string())
+    s.sendmail(msg["From"], msg["To"], msg.as_string())
     s.quit()
 
 
