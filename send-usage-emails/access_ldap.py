@@ -4,6 +4,7 @@ import constants
 import ldap3
 import logging
 import nslookup
+from getpass import getpass
 
 LOGGER = logging.getLogger("DEBUG")
 
@@ -100,6 +101,8 @@ def handle_input_arguments():
         constants.LDAP_USER = args.ldap_user
     if args.ldap_pass is not None:
         constants.LDAP_PASSWORD = args.ldap_pass
+    if constants.LDAP_PASSWORD == "":
+        constants.LDAP_PASSWORD = getpass()
 
 
 if __name__ == '__main__':
