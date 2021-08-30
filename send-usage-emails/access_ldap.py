@@ -28,10 +28,15 @@ class LDAPUtil():
             except ldap3.core.exceptions.LDAPSocketOpenError:
                 msg = 'problem connecting to ldap server {server_ip}... trying a different server'
                 LOGGER.WARNING(msg)
+            except ldap3.core.exceptions.LDAPBindError:
+                msg = f'Credentials are likely incorrect for idir\\{self.user}, password={self.passwd}'
+                LOGGER.WARNING(msg)
         return conn
 
     def getUserEmail(self, inputUserName):
         conn = self.getLdapConnection()
+        if conn is None:
+            return None
         # todo: calc this from default domain
         hoststring = 'OU=BCGOV,DC=idir,DC=BCGOV'
         queryString = f'(&(objectClass=person)(mailNickname={inputUserName.upper()}))'
