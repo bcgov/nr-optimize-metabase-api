@@ -22,7 +22,8 @@ class LDAPUtil():
             server = ldap3.Server(server_ip)
             try:
                 # Note: {self.serverSrc.defaultDomain} only works as "idir" on dev pc
-                conn = ldap3.Connection(server, user=f"{self.serverSrc.defaultDomain}\\{self.user}", password=f"{self.passwd}", auto_bind=True, authentication=ldap3.NTLM)
+                print(f"Trying: idir\\{self.user} with {self.passwd}")
+                conn = ldap3.Connection(server, user=f"idir\\{self.user}", password=f"{self.passwd}", auto_bind=True, authentication=ldap3.NTLM)
                 break
             except ldap3.core.exceptions.LDAPSocketOpenError:
                 msg = 'problem connecting to ldap server {server_ip}... trying a different server'
