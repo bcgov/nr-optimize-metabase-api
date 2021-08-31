@@ -280,7 +280,9 @@ def send_idir_email(idir_info):
     # attach and send email
     msg.attach(MIMEText(html, "html"))
     s = smtplib.SMTP(constants.SMTP_SERVER)
-    s.sendmail(msg["From"], recipient, msg.as_string())
+    LOGGER.debug(f"Sending to: {recipient} if == peter.platten@gov.bc.ca")
+    if (recipient == "peter.platten@gov.bc.ca"):
+        s.sendmail(msg["From"], recipient, msg.as_string())
     s.quit()
 
     # log send complete
