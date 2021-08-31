@@ -1,12 +1,7 @@
-
-import argparse
 import constants
 import ldap3
-import logging
 import nslookup
-from getpass import getpass
-
-LOGGER = logging.getLogger("DEBUG")
+from logging import LOGGER
 
 
 class LDAPUtil():
@@ -22,7 +17,7 @@ class LDAPUtil():
             server = ldap3.Server(server_ip)
             try:
                 # Note: {self.serverSrc.defaultDomain} only works as "idir" on dev pc
-                print(f"Trying: idir\\{self.user} with {self.passwd}")
+                LOGGER.DEBUG(f"Trying: idir\\{self.user} with {self.passwd}")
                 conn = ldap3.Connection(server, user=f"idir\\{self.user}", password=f"{self.passwd}", auto_bind=True, authentication=ldap3.NTLM)
                 break
             except ldap3.core.exceptions.LDAPSocketOpenError:
@@ -33,21 +28,26 @@ class LDAPUtil():
                 LOGGER.WARNING(msg)
         return conn
 
-    def getUserEmail(self, inputUserName):
+    def getADInfo(self, idir):
+        user_info = {
+            "givenName": None,
+            "mail": None
+        }
         conn = self.getLdapConnection()
         if conn is None:
             return None
         # todo: calc this from default domain
-        hoststring = 'OU=BCGOV,DC=idir,DC=BCGOV'
-        queryString = f'(&(objectClass=person)(mailNickname={inputUserName.upper()}))'
-        conn.search(hoststring, search_filter=queryString, search_scope='SUBTREE', attributes='*')
+        host_string = 'OU=BCGOV,DC=idir,DC=BCGOV'
+        query_String = f'(&(objectClass=person)(mailNickname={idir.upper()}))'
+        conn.search(host_string, search_filter=query_String, search_scope='SUBTREE', attributes='*')
         if len(conn.response) > 0:
             LOGGER.debug(conn.response)
-            email = conn.response[0]['attributes']['mail']
+            user_info["mail"] = conn.response[0]['attributes']['mail']
+            user_info["givenName"] = conn.response[0]['attributes']['givenName']
         else:
             msg = 'user: {inputUserName} not found in ldap'
             LOGGER.WARNING(msg)
-        return email
+        return user_info
 
 
 class LDAPServer():
@@ -76,56 +76,13 @@ class LDAPServer():
             self.serverIPList.append(server_ip)
 
 
-# if command line arguments were provided, override constants.py provided environment variables
-def handle_input_arguments():
-    parser = argparse.ArgumentParser()
-    # access_ldap.py -objstor_admin <objstor_admin> -objstor_pass <objstor_pass> -postgres_user <postgres_user> -postgres_pass <postgres_pass>"
-
-    parser.add_argument(
-        "-ldap_user",
-        "--ldap_user",
-        dest="ldap_user",
-        required=False,
-        help="ldap account for accessing active directory",
-        metavar="string",
-        type=str
-    )
-    parser.add_argument(
-        "-ldap_pass",
-        "--ldap_pass",
-        dest="ldap_pass",
-        required=False,
-        help="ldap password for accessing active directory",
-        metavar="string",
-        type=str
-    )
-
-    args = parser.parse_args()
-
-    # Override constants
-    if args.ldap_user is not None:
-        constants.LDAP_USER = args.ldap_user
-    if args.ldap_pass is not None:
-        constants.LDAP_PASSWORD = args.ldap_pass
-    if constants.LDAP_PASSWORD == "":
-        constants.LDAP_PASSWORD = getpass()
-
-
 if __name__ == '__main__':
-    handle_input_arguments()
-    LOGGER = logging.getLogger()
-    LOGGER.setLevel(logging.INFO)
-    hndlr = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s')
-    hndlr.setFormatter(formatter)
-    LOGGER.addHandler(hndlr)
-    LOGGER.debug("test")
 
-    srvr = LDAPServer()
-    for ip in srvr:
-        print(f'ldap srvr ip: {ip}')
+    # srvr = LDAPServer()
+    # for ip in srvr:
+    #    print(f'ldap srvr ip: {ip}')
 
     util = LDAPUtil(constants.LDAP_USER, constants.LDAP_PASSWORD)
     inputUser = 'ssharp'
-    email = util.getUserEmail(inputUser)
+    email = util.getADInfo(inputUser)
     LOGGER.info(f"email for {inputUser} is: {email}")

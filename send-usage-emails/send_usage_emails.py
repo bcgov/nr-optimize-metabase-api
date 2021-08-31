@@ -17,54 +17,23 @@
 # example:  send_usage_graph_v2.py -i J:\Scripts\Python\Data -f J:\Scripts\Python\Data\Output -e J:\Scripts\Python\Data\Lists
 # -------------------------------------------------------------------------------
 
-# import pyad.adquery
+
+import calendar
 import constants
+import ldap_helper as ldap
+import psycopg2
 import sys
 import smtplib
-import psycopg2
-import calendar
-# import glob
 import time
-# import os
+# import glob
 # import matplotlib.pyplot as plt
+# import os
 
 from datetime import datetime
 # from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
-
-"""
-q = pyad.adquery.ADQuery()
-q.default_ldap_server = "ldaps://plywood.idir.bcgov:636"
-
-# Update a user dictionary with AD information
-def get_ad_info(user):
-    idir = user["idir"]
-    q.execute_query(["samaccountname", "givenName", "mail"], where_clause=f"samaccountname='{idir}'")
-    error_message = ""
-    if q.get_row_count() == 0:
-        error_message = "not found in active directory."
-    else:
-        idir_info = q.get_single_result()
-        if "givenName" in idir_info and idir_info["givenName"] is not None:
-            user["givenName"] = idir_info["givenName"]
-        else:
-            error_message = "givenName not found. "
-        if "mail" in idir_info and idir_info["mail"] is not None:
-            user["mail"] = idir_info["mail"]
-        else:
-            error_message = error_message + "mail not found. "
-
-    errors = error_message != ""
-    user["all_ad_attributes_found"] = not errors
-    if errors:
-        user["error"] = error_message
-        f = open("error_log.csv", "a")
-        f.write(datetime.now().isoformat()+","+user["idir"]+","+error_message+"\n")
-        f.close()
-    return user
-"""
+from logging import LOGGER
 
 
 # Get a simple formatted "sample" object
@@ -120,14 +89,7 @@ def get_hdrive_data():
         # create a cursor
         cur = conn.cursor()
 
-        # execute a statement
-        print('PostgreSQL database version:')
-        cur.execute('SELECT version()')
-    # display the PostgreSQL database server version
-        db_version = cur.fetchone()
-        print(db_version)
-
-        print('H Drive data from the last two months:')
+        LOGGER.debug('H Drive data from the last two months:')
         sql_expression = """
         SELECT idir, datausage, date FROM hdriveusage WHERE (date_trunc('month',
          CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now()
@@ -138,6 +100,7 @@ def get_hdrive_data():
         cur.execute(sql_expression)
         all_results = cur.fetchall()
         data = {}
+        ldap_util = ldap.LDAPUtil(constants.LDAP_USER, constants.LDAP_PASSWORD)
         for result in all_results:
             idir = result[0]
             if constants.USE_DEBUG_IDIR.upper() == "TRUE":
@@ -146,13 +109,14 @@ def get_hdrive_data():
             gb = result[1]
             sample_datetime = result[2]
             if idir not in data:
+                ad_info = ldap_util.getADInfo(idir)
                 data[idir] = {
                     "idir": idir,
                     "samples": [
                         get_sample(gb, sample_datetime)
                     ],
-                    "email": "peter.platten@gov.bc.ca",
-                    "name": "Peter Platten"
+                    "mail": ad_info["mail"],
+                    "name": ad_info["givenName"]
                 }
             else:
                 data[idir]["samples"].append(get_sample(gb, sample_datetime))
@@ -168,12 +132,12 @@ def get_hdrive_data():
     # close the communication with the PostgreSQL
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
+        LOGGER.warning(error)
         send_error_email(error)
     finally:
         if conn is not None:
             conn.close()
-            print('Database connection closed.')
+            LOGGER.debug('Database connection closed.')
     return data
 
 
@@ -320,7 +284,7 @@ def send_idir_email(idir_info):
     s.quit()
 
     # log send complete
-    print(f"Email sent to {recipient}.")
+    LOGGER.debug(f"Email sent to {recipient}.")
 
 
 def main(argv):
@@ -341,9 +305,9 @@ def main(argv):
             gb = sample["gb"]
             sample_datetime = sample["sample_datetime"]
             month = sample["month"]
-            print(f"GB: {gb}, Datetime: {sample_datetime}, Month: {month}")
+            LOGGER.info(f"GB: {gb}, Datetime: {sample_datetime}, Month: {month}")
         # send email to user
-        print(idir)
+        LOGGER.debug(idir)
         if idir == "PPLATTEN":
             send_idir_email(data[idir])
         # follow smtp server guidelines of max 30 emails/minute
@@ -352,3 +316,4 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+    time.sleep(300)
