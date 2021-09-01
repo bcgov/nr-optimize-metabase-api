@@ -1,7 +1,8 @@
 import constants
 import ldap3
 import nslookup
-from logging import LOGGER
+
+from log_helper import LOGGER
 
 
 class LDAPUtil():
@@ -17,15 +18,15 @@ class LDAPUtil():
             server = ldap3.Server(server_ip)
             try:
                 # Note: {self.serverSrc.defaultDomain} only works as "idir" on dev pc
-                LOGGER.DEBUG(f"Trying: idir\\{self.user} with {self.passwd}")
+                LOGGER.debug(f"Trying: idir\\{self.user} with {self.passwd}")
                 conn = ldap3.Connection(server, user=f"idir\\{self.user}", password=f"{self.passwd}", auto_bind=True, authentication=ldap3.NTLM)
                 break
             except ldap3.core.exceptions.LDAPSocketOpenError:
                 msg = 'problem connecting to ldap server {server_ip}... trying a different server'
-                LOGGER.WARNING(msg)
+                LOGGER.warning(msg)
             except ldap3.core.exceptions.LDAPBindError:
                 msg = f'Credentials are likely incorrect for idir\\{self.user}, password={self.passwd}'
-                LOGGER.WARNING(msg)
+                LOGGER.warning(msg)
         return conn
 
     def getADInfo(self, idir):

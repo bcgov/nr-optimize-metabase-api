@@ -21,19 +21,21 @@
 import calendar
 import constants
 import ldap_helper as ldap
+import os
 import psycopg2
+import socket
 import sys
 import smtplib
 import time
 # import glob
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 # import os
 
 from datetime import datetime
-# from email.mime.image import MIMEImage
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from logging import LOGGER
+from log_helper import LOGGER
 
 
 # Get a simple formatted "sample" object
@@ -53,20 +55,24 @@ def get_sample(gb, sample_datetime: datetime):
 
 
 # Send an email to the admin with error message
-def send_error_email(error_message):
+def send_admin_email(message_detail):
     msg = MIMEMultipart("related")
-    msg["Subject"] = "Script failure"
-    msg["From"] = "IITD.Optimize@gov.bc.ca"
-    msg["To"] = "IITD.Optimize@gov.bc.ca"
-    if constants.USE_DEBUG_IDIR.upper() == "TRUE":
-        msg["To"] = "peter.platten@gov.bc.ca"
-        msg["From"] = "peter.platten@gov.bc.ca"
-    html = (
-        """<html><head></head><body><p>
-        The scheduled script send_usage_emails.py has failed to complete. Error Message:<br />"""
-        + str(error_message)
-        + """</p></body></html>"""
-    )
+    msg["Subject"] = "Script Report"
+    if constants.DEBUG_EMAIL == "":
+        msg["From"] = "IITD.Optimize@gov.bc.ca"
+        msg["To"] = "IITD.Optimize@gov.bc.ca"
+    else:
+        msg["To"] = constants.DEBUG_EMAIL
+        msg["From"] = constants.DEBUG_EMAIL
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    host_name = socket.gethostname()
+    html = "<html><head></head><body><p>" \
+        + "A scheduled script relay_bucket_data.py has sent an automated report email." \
+        + "<br />Server: " + str(host_name) \
+        + "<br />File Path: " + dir_path + "<br />" \
+        + str(message_detail) \
+        + "</p></body></html>"
     msg.attach(MIMEText(html, "html"))
     s = smtplib.SMTP(constants.SMTP_SERVER)
     s.sendmail(msg["From"], msg["To"], msg.as_string())
@@ -103,10 +109,12 @@ def get_hdrive_data():
         ldap_util = ldap.LDAPUtil(constants.LDAP_USER, constants.LDAP_PASSWORD)
         for result in all_results:
             idir = result[0]
-            if constants.USE_DEBUG_IDIR.upper() == "TRUE":
-                if idir != constants.DEBUG_IDIR:
-                    continue
             gb = result[1]
+            if constants.DEBUG_IDIR is not None:
+                if idir == constants.DEBUG_IDIR:
+                    gb = 12.456
+                else:
+                    continue
             sample_datetime = result[2]
             if idir not in data:
                 ad_info = ldap_util.getADInfo(idir)
@@ -125,15 +133,15 @@ def get_hdrive_data():
             data[idir]["samples"].sort(
                 key=lambda s: s["sample_datetime"]
             )
-            if constants.USE_DEBUG_IDIR.upper() == "TRUE":
-                data[idir]["samples"][0]["gb"] = 12.456
-                data[idir]["samples"][1]["gb"] = 16.543
 
     # close the communication with the PostgreSQL
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         LOGGER.warning(error)
-        send_error_email(error)
+        message_detail = "The send_usage_emails script failed to connect or read data from the postgres database. " \
+            + "<br />Username: " + constants.POSTGRES_USER \
+            + "<br />Message Detail: " + str(error)
+        send_admin_email(message_detail)
     finally:
         if conn is not None:
             conn.close()
@@ -141,16 +149,34 @@ def get_hdrive_data():
     return data
 
 
-"""
 # Generate an graph image's bytes using idir info
 def get_graph_bytes(idir_info):
     samples = idir_info["samples"]
     idir = idir_info["name"]
+
     # Select plot theme
     plt.style.use("seaborn-whitegrid")
     fig = plt.figure()
     ax1 = plt.axes()
 
+    # Build bar chart with a colour array
+    colors = ["#e3a82b", "#234075"]
+    axis_dates = []
+    for idx, sample in enumerate(samples):
+        plt.bar(sample["sample_datetime"], sample["gb"], color=colors[idx], alpha=0.9, label=sample["month"])
+        axis_dates.append(sample["sample_datetime"].strftime('%Y-%m-%d'))
+
+    # Apply labels, legends and alignments
+    plt.legend(
+        title="Month",
+        fontsize="small",
+        fancybox=True,
+        framealpha=1,
+        shadow=True,
+        bbox_to_anchor=(1.01, 1),
+        borderaxespad=0
+    )
+    """
     dates = []
     gb = []
     label_names = []
@@ -164,11 +190,6 @@ def get_graph_bytes(idir_info):
     plt.bar(x, y, color=["#e3a82b", "#234075"], alpha=0.9)
 
     # Apply labels, legends and alignments
-    plt.title(f"{idir} - H: Drive Data Usage", fontsize=14)
-    plt.ylabel("Data size (GB)", fontsize=10)
-    x_axis = ax1.axes.get_xaxis()
-    x_axis.set_visible(False)
-
     plt.legend(
         title="Month",
         fontsize="small",
@@ -178,7 +199,13 @@ def get_graph_bytes(idir_info):
         bbox_to_anchor=(1.01, 1),
         labels=label_names,
         borderaxespad=0
-    )
+    )"""
+
+    plt.title(f"{idir} - H: Drive Data Usage", fontsize=14)
+    plt.ylabel("Data size (GB)", fontsize=10)
+    x_axis = ax1.axes.get_xaxis()
+    x_axis.set_visible(False)
+
     caption = " "
     fig.text(0.5, 0.01, caption, ha="center")
     plt.tight_layout()
@@ -191,14 +218,13 @@ def get_graph_bytes(idir_info):
     fp.close()
 
     return image_bytes
-"""
 
 
 # Send an email to the user containing usage information
 def send_idir_email(idir_info):
     samples = idir_info["samples"]
     name = idir_info["name"]
-    recipient = idir_info["email"]
+    recipient = idir_info["mail"]
     msg = MIMEMultipart("related")
 
     # last_month is the most recent reporting month
@@ -272,21 +298,22 @@ def send_idir_email(idir_info):
     </body>
     </html>
     """
-    # msgImage = MIMEImage(get_graph_bytes(idir_info))
-    # msgImage.add_header("Content-ID", "<image1>")
-    # msg.attach(msgImage)
     html = (html_intro + html_snapshot_taken + html_img + html_why_important + html_footer)
-
-    # attach and send email
     msg.attach(MIMEText(html, "html"))
+
+    msgImage = MIMEImage(get_graph_bytes(idir_info))
+    msgImage.add_header("Content-ID", "<image1>")
+    msg.attach(msgImage)
+
+    # send email
     s = smtplib.SMTP(constants.SMTP_SERVER)
     LOGGER.debug(f"Sending to: {recipient} if == peter.platten@gov.bc.ca")
-    if (recipient == "peter.platten@gov.bc.ca"):
+    if (recipient.upper() == constants.DEBUG_EMAIL.upper()):
         s.sendmail(msg["From"], recipient, msg.as_string())
     s.quit()
 
     # log send complete
-    LOGGER.debug(f"Email sent to {recipient}.")
+    LOGGER.info(f"Email sent to {recipient}.")
 
 
 def main(argv):

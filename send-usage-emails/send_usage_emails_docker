@@ -1,10 +1,7 @@
-FROM docker-remote.artifacts.developer.gov.bc.ca/alpine:3.14
+FROM python:3.9-slim
 WORKDIR /src
 COPY ["*", "./"]
 
-RUN apk add --no-cache python3 py3-pip postgresql-libs && \
-    apk add --no-cache --virtual .build-deps gcc python3-dev musl-dev gfortran postgresql-dev build-base py3-numpy && \
-    python3 -m pip install -r requirements.txt --no-cache-dir && \
-    apk --purge del .build-deps
+RUN pip install --no-cache-dir matplotlib pandas
 
 ENTRYPOINT ["python3", "send_usage_emails.py"]
