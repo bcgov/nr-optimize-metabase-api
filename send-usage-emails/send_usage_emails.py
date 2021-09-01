@@ -214,6 +214,7 @@ def get_graph_bytes(idir_info):
     plt.savefig(os.path.join(os.getcwd(), 'graph.png'))
     # open image and read as binary
     fp = open(os.path.join(os.getcwd(), "graph.png"), "rb")
+    os.remove(os.path.join(os.getcwd(), "graph.png"))
     image_bytes = fp.read()
     fp.close()
 
