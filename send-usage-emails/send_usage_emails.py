@@ -210,10 +210,10 @@ def get_graph_bytes(idir_info):
     plt.tight_layout()
 
     # Save the plot to file
-    plt.savefig(os.path.join(os.getcwd(), 'graph.png'))
+    plt.savefig('/tmp/graph.png')
     # open image and read as binary
-    fp = open(os.path.join(os.getcwd(), "graph.png"), "rb")
-    os.remove(os.path.join(os.getcwd(), "graph.png"))
+    fp = open('/tmp/graph.png', "rb")
+    os.remove('/tmp/graph.png')
     image_bytes = fp.read()
     fp.close()
 
