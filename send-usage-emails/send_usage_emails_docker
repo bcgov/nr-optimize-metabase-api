@@ -1,8 +1,9 @@
 FROM python:3.9-slim
 WORKDIR /src
 
+RUN apk add --no-cache python3 py3-pip postgresql-libs
+
 RUN apt-get update \
-    && apk add --no-cache python3 py3-pip postgresql-libs \
     && apt-get install gcc python3-dev musl-dev gfortran postgresql-dev build-base py3-numpy -y \
     && apt-get clean
 
