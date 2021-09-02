@@ -86,8 +86,7 @@ def get_hdrive_data():
     try:
         # Open a connection
         conn = psycopg2.connect(
-            # host="postgresql",
-            host="localhost",
+            host=constants.POSTGRES_HOST,
             database="metabase",
             user=constants.POSTGRES_USER,
             password=constants.POSTGRES_PASSWORD
