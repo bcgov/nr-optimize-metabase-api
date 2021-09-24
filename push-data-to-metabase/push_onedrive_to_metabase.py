@@ -21,6 +21,7 @@
 import glob
 import pandas as pd
 import os
+import sys
 from datetime import datetime
 import psycopg2
 import push_onedrive_constants as constants
@@ -36,7 +37,7 @@ ministry_renames = {
 
 nrm_ministries = ["AFF", "EMLI", "ENV", "FLNR", "IRR"]
 
-delete_before_insert = True
+delete_before_insert = False
 
 
 # gets all .xlsx files from the python files directory
@@ -122,5 +123,7 @@ def insert_records_to_metabase(record_tuples):
 
 
 if __name__ == "__main__":
+    if "-d" in sys.argv:
+        delete_before_insert = True
     record_tuples = get_records_from_xlsx()
     insert_records_to_metabase(record_tuples)
