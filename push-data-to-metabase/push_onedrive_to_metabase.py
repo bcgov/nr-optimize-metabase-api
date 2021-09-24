@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------
 # Name:        push_onedrive_to_metabase.py
 # Purpose:     the purpose of the script is to ETL onedrive data into metabase:
-#              1.) Read in CSV data
+#              1.) Read in xlsx data
 #              2.) Transform the data
 #              3.) Insert to Metabase
 #
@@ -15,7 +15,7 @@
 # usage: push_onedrive_to_metabase.py
 # requirements:
 #              1.) Must have open port to metabase database (can use push_to_onedrive.bat to bind port with oc)
-#              2.) Must have all onedrive CSVs in same folder
+#              2.) Must have all onedrive xlsx in same folder
 # -------------------------------------------------------------------------------
 
 import glob
