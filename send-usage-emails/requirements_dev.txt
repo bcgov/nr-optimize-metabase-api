@@ -5,3 +5,4 @@ python-dotenv==0.17.1
 psycopg2==2.9.1
 ldap3==2.9.1
 nslookup==1.4.0
+seaborn==0.11.1

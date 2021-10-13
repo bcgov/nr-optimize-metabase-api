@@ -23,6 +23,7 @@ import constants
 import ldap_helper as ldap
 import os
 import psycopg2
+import seaborn as sns
 import socket
 import sys
 import smtplib
@@ -150,10 +151,11 @@ def get_hdrive_data():
 
 # Generate an graph image's bytes using idir info
 def get_graph_bytes(idir_info):
-    samples = idir_info["samples"]
+    # samples = idir_info["samples"]
     idir = idir_info["name"]
 
-    # Select plot theme
+    # Select plot theme, without seaborn
+    """
     plt.style.use("seaborn-whitegrid")
     fig = plt.figure()
     ax1 = plt.axes()
@@ -164,6 +166,12 @@ def get_graph_bytes(idir_info):
     for idx, sample in enumerate(samples):
         plt.bar(sample["sample_datetime"], sample["gb"], color=colors[idx], alpha=0.9, label=sample["month"])
         axis_dates.append(sample["sample_datetime"].strftime('%Y-%m-%d'))
+        """
+
+    # Select plot theme, with seaborn
+    sns.set()
+    sns.set_theme(style="whitegrid")
+    fig = plt.figure()
 
     # Apply labels, legends and alignments
     plt.legend(
@@ -202,8 +210,8 @@ def get_graph_bytes(idir_info):
 
     plt.title(f"{idir} - H: Drive Data Usage", fontsize=14)
     plt.ylabel("Data size (GB)", fontsize=10)
-    x_axis = ax1.axes.get_xaxis()
-    x_axis.set_visible(False)
+    # x_axis = ax1.axes.get_xaxis()
+    # x_axis.set_visible(False)
 
     caption = " "
     fig.text(0.5, 0.01, caption, ha="center")
