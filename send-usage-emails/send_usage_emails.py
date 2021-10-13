@@ -151,7 +151,7 @@ def get_hdrive_data():
 
 # Generate an graph image's bytes using idir info
 def get_graph_bytes(idir_info):
-    # samples = idir_info["samples"]
+    samples = idir_info["samples"]
     idir = idir_info["name"]
 
     # Select plot theme, without seaborn
@@ -172,6 +172,16 @@ def get_graph_bytes(idir_info):
     sns.set()
     sns.set_theme(style="whitegrid")
     fig = plt.figure()
+    ax1 = plt.axes()
+    # Create a colour array
+    colors = ["#e3a82b", "#234075"]
+    # Set custom colour palette
+    sns.set_palette(sns.color_palette(colors))
+    # Build bar chart
+    axis_dates = []
+    for idx, sample in enumerate(samples):
+        sns.barplot(sample["sample_datetime"], sample["gb"], color=colors[idx], ci=None, dodge=False, alpha=0.9, estimator=min, label=sample["month"])
+        axis_dates.append(sample["sample_datetime"].strftime('%Y-%m-%d'))
 
     # Apply labels, legends and alignments
     plt.legend(
@@ -210,8 +220,8 @@ def get_graph_bytes(idir_info):
 
     plt.title(f"{idir} - H: Drive Data Usage", fontsize=14)
     plt.ylabel("Data size (GB)", fontsize=10)
-    # x_axis = ax1.axes.get_xaxis()
-    # x_axis.set_visible(False)
+    x_axis = ax1.axes.get_xaxis()
+    x_axis.set_visible(False)
 
     caption = " "
     fig.text(0.5, 0.01, caption, ha="center")
