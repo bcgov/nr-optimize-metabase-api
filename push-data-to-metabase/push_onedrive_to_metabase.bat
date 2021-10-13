@@ -3,8 +3,9 @@ REM Correct project must be selected
 REM Optional parameter -d will delete records before adding new ones from csv
 
 
-REM Run Bind Port script
+REM Run Bind Port script and wait for it to run
 start "port-bind" cmd /k "bind_to_ocp_database_port.bat"
+timeout /t 25
 
 REM Push to OneDrive Table
 "python.exe" push_onedrive_to_metabase.py %1
