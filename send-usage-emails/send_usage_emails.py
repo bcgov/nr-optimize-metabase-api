@@ -180,10 +180,18 @@ def get_graph_bytes(idir_info):
     # Build bar chart
     axis_dates = []
     for idx, sample in enumerate(samples):
+        sample_datetime = sample["sample_datetime"]
+        sample_gb = sample["gb"]
+        sample_month = sample["month"]
+        sample_color = colors[idx]
+        print(f"sample_datetime: {sample_datetime}")
+        print(f"sample_gb: {sample_gb}")
+        print(f"sample_month: {sample_month}")
+        print(f"color: {sample_color}")
         sns.barplot(
-            x=sample["sample_datetime"],
-            y=sample["gb"],
-            color=colors[idx],
+            x=sample_datetime,
+            y=sample_gb,
+            color=sample_color,
             width=1,
             space=1,
             ci=None,
