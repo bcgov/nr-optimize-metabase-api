@@ -192,7 +192,7 @@ def get_graph_bytes(idir_info):
     #     print(f"sample_month: {sample_month}")
     #     print(f"color: {sample_color}")
     sns.barplot(
-        samples,
+        data=samples,
         x="sample_datetime",
         y="gb",
         hue="color",
