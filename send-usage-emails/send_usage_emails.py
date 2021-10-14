@@ -177,30 +177,33 @@ def get_graph_bytes(idir_info):
     colors = ["#e3a82b", "#234075"]
     # Set custom colour palette
     sns.set_palette(sns.color_palette(colors))
+
     # Build bar chart
     axis_dates = []
     for idx, sample in enumerate(samples):
-        sample_datetime = sample["sample_datetime"]
-        sample_gb = sample["gb"]
-        sample_month = sample["month"]
-        sample_color = colors[idx]
-        print(f"sample_datetime: {sample_datetime}")
-        print(f"sample_gb: {sample_gb}")
-        print(f"sample_month: {sample_month}")
-        print(f"color: {sample_color}")
-        sns.barplot(
-            x=sample_datetime,
-            y=sample_gb,
-            color=sample_color,
-            width=1,
-            space=1,
-            ci=None,
-            dodge=False,
-            alpha=0.9,
-            estimator=min,
-            label=sample["month"]
-        )
         axis_dates.append(sample["sample_datetime"].strftime("%Y-%m-%d"))
+        sample["color"] = colors[idx]
+    #     sample_datetime = sample["sample_datetime"]
+    #     sample_gb = sample["gb"]
+    #     sample_month = sample["month"]
+    #     sample_color = colors[idx]
+    #     print(f"sample_datetime: {sample_datetime}")
+    #     print(f"sample_gb: {sample_gb}")
+    #     print(f"sample_month: {sample_month}")
+    #     print(f"color: {sample_color}")
+    sns.barplot(
+        samples,
+        x="sample_datetime",
+        y="gb",
+        hue="color",
+        width=1,
+        space=1,
+        ci=None,
+        dodge=False,
+        alpha=0.9,
+        estimator=min,
+        label="month"
+    )
 
     # Apply labels, legends and alignments
     plt.legend(
