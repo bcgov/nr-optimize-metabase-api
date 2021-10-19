@@ -9,6 +9,7 @@ if os.path.exists(envPath):
 SMTP_SERVER = os.environ['SMTP_SERVER']
 DEBUG_IDIR = os.environ['DEBUG_IDIR']
 DEBUG_EMAIL = os.environ['DEBUG_EMAIL']
+EMAIL_WHITELIST = os.environ['EMAIL_WHITELIST']
 POSTGRES_USER = os.environ['POSTGRES_USER']
 POSTGRES_PASSWORD = os.environ['POSTGRES_PASSWORD']
 POSTGRES_HOST = os.environ['POSTGRES_HOST']

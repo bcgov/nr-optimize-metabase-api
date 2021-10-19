@@ -399,10 +399,13 @@ def main(argv):
             LOGGER.info(f"GB: {gb}, Datetime: {sample_datetime}, Month: {month}")
         # send email to user
         LOGGER.debug(idir)
-        if idir == "PPLATTEN":
+        if constants.EMAIL_WHITELIST:
+            print("constants.EMAIL_WHITELIST is a boolean")
+
+        if idir["mail"] in constants.EMAIL_WHITELIST.split(','):
             send_idir_email(data[idir])
-        # follow smtp server guidelines of max 30 emails/minute
-        time.sleep(2)
+            # follow smtp server guidelines of max 30 emails/minute
+            time.sleep(2)
 
 
 if __name__ == "__main__":
