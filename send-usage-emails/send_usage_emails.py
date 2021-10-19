@@ -191,20 +191,39 @@ def get_graph_bytes(idir_info):
     #     print(f"sample_gb: {sample_gb}")
     #     print(f"sample_month: {sample_month}")
     #     print(f"color: {sample_color}")
+
+    barplot_formatted_samples = {
+        'gb': [],
+        'datetime': [],
+        'month': [],
+        'cost': [],
+        'color': []
+    }
+    for sample in samples:
+        barplot_formatted_samples['gb'].append(sample['gb'])
+        barplot_formatted_samples['datetime'].append(sample['sample_datetime'])
+        barplot_formatted_samples['month'].append(sample['month'])
+        barplot_formatted_samples['cost'].append(sample['cost'])
+        barplot_formatted_samples['color'].append(sample['color'])
+
     sns.barplot(
-        data=samples,
-        x="sample_datetime",
-        y="gb",
+        "month",
+        "gb",
+        data=barplot_formatted_samples,
+    )
+
+    """
         hue="color",
-        width=1,
-        space=1,
         ci=None,
         dodge=False,
         alpha=0.9,
-        estimator=min,
-        label="month"
-    )
+        estimator=min
+        space=1,
+        width=1,
+        label=barplot_formatted_samples["month"]
+    """
 
+    """
     # Apply labels, legends and alignments
     plt.legend(
         title="Month",
@@ -215,6 +234,7 @@ def get_graph_bytes(idir_info):
         bbox_to_anchor=(1.01, 1),
         borderaxespad=0
     )
+    """
     """
     dates = []
     gb = []
@@ -242,20 +262,22 @@ def get_graph_bytes(idir_info):
 
     plt.title(f"{idir} - H: Drive Data Usage", fontsize=14)
     plt.ylabel("Data size (GB)", fontsize=10)
-    x_axis = ax1.axes.get_xaxis()
-    x_axis.set_visible(False)
+    # x_axis = ax1.axes.get_xaxis()
+    # x_axis.set_visible(False)
 
     caption = " "
     fig.text(0.5, 0.01, caption, ha="center")
     plt.tight_layout()
 
     # Save the plot to file
-    plt.savefig('/tmp/graph.png')
+    filepath = '/tmp/graph.png'
+    # filepath = 'c:/temp/graph.png'
+    plt.savefig(filepath)
     # open image and read as binary
-    fp = open('/tmp/graph.png', "rb")
-    os.remove('/tmp/graph.png')
+    fp = open(filepath, "rb")
     image_bytes = fp.read()
     fp.close()
+    os.remove(filepath)
 
     return image_bytes
 
