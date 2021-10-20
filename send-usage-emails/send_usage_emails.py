@@ -1,11 +1,9 @@
 # -------------------------------------------------------------------------------
-# Name:        send_usage_graph_v2.py
+# Name:        send_usage_emails.py
 # Purpose:     the purpose of the script is to email a list of users a bar chart of their H:drive usage over the past 2 reporting periods:
-#                    1.) Combine 2 most recent NRM H:drive .csv files into one file
-#                    2.) Remove IDIRs that have "opted-out" by using exclusion list
-#                    3.) Create a bar chart per IDIR
-#                    4.) E-mail message + embedded chart to each user using ADquery
-#                    5.) Remove remaining .png and .csv from directory
+#                    1.) Connect to the metabase postgres database, querying for all H drives
+#                    2.) Get emails and names from active directory
+#                    3.) Create a bar chart and send each user their html format report by email
 #
 # Author:      HHAY, JMONTEBE, PPLATTEN
 #
@@ -13,8 +11,10 @@
 # Copyright:   (c) Optimization Team 2021
 # Licence:     mine
 #
-# usage: send_usage_graph_v2.py -i <input_directory> -f <destination_directory> -e <exclusion_directory>
-# example:  send_usage_graph_v2.py -i J:\Scripts\Python\Data -f J:\Scripts\Python\Data\Output -e J:\Scripts\Python\Data\Lists
+# usage: send_usage_emails.py
+# Requires:
+#   1.) Postgres database to be "localhost". On Dev PCs this is done using port binding with open_postgres_port_dev.bat
+#   2.) A .env file to exist with valid credentials. See the constants.py for the required values.
 # -------------------------------------------------------------------------------
 
 
@@ -28,9 +28,7 @@ import socket
 import sys
 import smtplib
 import time
-# import glob
 import matplotlib.pyplot as plt
-# import os
 
 from datetime import datetime
 from email.mime.image import MIMEImage
@@ -188,25 +186,10 @@ def get_graph_bytes(idir_info):
     samples = idir_info["samples"]
     idir = idir_info["name"]
 
-    # Select plot theme, without seaborn
-    """
-    plt.style.use("seaborn-whitegrid")
-    fig = plt.figure()
-    ax1 = plt.axes()
-
-    # Build bar chart with a colour array
-    colors = ["#e3a82b", "#234075"]
-    axis_dates = []
-    for idx, sample in enumerate(samples):
-        plt.bar(sample["sample_datetime"], sample["gb"], color=colors[idx], alpha=0.9, label=sample["month"])
-        axis_dates.append(sample["sample_datetime"].strftime('%Y-%m-%d'))
-        """
-
     # Select plot theme, with seaborn
     sns.set()
     sns.set_theme(style="whitegrid")
     fig = plt.figure()
-    # ax1 = plt.axes()
     # Create a colour array
     colors = ["#e3a82b", "#234075"]
     # Set custom colour palette
@@ -217,14 +200,6 @@ def get_graph_bytes(idir_info):
     for idx, sample in enumerate(samples):
         axis_dates.append(sample["sample_datetime"].strftime("%Y-%m-%d"))
         sample["color"] = colors[idx]
-    #     sample_datetime = sample["sample_datetime"]
-    #     sample_gb = sample["gb"]
-    #     sample_month = sample["month"]
-    #     sample_color = colors[idx]
-    #     print(f"sample_datetime: {sample_datetime}")
-    #     print(f"sample_gb: {sample_gb}")
-    #     print(f"sample_month: {sample_month}")
-    #     print(f"color: {sample_color}")
 
     barplot_formatted_samples = {
         'gb': [],
@@ -246,58 +221,8 @@ def get_graph_bytes(idir_info):
         data=barplot_formatted_samples,
     )
 
-    """
-        hue="color",
-        ci=None,
-        dodge=False,
-        alpha=0.9,
-        estimator=min
-        space=1,
-        width=1,
-        label=barplot_formatted_samples["month"]
-    """
-
-    """
-    # Apply labels, legends and alignments
-    plt.legend(
-        title="Month",
-        fontsize="small",
-        fancybox=True,
-        framealpha=1,
-        shadow=True,
-        bbox_to_anchor=(1.01, 1),
-        borderaxespad=0
-    )
-    """
-    """
-    dates = []
-    gb = []
-    label_names = []
-    for sample in samples:
-        dates.append(sample["sample_datetime"])
-        gb.append(sample["gb"])
-        label_names.append(sample["month"])
-    # Build bar chart with a colour array
-    x = dates
-    y = gb
-    plt.bar(x, y, color=["#e3a82b", "#234075"], alpha=0.9)
-
-    # Apply labels, legends and alignments
-    plt.legend(
-        title="Month",
-        fontsize="small",
-        fancybox=True,
-        framealpha=1,
-        shadow=True,
-        bbox_to_anchor=(1.01, 1),
-        labels=label_names,
-        borderaxespad=0
-    )"""
-
     plt.title(f"{idir} - H: Drive Data Usage", fontsize=14)
     plt.ylabel("Data size (GB)", fontsize=10)
-    # x_axis = ax1.axes.get_xaxis()
-    # x_axis.set_visible(False)
 
     caption = " "
     fig.text(0.5, 0.01, caption, ha="center")
@@ -403,12 +328,10 @@ def send_idir_email(idir_info):
 
     # send email
     s = smtplib.SMTP(constants.SMTP_SERVER)
-    # LOGGER.debug(f"Sending to: {recipient} if == peter.platten@gov.bc.ca")
-    # if (recipient.upper() == constants.DEBUG_EMAIL.upper()):
-    #     LOGGER.debug(f"Sending to: {recipient}")
     s.sendmail(msg["From"], recipient, msg.as_string())
-    # follow smtp server guidelines of max 30 emails/minute
     s.quit()
+
+    # ensure we're following smtp server guidelines of max 30 emails/minute
     time.sleep(2)
 
     # log send complete

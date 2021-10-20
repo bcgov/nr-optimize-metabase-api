@@ -1,7 +1,6 @@
-python-dotenv==0.17.1
-psycopg2==2.9.1
 ldap3==2.9.1
-nslookup==1.4.0
 matplotlib==3.4.2
-pandas==1.2.4
+nslookup==1.4.0
+psycopg2==2.9.1
+python-dotenv==0.17.1
 seaborn==0.11.1
