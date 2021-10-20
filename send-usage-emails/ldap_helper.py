@@ -13,6 +13,8 @@ class LDAPUtil():
         self.serverSrc = LDAPServer()
 
     def getLdapConnection(self):
+        conn = None
+        self.serverSrc.curServ = 0
         for server_ip in self.serverSrc:
             LOGGER.debug(f"trying the ip: {server_ip}")
             server = ldap3.Server(server_ip)
@@ -22,32 +24,36 @@ class LDAPUtil():
                 conn = ldap3.Connection(server, user=f"idir\\{self.user}", password=f"{self.passwd}", auto_bind=True, authentication=ldap3.NTLM)
                 break
             except ldap3.core.exceptions.LDAPSocketOpenError:
-                msg = 'problem connecting to ldap server {server_ip}... trying a different server'
+                msg = f'problem connecting to ldap server {server_ip}... trying a different server'
                 LOGGER.warning(msg)
             except ldap3.core.exceptions.LDAPBindError:
                 msg = f'Credentials are likely incorrect for idir\\{self.user}, password={self.passwd}'
                 LOGGER.warning(msg)
+            except (Exception) as error:
+                LOGGER.warning(f"Failed to connect to ldap server, error: {error}")
         return conn
 
-    def getADInfo(self, idir):
+    def getADInfo(self, idir, conn=None):
         user_info = {
             "givenName": None,
             "mail": None
         }
-        conn = self.getLdapConnection()
+        if conn is None:
+            conn = self.getLdapConnection()
         if conn is None:
             return None
         # todo: calc this from default domain
         host_string = 'OU=BCGOV,DC=idir,DC=BCGOV'
-        query_String = f'(&(objectClass=person)(mailNickname={idir.upper()}))'
+        # query_String = f'(&(objectClass=person)(mailNickname={idir.upper()}))'
+        query_String = f'(samaccountname={idir.upper()})'
         conn.search(host_string, search_filter=query_String, search_scope='SUBTREE', attributes='*')
         if len(conn.response) > 0:
             LOGGER.debug(conn.response)
             user_info["mail"] = conn.response[0]['attributes']['mail']
             user_info["givenName"] = conn.response[0]['attributes']['givenName']
         else:
-            msg = 'user: {inputUserName} not found in ldap'
-            LOGGER.WARNING(msg)
+            msg = f'user: {idir} not found in ldap'
+            LOGGER.warning(msg)
         return user_info
 
 
