@@ -105,47 +105,81 @@ def get_hdrive_data():
         """
         cur.execute(sql_expression)
         all_results = cur.fetchall()
-        data = {}
-        ldap_util = ldap.LDAPUtil(constants.LDAP_USER, constants.LDAP_PASSWORD)
-        for result in all_results:
-            idir = result[0]
-            gb = result[1]
-            if constants.DEBUG_IDIR is not None:
-                if idir == constants.DEBUG_IDIR:
-                    gb = 12.456
-                else:
-                    continue
-            sample_datetime = result[2]
-            if idir not in data:
-                ad_info = ldap_util.getADInfo(idir)
-                data[idir] = {
-                    "idir": idir,
-                    "samples": [
-                        get_sample(gb, sample_datetime)
-                    ],
-                    "mail": ad_info["mail"],
-                    "name": ad_info["givenName"]
-                }
-            else:
-                data[idir]["samples"].append(get_sample(gb, sample_datetime))
-        for idir in data:
-            # sort the samples
-            data[idir]["samples"].sort(
-                key=lambda s: s["sample_datetime"]
-            )
 
-    # close the communication with the PostgreSQL
+        # close the communication with the PostgreSQL
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        LOGGER.warning(error)
+        LOGGER.info(error)
         message_detail = "The send_usage_emails script failed to connect or read data from the postgres database. " \
             + "<br />Username: " + constants.POSTGRES_USER \
             + "<br />Message Detail: " + str(error)
         send_admin_email(message_detail)
+        quit()
     finally:
         if conn is not None:
             conn.close()
             LOGGER.debug('Database connection closed.')
+
+    data = {}
+
+    try:
+        ldap_util = ldap.LDAPUtil(constants.LDAP_USER, constants.LDAP_PASSWORD)
+    except (Exception) as error:
+        LOGGER.info(error)
+        message_detail = "The send_usage_emails script failed to connect or log in to LDAP. " \
+            + "<br />Username: " + constants.LDAP_USER \
+            + "<br />Message Detail: " + str(error)
+        send_admin_email(message_detail)
+        quit()
+
+    attribute_error_idirs = []
+    other_error_idirs = []
+    conn = ldap_util.getLdapConnection()
+    for result in all_results:
+        idir = result[0]
+        gb = result[1]
+        if constants.DEBUG_IDIR is not None:
+            if idir == constants.DEBUG_IDIR:
+                gb = 12.456
+        sample_datetime = result[2]
+        if idir not in attribute_error_idirs and idir not in other_error_idirs:
+            if idir not in data:
+                try:
+                    ad_info = ldap_util.getADInfo(idir, conn)
+                except (Exception, AttributeError) as error:
+                    print(f"Unable to find {idir} due to error {error}")
+                    attribute_error_idirs.append(idir)
+                    continue
+                except (Exception) as error:
+                    print(f"Unable to find {idir} due to error {error}")
+                    other_error_idirs.append(idir)
+                    continue
+
+                if ad_info is None or ad_info["mail"] is None or ad_info["givenName"] is None:
+                    other_error_idirs.append(idir)
+                else:
+                    data[idir] = {
+                        "idir": idir,
+                        "samples": [
+                            get_sample(gb, sample_datetime)
+                        ],
+                        "mail": ad_info["mail"],
+                        "name": ad_info["givenName"]
+                    }
+            else:
+                data[idir]["samples"].append(get_sample(gb, sample_datetime))
+    for idir in data:
+        # sort the samples
+        data[idir]["samples"].sort(
+            key=lambda s: s["sample_datetime"]
+        )
+
+    if len(attribute_error_idirs) > 0 or len(other_error_idirs) > 0:
+        message_detail = "The send_usage_emails script failed to find all IDIRs. " \
+            + "<br /><br />IDIRs not found due to attribute error: " + ",".join(attribute_error_idirs) \
+            + "<br /><br />IDIRs not found due to other issue: " + ",".join(other_error_idirs)
+        LOGGER.info(message_detail)
+        send_admin_email(message_detail)
     return data
 
 
@@ -172,7 +206,7 @@ def get_graph_bytes(idir_info):
     sns.set()
     sns.set_theme(style="whitegrid")
     fig = plt.figure()
-    ax1 = plt.axes()
+    # ax1 = plt.axes()
     # Create a colour array
     colors = ["#e3a82b", "#234075"]
     # Set custom colour palette
@@ -207,8 +241,8 @@ def get_graph_bytes(idir_info):
         barplot_formatted_samples['color'].append(sample['color'])
 
     sns.barplot(
-        "month",
-        "gb",
+        x="month",
+        y="gb",
         data=barplot_formatted_samples,
     )
 
@@ -369,10 +403,13 @@ def send_idir_email(idir_info):
 
     # send email
     s = smtplib.SMTP(constants.SMTP_SERVER)
-    LOGGER.debug(f"Sending to: {recipient} if == peter.platten@gov.bc.ca")
-    if (recipient.upper() == constants.DEBUG_EMAIL.upper()):
-        s.sendmail(msg["From"], recipient, msg.as_string())
+    # LOGGER.debug(f"Sending to: {recipient} if == peter.platten@gov.bc.ca")
+    # if (recipient.upper() == constants.DEBUG_EMAIL.upper()):
+    #     LOGGER.debug(f"Sending to: {recipient}")
+    s.sendmail(msg["From"], recipient, msg.as_string())
+    # follow smtp server guidelines of max 30 emails/minute
     s.quit()
+    time.sleep(2)
 
     # log send complete
     LOGGER.info(f"Email sent to {recipient}.")
@@ -396,16 +433,12 @@ def main(argv):
             gb = sample["gb"]
             sample_datetime = sample["sample_datetime"]
             month = sample["month"]
-            LOGGER.info(f"GB: {gb}, Datetime: {sample_datetime}, Month: {month}")
+            LOGGER.debug(f"GB: {gb}, Datetime: {sample_datetime}, Month: {month}")
         # send email to user
         LOGGER.debug(idir)
-        if constants.EMAIL_WHITELIST:
-            print("constants.EMAIL_WHITELIST is a boolean")
 
-        if idir["mail"] in constants.EMAIL_WHITELIST.split(','):
+        if constants.EMAIL_WHITELIST and data[idir]["mail"] is not None and data[idir]["mail"].lower() in constants.EMAIL_WHITELIST.split(','):
             send_idir_email(data[idir])
-            # follow smtp server guidelines of max 30 emails/minute
-            time.sleep(2)
 
 
 if __name__ == "__main__":
