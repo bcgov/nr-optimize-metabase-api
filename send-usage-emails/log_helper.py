@@ -1,6 +1,7 @@
 import logging
 
 LOGGER = logging.getLogger("DEBUG")
+LOGGER = logging.getLogger("WARNING")
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)
 hndlr = logging.StreamHandler()
