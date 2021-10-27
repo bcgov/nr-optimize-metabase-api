@@ -20,9 +20,12 @@
 
 import calendar
 import constants
+import decimal
 import ldap_helper as ldap
+import math
 import os
 import psycopg2
+import random
 import seaborn as sns
 import socket
 import sys
@@ -40,10 +43,12 @@ from log_helper import LOGGER
 # Get a simple formatted "sample" object
 def get_sample(gb, sample_datetime: datetime):
     gb = float(gb)
-    # Calculate and Format $ cost by GB
-    cost = round((gb - 1.5) * 2.7, 2)
-    if cost < 0:
-        cost = 0
+    # Calculate and Format $ cost by GB, encouraging users to have "up to" 1.5gb
+    # cost = round((gb - 1.5) * 2.7, 2)
+    # if cost < 0:
+    #    cost = 0
+    # Calculate and Format $ cost by GB, with 1.5gb discount applied at ministry level
+    cost = round(gb * 2.7, 2)
 
     return {
         "gb": gb,
@@ -93,11 +98,11 @@ def get_hdrive_data():
         # create a cursor
         cur = conn.cursor()
 
-        LOGGER.debug('H Drive data from the last two months:')
+        LOGGER.debug('H Drive data from the last six months:')
         sql_expression = """
         SELECT idir, datausage, date FROM hdriveusage WHERE (date_trunc('month',
          CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now()
-         AS timestamp) + (INTERVAL '-2 month')) AS timestamp)) AND
+         AS timestamp) + (INTERVAL '-6 month')) AS timestamp)) AND
          date_trunc('month', CAST(now() AS timestamp)) AND idir <> 'Soft
          deleted Home Drives') ORDER BY idir ASC;
         """
@@ -133,12 +138,25 @@ def get_hdrive_data():
     attribute_error_idirs = []
     other_error_idirs = []
     conn = ldap_util.getLdapConnection()
+
+    # Block which filters results to just one for quick debugging.
+    """
+    debug_results = []
+    for result in all_results:
+        idir = result[0]
+        if idir.lower() == "pplatten":
+            gb = (decimal.Decimal(random.randrange(0, 1000))/100)
+            gb = round(gb, 2)
+            gb_cost = round(gb*decimal.Decimal(2.7))
+            month = calendar.month_name[result[2].month]
+            print(f"sample size cost for {month}: ${gb_cost}")
+            debug_results.append((idir, gb, result[2]))
+    all_results = debug_results
+    """
+
     for result in all_results:
         idir = result[0]
         gb = result[1]
-        if constants.DEBUG_IDIR is not None:
-            if idir == constants.DEBUG_IDIR:
-                gb = 12.456
         sample_datetime = result[2]
         if idir not in attribute_error_idirs and idir not in other_error_idirs:
             if idir not in data:
@@ -181,6 +199,51 @@ def get_hdrive_data():
     return data
 
 
+def get_h_drive_summary():
+    conn = None
+    try:
+        # Open a connection
+        conn = psycopg2.connect(
+            host=constants.POSTGRES_HOST,
+            database="metabase",
+            user=constants.POSTGRES_USER,
+            password=constants.POSTGRES_PASSWORD
+        )
+        # create a cursor
+        cur = conn.cursor()
+
+        LOGGER.debug('H Drive data from the last six months:')
+        sql_expression = """
+        SELECT count(*) AS "COUNT", sum(datausage) AS "DATAUSAGE" FROM hdriveusage WHERE (date_trunc('month',
+         CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now()
+         AS timestamp) + (INTERVAL '-1 month')) AS timestamp)) AND
+         date_trunc('month', CAST(now() AS timestamp)) AND idir <> 'Soft
+         deleted Home Drives');
+        """
+        cur.execute(sql_expression)
+        all_results = cur.fetchall()
+
+        # close the communication with the PostgreSQL
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        LOGGER.info(error)
+        message_detail = "The send_usage_emails script failed to connect or read data from the postgres database. " \
+            + "<br />Username: " + constants.POSTGRES_USER \
+            + "<br />Message Detail: " + str(error)
+        send_admin_email(message_detail)
+        quit()
+    finally:
+        if conn is not None:
+            conn.close()
+            LOGGER.debug('Database connection closed.')
+
+    nrm_metrics = {}
+    for result in all_results:
+        nrm_metrics["total_h_drive_count"] = result[0]
+        nrm_metrics["total_gb"] = result[1]
+    return nrm_metrics
+
+
 # Generate an graph image's bytes using idir info
 def get_graph_bytes(idir_info):
     samples = idir_info["samples"]
@@ -190,16 +253,21 @@ def get_graph_bytes(idir_info):
     sns.set()
     sns.set_theme(style="whitegrid")
     fig = plt.figure()
-    # Create a colour array
-    colors = ["#e3a82b", "#234075"]
-    # Set custom colour palette
-    sns.set_palette(sns.color_palette(colors))
 
-    # Build bar chart
+    # Set custom colour palette and build bar chart
+    previous_months_color = "#234075"
+    last_month_color = "#e3a82b"
+    colors = []
     axis_dates = []
     for idx, sample in enumerate(samples):
         axis_dates.append(sample["sample_datetime"].strftime("%Y-%m-%d"))
-        sample["color"] = colors[idx]
+        if idx == len(samples) - 1:
+            colors.append(last_month_color)
+            sample["color"] = last_month_color
+        else:
+            colors.append(previous_months_color)
+            sample["color"] = previous_months_color
+    sns.set_palette(sns.color_palette(colors))
 
     barplot_formatted_samples = {
         'gb': [],
@@ -217,20 +285,22 @@ def get_graph_bytes(idir_info):
 
     sns.barplot(
         x="month",
-        y="gb",
+        y="cost",
         data=barplot_formatted_samples,
     )
 
-    plt.title(f"{idir} - H: Drive Data Usage", fontsize=14)
-    plt.ylabel("Data size (GB)", fontsize=10)
+    plt.title(f"{idir} - H: Drive Cost", fontsize=14)
+    plt.ylabel("Data Cost ($)", fontsize=10)
+    plt.xlabel("Month", fontsize=10)
 
     caption = " "
     fig.text(0.5, 0.01, caption, ha="center")
     plt.tight_layout()
+    plt.ylim(bottom=0)
 
     # Save the plot to file
-    filepath = '/tmp/graph.png'
-    # filepath = 'c:/temp/graph.png'
+    # filepath = '/tmp/graph.png'
+    filepath = 'c:/temp/graph.png'
     plt.savefig(filepath)
     # open image and read as binary
     fp = open(filepath, "rb")
@@ -242,7 +312,7 @@ def get_graph_bytes(idir_info):
 
 
 # Send an email to the user containing usage information
-def send_idir_email(idir_info):
+def send_idir_email(idir_info, total_h_drive_count, total_gb):
     samples = idir_info["samples"]
     name = idir_info["name"]
     recipient = idir_info["mail"]
@@ -258,12 +328,20 @@ def send_idir_email(idir_info):
     month_before_last_sample = None
     if len(samples) > 1:
         month_before_last_sample = samples[len(samples)-2]
-        month_before_last_name = month_before_last_sample["month"]
         month_before_last_gb = month_before_last_sample["gb"]
-        month_before_last_cost = last_month_sample["cost"]
+        month_before_last_cost = month_before_last_sample["cost"]
+
+    total_gb = float(total_gb)
+    total_h_drive_count = float(total_h_drive_count)
+    total_h_drive_cost = (total_gb - (total_h_drive_count*1.5)) * 2.7
+    # round down to nearest thousand
+    total_gb = int(math.floor(total_gb/1000)*1000)
+    total_h_drive_cost = int(math.floor(total_h_drive_cost/1000)*1000)
+    total_h_drive_count = int(math.floor(total_h_drive_count/1000)*1000)
 
     # build email content and metadata
-    msg["Subject"] = f"Your H: Drive Usage Report for {last_month_name}"
+    year = last_month_sample["sample_datetime"].year
+    msg["Subject"] = f"Transitory: Your H: Drive Usage Report for {last_month_name} {year}"
     msg["From"] = "IITD.Optimize@gov.bc.ca"
     msg["To"] = recipient
 
@@ -271,39 +349,50 @@ def send_idir_email(idir_info):
     <html><head></head><body><p>
         Hi {name}!<br><br>
 
-        The Optimization Team is making personalized H: Drive Usage Reports available
-         to NRM users by email on a monthly basis.<br><br>
+        IITD is providing you with personalized H: Drive Usage Reports to raise awareness and encourage you to proactively keep costs down.<br><br>
 
-        H: Drive usage information is provided mid-month from the OCIO.
-        Below, you will find a graph highlighting your H: Drive usage for {last_month_name}"""
-    if month_before_last_sample is not None:
-        html_intro = html_intro + f" and {month_before_last_name}"
-    html_snapshot_taken = f""".
-    At the time the data usage snapshot was taken, your H: Drive size was {last_month_gb}
-    GB, costing your Ministry ${last_month_cost} for the month of {last_month_name}."""
-    if month_before_last_sample is not None:
-        html_snapshot_taken = html_snapshot_taken + f"""
-        In {month_before_last_name}, you used {month_before_last_gb} GB at a cost of
-        ${month_before_last_cost}.
+        <b>Why is My Data Usage Important?</b><br>
+        There are over {total_h_drive_count:,} H: Drives, and lots of small actions add up to big savings.
+        <ul>
+        <li>Data storage on the H: Drive is expensive and billed at $2.70 per GB, per month.</li>
+        <li>The NRM has over {total_gb:,}GB of data in H: Drives, billed at over ${total_h_drive_cost:,} per month.</li>
         """
-    html_img = """<br><br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">"""
+
+    html_snapshot_taken = ""
+    if month_before_last_sample is not None:
+        difference = round(last_month_gb-month_before_last_gb, 2)
+        difference_cost = round((last_month_cost-month_before_last_cost), 2)
+        if difference == 0:
+            html_snapshot_taken = html_snapshot_taken + """<li>There was no change to the size of your H: Drive last month.</li>"""
+        elif difference > 0:
+            html_snapshot_taken = html_snapshot_taken + f"""<li>Your H: Drive consumption <span style="color:#D8292F;">increased</span> by {difference}GB,
+            costing an additional ${difference_cost} per month.</li>"""
+        elif difference < 0:
+            difference = abs(difference)
+            difference_cost = abs(difference_cost)
+            html_snapshot_taken = html_snapshot_taken + f"""<li>Your H: Drive consumption <span style="color:#2E8540;">decreased</span> by {difference}GB,
+            saving ${difference_cost} per month.</li>"""
+    html_snapshot_taken = html_snapshot_taken + """</ul>"""
+
+    number_names = ["", "two ", "three ", "four ", "five ", "six ", "seven "]
+    month_count = number_names[len(samples)-1]
+    month_plural = ""
+    if month_before_last_sample is not None:
+        month_plural = "s"
+    html_img = f"Below, you will find a graph highlighting your H: Drive usage for the past {month_count}month{month_plural}."
+    html_img = html_img + """<br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">
+    <p style="font-size: 10px">H: Drive usage information is provided mid-month from the Office of the Chief Information Officer (OCIO).</p>"""
     html_why_important = """
-    <br><br>
-    <b>Why is My Data Usage Important?</b><br>
-    Data storage on the H: Drive is expensive and billed at $2.70 per GB, per month.
-    This communication is meant to raise awareness and encourage you to proactively keep costs down.<br>
-    <br>
-    <b>Did the size of your H:Drive go up this month?</b><br>
-    Here are 3 simple actions to help you reduce your storage expense "footprint":
+    <b>Did the cost of your H: Drive go up this month?</b><br>
+    This happens from time to time. Here are 3 simple actions to help you reduce your storage expense "footprint":
     <ol>
-        <li>Delete duplicate files and old drafts (time suggested: 5-10 mins)</li>
+        <li>Delete <a href="https://intranet.gov.bc.ca/assets/intranet/iit/pdfs-and-docs/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
         <li><a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info#Emptyyourrecycling">Empty</a>
         your Recycle Bin (time suggested: 1 min)</li>
-        <li><a href="https://intranet.gov.bc.ca/iit/onedrive/onedriveinfo?">Move</a> your files to OneDrive (time suggested: 20 mins)</li>
+        <li>Move <a href="https://intranet.gov.bc.ca/iit/onedrive/what-not-to-move-onto-onedrive">appropriate</a> files to OneDrive (time suggested: 20 mins)</li>
     </ol>
     """
     html_footer = """
-    <br><br>
     More suggestions on how to reduce can be found on our
     <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">StorageTips and Information page</a>.<br>
     <br>
@@ -311,11 +400,11 @@ def send_idir_email(idir_info):
     <br>
     Signed,<br>
     Your Friendly Neighbourhood Optimization Team<br>
-    (Chris, Hannah, Heather, Joseph, Kristal, Lolanda, and Peter)<br>
+    (Chris, Hannah, Heather, Joseph, Kristal, Kulbir, Lolanda, and Peter)<br>
     <br>
     <br>
     </p>
-    <p style="font-size: 10px">If you do not wish to receive these emails, please reply with the subject line "unsubscribe".</p>
+    <p style="font-size: 10px">If you do not wish to receive these monthly emails, please reply with the subject line "unsubscribe".</p>
     </body>
     </html>
     """
@@ -350,6 +439,11 @@ def main(argv):
     if data is None:
         return
 
+    # Get NRM metrics
+    nrm_metrics = get_h_drive_summary()
+    total_h_drive_count = nrm_metrics["total_h_drive_count"]
+    total_gb = nrm_metrics["total_gb"]
+
     for idir in data:
         # print the samples for development
         for sample in data[idir]["samples"]:
@@ -361,9 +455,9 @@ def main(argv):
         LOGGER.debug(idir)
 
         if constants.EMAIL_WHITELIST and data[idir]["mail"] is not None and data[idir]["mail"].lower() in constants.EMAIL_WHITELIST.split(','):
-            send_idir_email(data[idir])
+            send_idir_email(data[idir], total_h_drive_count, total_gb)
 
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-    time.sleep(300)
+    # time.sleep(300)
