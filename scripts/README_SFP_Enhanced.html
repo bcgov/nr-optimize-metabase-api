@@ -371,10 +371,25 @@ pre code {
 * <a href="%5Bhttps://community.chocolatey.org/packages/R.Studio#install">R Studio</a></p>
 </blockquote>
 </div>
-<div id="installing-library-packages" class="section level3">
-<h3>Installing Library Packages</h3>
+<div id="setting-up-your-folder-hierarchy-for-r" class="section level3">
+<h3>Setting up Your Folder Hierarchy for R</h3>
 <blockquote>
-<p>To use the packages in your script’s library call, they must first be installed. In RStudio, you can go to the Packages tab on the right, select Install, type in the name of the package and press Install. Alternatively, you can enter <em>install.packages(package_name)</em> into the console. You might also see a popup message at the top of your script that says dependancies are not installed. If you select Install, all the required packages will be downloaded.</p>
+<p>This is how I set up my scripting folders for R. If yours are different, you may need to adjust your <em>here()</em> function to reflect that in the scripts.</p>
+<p><strong>RStudio_Heather</strong> (<em>This is my working directory and I also keep my .Proj files here</em>)<br />
+* figure<br />
+* output<br />
+* scripts<br />
+* source</p>
+</blockquote>
+</div>
+<div id="setting-working-directory-in-r-studio" class="section level3">
+<h3>Setting Working Directory in R Studio</h3>
+<blockquote>
+<p>Go to <em>Tools &gt; Global Options &gt; General</em><br />
+* Leave the R version as “Default”<br />
+* Set Default Working Directory (when not in a project) to your preferred location<br />
+* Un-check Restore .RData into workspace at startup<br />
+* Set Save workspace to .RData on exit to “Never”</p>
 </blockquote>
 </div>
 <div id="setting-dark-mode-in-r-studio" class="section level3">
@@ -383,18 +398,26 @@ pre code {
 <p>You can set RStudio to a variety of dark modes by going to <em>Tools &gt; Global Options &gt; Appearance</em> and changing the Editor theme. I use “Pastel on Dark”, but pick what works best for you.</p>
 </blockquote>
 </div>
+<div id="installing-library-packages" class="section level3">
+<h3>Installing Library Packages</h3>
+<blockquote>
+<p>To use the packages in your script’s library call, they must first be installed. In RStudio, you can go to the Packages tab on the right, select Install, type in the name of the package and press Install. Alternatively, you can enter <em>install.packages(package_name)</em> into the console. You might also see a popup message at the top of your script that says dependancies are not installed. If you select Install, all the required packages will be downloaded.</p>
+</blockquote>
+</div>
+<div id="reference-material" class="section level3">
+<h3>Reference Material</h3>
+<blockquote>
+<p><a href="https://r4ds.had.co.nz/">R For Data Science</a><br />
+<a href="https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects">Using Projects</a><br />
+<a href="https://cran.r-project.org/web/packages/available_packages_by_name.html">CRAN Packages</a></p>
+</blockquote>
+</div>
 <div id="running-in-vs-code" class="section level3">
 <h3>Running in VS Code</h3>
 <blockquote>
 <p>If you choose to run this script in VS Code instead of RStudio, you will need to install <em>R Extension for Visual Studio Code</em> by Yuki Ueda.</p>
 <p>You’ll also want to set the system environment in VS Code with this line: <strong>Sys.setenv(RSTUDIO_PANDOC=“C:/Program Files/RStudio/bin/pandoc”)</strong><br />
 You can find the correct directory by typing <em>Sys.getenv(“RSTUDIO_PANDOC”)</em> into the console</p>
-</blockquote>
-</div>
-<div id="reference-materia" class="section level3">
-<h3>Reference Materia</h3>
-<blockquote>
-<p><a href="https://r4ds.had.co.nz/">R For Data Science</a></p>
 </blockquote>
 </div>
 <div id="running-an-sfp-enhanced-report-on-a-share-vs.-a-folder-or-sub-folder" class="section level3">
@@ -424,6 +447,12 @@ You can find the correct directory by typing <em>Sys.getenv(“RSTUDIO_PANDOC”
 <pre class="r"><code>#search_folder &lt;- sfp_enhanced %&gt;%
   #filter(str_detect(path, &quot;^\\\\\\\\GRADER\\\\S40086\\\\WANSHARE\\\\ROB&quot;)) %&gt;%
   #filter(str_detect(path,&quot;\\bROB\\b&quot;))</code></pre>
+</div>
+<div id="preferences" class="section level3">
+<h3>Preferences</h3>
+<blockquote>
+<p>I prefer to create new R files with R Markdown (.Rmd) because it allows me to write code in “chunks”. This way, I can run my chunks as I go along to make sure I’m getting the desired outcome, without having to write the whole script at once.</p>
+</blockquote>
 </div>
 
 

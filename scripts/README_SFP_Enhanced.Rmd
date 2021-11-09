@@ -26,13 +26,38 @@ The chocolatey documentation is here:
 * [R Studio]([https://community.chocolatey.org/packages/R.Studio#install)  
 
 
+### Setting up Your Folder Hierarchy for R
+> This is how I set up my scripting folders for R. If yours are different, you may need to adjust your *here()* function to reflect that in the scripts.  
+>
+**RStudio_Heather**   (*This is my working directory and I also keep my .Proj files here*)      
+* figure  
+* output  
+* scripts  
+* source  
+
+
+### Setting Working Directory in R Studio
+> Go to *Tools > Global Options > General*  
+* Leave the R version as "Default"  
+* Set Default Working Directory (when not in a project) to your preferred location  
+* Un-check Restore .RData into workspace at startup  
+* Set Save workspace to .RData on exit to "Never"
+
+
+### Setting Dark Mode in R Studio
+> You can set RStudio to a variety of dark modes by going to *Tools > Global Options > Appearance* and changing the Editor theme. I use "Pastel on Dark", but pick what works best for you.
+
+
 ### Installing Library Packages
 > To use the packages in your script's library call, they must first be installed.
 In RStudio, you can go to the Packages tab on the right, select Install, type in the name of the package and press Install. Alternatively, you can enter *install.packages(package_name)* into the console. You might also see a popup message at the top of your script that says dependancies are not installed. If you select Install, all the required packages will be downloaded.
 
 
-### Setting Dark Mode in R Studio
-> You can set RStudio to a variety of dark modes by going to *Tools > Global Options > Appearance* and changing the Editor theme. I use "Pastel on Dark", but pick what works best for you.
+### Reference Material
+> 
+[R For Data Science](https://r4ds.had.co.nz/)  
+[Using Projects](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects)  
+[CRAN Packages](https://cran.r-project.org/web/packages/available_packages_by_name.html)
 
 
 ### Running in VS Code 
@@ -41,11 +66,6 @@ In RStudio, you can go to the Packages tab on the right, select Install, type in
 You'll also want to set the system environment in VS Code with this line:
 **Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")**  
 You can find the correct directory by typing *Sys.getenv("RSTUDIO_PANDOC")* into the console
-
-
-### Reference Materia
-> 
-[R For Data Science](https://r4ds.had.co.nz/)
 
 
 ### Running an SFP Enhanced Report on a Share vs. a Folder or Sub-Folder
@@ -93,3 +113,5 @@ You can find the correct directory by typing *Sys.getenv("RSTUDIO_PANDOC")* into
   #filter(str_detect(path,"\\bROB\\b"))
 ```
 
+### Preferences
+> I prefer to create new R files with R Markdown (.Rmd) because it allows me to write code in "chunks". This way, I can run my chunks as I go along to make sure I'm getting the desired outcome, without having to write the whole script at once. 
