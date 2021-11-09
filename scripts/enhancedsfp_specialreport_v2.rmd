@@ -1,0 +1,233 @@
+---
+title: "SFP Enhanced Search - Special Report on S63072"
+subtitle: "Q3 - October 2021"
+author: "Copyright: Optimization Team 2021"
+date: "Compiled on `r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  prettydoc::html_pretty:
+    theme: architect
+---
+
+```{r setup, include=FALSE}
+#load the libraries needed to run this script
+knitr::opts_chunk$set(echo = TRUE)
+library(dbplyr)
+library(dplyr)
+library(forcats)
+library(glue)
+library(here)
+library(htmltools)
+library(knitr)
+library(lubridate)
+library(stringr)
+library(tidyverse)
+library(scales)
+library(writexl)
+```
+
+```{r apply team logo, echo=FALSE}
+#load image file to be used as header
+htmltools::img(src = knitr::image_uri(file.path(here("scripts"), "GFX_OptimizationLogo-Icon_v2.png")), 
+               alt = 'logo', 
+               style = 'position:bottom:0; left:0; padding:10px;',
+               width = "350px",
+               heigth = "350px")
+```
+
+```{r set system environment, include = FALSE}
+# This chunk is helpful if you're using an IDE like VS Code
+# You can find the correct directory by typing Sys.getenv("RSTUDIO_PANDOC") into the console
+Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
+```
+
+```{r load data, include = FALSE}
+# load the csv file containing relevant SFP Enhanced data
+here::here()
+sfp_enhanced <- read_csv(here("source", "2021-10-01_FLNR_SFP_Enhanced_Data.csv"), col_names = TRUE)
+```
+
+```{r folder search, include = FALSE}
+# specify what data to pull out
+# manipulate data to create new columns for file size in GB, file type, monthly cost
+search_folder <- sfp_enhanced %>%
+  filter(share == "S63072") %>%
+  select(filename, path, share, sizemb, lastaccessdate, lastmodifieddate) %>%
+  mutate(sizegb = sizemb / 1000) %>% 
+  mutate(sizegb = round(sizegb, 3)) %>% 
+  mutate(lastaccessdate = as_date(lastaccessdate, tz = NULL)) %>% 
+  mutate(lastmodifieddate = as_date(lastmodifieddate, tz = NULL)) %>%
+  mutate(filetype = str_extract(filename, "[^.]+$")) %>%
+  mutate(filetype = tolower(filetype)) %>% 
+  mutate(monthly_cost = sizegb * 2.7) %>% 
+  mutate(cost = dollar(monthly_cost)) %>% 
+  select(filename, filetype, path, sizemb, sizegb, lastaccessdate, lastmodifieddate, monthly_cost, cost)
+
+#View(search_folder)
+```
+
+```{r find duplicate files, include = FALSE}
+# find files that are duplicated in both name and size
+duplicate_files <- search_folder %>% 
+  group_by(filename) %>% 
+  filter( n() > 1 )
+
+duplicate_files <- duplicate_files %>% 
+  group_by(sizemb) %>% 
+  filter( n() > 1 ) 
+  
+
+duplicate_files_formatted <- duplicate_files %>% 
+  select (filename,	filetype,	path,	sizemb,	sizegb,	lastaccessdate,	lastmodifieddate, cost)
+
+#View(duplicate_files_formatted)
+```
+
+```{r calculate share size, include = FALSE}
+# sum up the size of the share, split out by filetype
+calculate_sharesize <- search_folder %>%
+  group_by(filetype) %>% 
+  summarize(foldersizemb = sum(sizemb), foldersizegb = sum(sizegb))
+
+#View(calculate_sharesize)
+```
+
+```{r calculate folder size, include = FALSE}
+# sum up the size of each folder in the share and calculate the monthly cost
+calculate_folder_size <- search_folder %>%
+  group_by(path) %>% 
+  summarize(foldersizemb = sum(sizemb), foldersizegb = sum(sizegb), foldercost = sum(monthly_cost)) %>% 
+  mutate(foldercost = dollar(foldercost)) 
+
+#View(calculate_folder_size)
+```
+
+```{r calculate filetype size by folder, include = FALSE}
+# sum up the size of each folder in the share, split out by filetype, and calculate the monthly cost
+calculate_folder_filetype_size <- search_folder %>%
+  group_by(path, filetype, cost) %>% 
+  summarize(foldersizemb = sum(sizemb), foldersizegb = sum(sizegb))
+
+#View(calculate_folder_filetype_size)
+```
+
+```{r tally files per folder, include = FALSE}
+# count the number of files in each folder of the share
+folder_filetally <- search_folder %>%
+  group_by(path) %>% 
+  summarise("number of files" = n())
+
+#View(folder_filetally)
+```
+
+```{r tally unique file types in share, include = FALSE}
+# count the number of files in the share, split out by filetype
+share_filetype_tally <- search_folder %>% 
+  group_by(filetype) %>% 
+  summarise(amount = n()) %>% 
+  arrange(desc(amount))
+
+#View(share_filetype_tally)
+```
+
+```{r tally unique file types per folder, include = FALSE}
+# count the number of files in each folder of the share, split out by filetype
+folder_filetype_tally <- search_folder %>% 
+  group_by(filetype, path) %>% 
+  summarise(amount = n()) %>% 
+  select(path, filetype, amount)
+
+#View(folder_filetype_tally)
+```
+
+```{r, include = FALSE}
+# create table with folder size & file tally
+table_pathsize_tallyfiles <- inner_join(calculate_folder_size,folder_filetally, by = "path") 
+
+#View(table_pathsize_tallyfiles)
+```
+
+```{r, include = FALSE}
+# create table with share file type size & tally
+table_sharesize_tallyfiles <- inner_join(calculate_sharesize,share_filetype_tally,by="filetype") %>% 
+  select(filetype, amount, foldersizemb, foldersizegb)
+
+#View(table_sharesize_tallyfiles)
+```
+
+```{r, include = FALSE}
+# create table with folder file type size & file type tally
+table_foldersize_tallyfiles <- inner_join(calculate_folder_filetype_size,folder_filetally,by="path") %>% 
+  select(path, filetype, "number of files", "total_filetype_sizemb" = foldersizemb, "total_filetype_sizegb" = foldersizegb)
+
+#View(table_foldersize_tallyfiles)
+```
+
+```{r calculate folder depth, include = FALSE}
+# Count the number of '\'s in each element of string
+table_pathsize_tallyfiles$folderdepth <- str_count(table_pathsize_tallyfiles$path, "\\\\") 
+# Subtract 5 because the folder depth count starts after \\SERVER\SHARE\ROOTFOLDER\ 
+table_pathsize_tallyfiles$folderdepth <- table_pathsize_tallyfiles$folderdepth - 5
+
+#View(table_pathsize_tallyfiles)
+```
+
+```{r tally folders based on folder depth, include = FALSE}
+# count the number of folders for each unique folder depth recorded
+table_folderdepth_tallyfolders <- table_pathsize_tallyfiles %>%
+  group_by(folderdepth) %>% 
+  tally(name = "folderdepth_count")
+
+#View(table_folderdepth_tallyfolders)
+```
+
+```{r folder count, echo = FALSE}
+# count the number of folders contained in the share
+# tailor this statement to the specific share
+folder_count <- unique(search_folder$path)
+folder_count <- length(folder_count)
+
+glue('The share S63072 has {folder_count} folders.')
+```
+
+```{r find average folder depth, echo = FALSE}
+# calculate the average folder depth within the folder of interest
+# tailor this statement to the specific \\SERVER\SHARE\ROOTFOLDER
+mean_depth <- as.integer(mean(table_pathsize_tallyfiles$folderdepth))
+
+glue('The average folder depth within \\\\\\DRILL\\S63072\\ARCH is {mean_depth}.')
+```
+
+```{r find GB total for share, echo = FALSE}
+# calculate the size of entire share in GB
+# tailor this statement to the specific share
+share_size <- sum(table_foldersize_tallyfiles$total_filetype_sizegb)
+
+glue('The size of share S63072 is {share_size} GB.')
+```
+
+```{r find share cost, echo = FALSE}
+# calculate the monthly cost of the share based on $2.70 per GB
+# tailor this statement to the specific share
+share_cost <- sum(share_size) * 2.7
+share_cost <- round((share_cost), 2)
+
+glue('The cost of share S63072 is ${share_cost}.')
+```
+
+```{r find cost of duplicates, echo = FALSE}
+# calculate the cost of all duplicate files at $2.70 per GB
+# divide total cost by 2 to represent minimum savings incurred by their removal (minimum, because there could be more than 1 duplicate of a file)
+dup_cost <- sum(duplicate_files$monthly_cost)
+dup_cost <- dollar(dup_cost)
+
+dup_cost_half <- (sum(duplicate_files$monthly_cost)) / 2
+dup_cost_half <- dollar(dup_cost_half)
+
+glue('There are files saved in more than one location on S63072 that total a cost of {dup_cost}. 
+     By finding & removing all the duplicates, at least half this amount ({dup_cost_half}) could be saved!')
+```
+
+```{r write output to Excel file, include = FALSE}
+# write each of the tables to their own tab of a new Excel file and save to the output folder
+write_xlsx(list("Path Details" = table_pathsize_tallyfiles, "Folder File Type Tally" = table_foldersize_tallyfiles, "Share File Type Tally" = table_sharesize_tallyfiles, "Folder Depth Tally" = table_folderdepth_tallyfolders, "Duplicate Files" = duplicate_files_formatted), path = here("output","S63072_share_info.xlsx"))
+```
