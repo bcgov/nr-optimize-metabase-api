@@ -331,6 +331,7 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
         month_before_last_sample = samples[len(samples)-2]
         month_before_last_gb = month_before_last_sample["gb"]
         month_before_last_cost = month_before_last_sample["cost"]
+        month_before_last_name = month_before_last_sample["month"]
 
     total_gb = float(total_gb)
     total_h_drive_count = float(total_h_drive_count)
@@ -349,11 +350,10 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
 
     html_intro = f"""
     <html><head></head><body><p>
-        Hi {name}!<br><br>
+        Hi {name},<br><br>
 
-        The <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
-         is providing you with personalized H: Drive usage reports to help raise awareness and encourage
-          you to proactively keep costs down.<br><br>
+        The purpose of this personalized H: Drive usage report from the <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
+         is to help raise awareness and encourage you to proactively keep costs down.<br><br>
 
         <b>Why is knowing my data usage important?</b><br>
         <ul>
@@ -365,19 +365,19 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
         """
 
     html_personal_metrics = f"""<b>What are my personal metrics?</b><br><br>
-    Last month your H: Drive consumption was {last_month_gb:,}GB, costing is ${last_month_cost:,.2f}. This has """
+    Last month your H: Drive consumption was {last_month_gb:,}GB, costing ${last_month_cost:,.2f}. This has """
     if month_before_last_sample is not None:
         difference = round(last_month_gb-month_before_last_gb, 2)
         difference_cost = round((last_month_cost-month_before_last_cost), 2)
         if difference == 0:
-            html_personal_metrics = html_personal_metrics + """not changed since last month."""
+            html_personal_metrics = html_personal_metrics + f"""not changed since {month_before_last_name}."""
         elif difference > 0:
-            html_personal_metrics = html_personal_metrics + f"""<span style="color:#D8292F;"><b>increased</b></span> by <b>{difference:,}GB</b> since last month,
+            html_personal_metrics = html_personal_metrics + f"""<span style="color:#D8292F;"><b>increased</b></span> by <b>{difference:,.3g}GB</b> since {month_before_last_name},
             costing an additional <b>${difference_cost:,.2f}</b> per month."""
         elif difference < 0:
             difference = abs(difference)
             difference_cost = abs(difference_cost)
-            html_personal_metrics = html_personal_metrics + f"""<span style="color:#2E8540;"><b>decreased</b></span> by <b>{difference:,}GB</b> since last month,
+            html_personal_metrics = html_personal_metrics + f"""<span style="color:#2E8540;"><b>decreased</b></span> by <b>{difference:,.2g}GB</b> since {month_before_last_name},
             saving <b>${difference_cost:,.2f}</b> per month."""
 
     number_names = ["", "two ", "three ", "four ", "five ", "six ", "seven "]
@@ -399,20 +399,20 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
     </ol>
     <b>Storage Saving Kudos:</b><br>
     <ul>
-        <li>Last month the largest H: Drive savings from a single user was {biggest_drop:,.2f}GB saving ${biggest_drop_cost:,.2f} per month!</li>
+        <li>Last month the largest H: Drive savings from a single user was {biggest_drop:,.3g}GB saving ${biggest_drop_cost:,.2f} per month!</li>
     </ul>
     """
     html_footer = """
     More suggestions on how to reduce can be found on our
     <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>.<br>
     <br>
-    Thank-you for taking the time to review and manage your digital storage!
-    <br>
-    Questions? Comments? Ideas? Connect with us at <a href="mailto:IITD.Optimize@gov.bc.ca">IITD.Optimize@gov.bc.ca</a>.<br>
+    Thank-you for taking the time to review and manage your digital storage. Questions? Comments? Ideas?
+    Connect with us at <a href="mailto:IITD.Optimize@gov.bc.ca">IITD.Optimize@gov.bc.ca</a>.<br>
     <br><br>
     </p>
     <p style="font-size: 10px">H: Drive usage information is captured mid-month from the Office of the Chief Information Officer (OCIO).
-     If you do not wish to receive these monthly emails, please reply with the subject line "unsubscribe".</p>
+     If you do not wish to receive these monthly emails, please reply with the subject line "unsubscribe".
+     Users can subscribe or re-subscribe by emailing IITD.Optimize@gov.bc.ca with the subject line "PSR subscribe" and including their email address.</p>
     </body>
     </html>
     """
