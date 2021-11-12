@@ -20,12 +20,10 @@
 
 import calendar
 import constants
-import decimal
 import ldap_helper as ldap
 import math
 import os
 import psycopg2
-import random
 import seaborn as sns
 import socket
 import sys
@@ -100,7 +98,7 @@ def get_hdrive_data():
 
         LOGGER.debug('H Drive data from the last six months:')
         sql_expression = """
-        SELECT idir, datausage, date FROM hdriveusage WHERE (date_trunc('month',
+        SELECT idir, datausage, date, ministry FROM hdriveusage WHERE (date_trunc('month',
          CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now()
          AS timestamp) + (INTERVAL '-6 month')) AS timestamp)) AND
          date_trunc('month', CAST(now() AS timestamp)) AND idir <> 'Soft
@@ -140,24 +138,12 @@ def get_hdrive_data():
     conn = ldap_util.getLdapConnection()
 
     # Block which filters results to just one for quick debugging.
-    """
-    debug_results = []
-    for result in all_results:
-        idir = result[0]
-        if idir.lower() == "pplatten":
-            gb = (decimal.Decimal(random.randrange(0, 1000))/100)
-            gb = round(gb, 2)
-            gb_cost = round(gb*decimal.Decimal(2.7))
-            month = calendar.month_name[result[2].month]
-            print(f"sample size cost for {month}: ${gb_cost}")
-            debug_results.append((idir, gb, result[2]))
-    all_results = debug_results
-    """
 
     for result in all_results:
         idir = result[0]
         gb = result[1]
         sample_datetime = result[2]
+        ministry = result[3]
         if idir not in attribute_error_idirs and idir not in other_error_idirs:
             if idir not in data:
                 try:
@@ -180,7 +166,8 @@ def get_hdrive_data():
                             get_sample(gb, sample_datetime)
                         ],
                         "mail": ad_info["mail"],
-                        "name": ad_info["givenName"]
+                        "name": ad_info["givenName"],
+                        "ministry": ministry
                     }
             else:
                 data[idir]["samples"].append(get_sample(gb, sample_datetime))
@@ -214,11 +201,12 @@ def get_h_drive_summary():
 
         LOGGER.debug('H Drive data from the last six months:')
         sql_expression = """
-        SELECT count(*) AS "COUNT", sum(datausage) AS "DATAUSAGE" FROM hdriveusage WHERE (date_trunc('month',
+        SELECT count(*) AS "COUNT", sum(datausage) AS "DATAUSAGE", ministry AS "MINISTRY" FROM hdriveusage WHERE (date_trunc('month',
          CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now()
          AS timestamp) + (INTERVAL '-1 month')) AS timestamp)) AND
          date_trunc('month', CAST(now() AS timestamp)) AND idir <> 'Soft
-         deleted Home Drives');
+         deleted Home Drives')
+         GROUP BY MINISTRY;
         """
         cur.execute(sql_expression)
         all_results = cur.fetchall()
@@ -237,10 +225,17 @@ def get_h_drive_summary():
             conn.close()
             LOGGER.debug('Database connection closed.')
 
-    nrm_metrics = {}
+    nrm_metrics = {
+        "total_h_drive_count": 0,
+        "total_gb": 0
+    }
     for result in all_results:
-        nrm_metrics["total_h_drive_count"] = result[0]
-        nrm_metrics["total_gb"] = result[1]
+        nrm_metrics["total_h_drive_count"] += result[0]
+        nrm_metrics["total_gb"] += result[1]
+        nrm_metrics[result[2]] = {
+            "h_drive_count": result[0],
+            "gb": result[1]
+        }
     return nrm_metrics
 
 
@@ -269,6 +264,7 @@ def get_graph_bytes(idir_info):
             sample["color"] = previous_months_color
     sns.set_palette(sns.color_palette(colors))
 
+    # convert samples array into dictionary of arrays
     barplot_formatted_samples = {
         'gb': [],
         'datetime': [],
@@ -282,16 +278,21 @@ def get_graph_bytes(idir_info):
         barplot_formatted_samples['month'].append(sample['month'])
         barplot_formatted_samples['cost'].append(sample['cost'])
         barplot_formatted_samples['color'].append(sample['color'])
-
-    sns.barplot(
+    g = sns.barplot(
         x="month",
         y="cost",
         data=barplot_formatted_samples,
     )
 
+    # Format y axis labels as dollar values
+    ylabels = []
+    for ytick in g.get_yticks():
+        ylabels.append(f"${ytick:,.2f}")
+    g.set_yticklabels(ylabels)
+
     plt.title(f"{idir} - H: Drive Cost", fontsize=14)
-    plt.ylabel("Data Cost ($)", fontsize=10)
-    plt.xlabel("Month", fontsize=10)
+    plt.ylabel("H: Drive Cost", fontsize=13)
+    plt.xlabel("", fontsize=10)
 
     caption = " "
     fig.text(0.5, 0.01, caption, ha="center")
@@ -312,7 +313,7 @@ def get_graph_bytes(idir_info):
 
 
 # Send an email to the user containing usage information
-def send_idir_email(idir_info, total_h_drive_count, total_gb):
+def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, biggest_drop):
     samples = idir_info["samples"]
     name = idir_info["name"]
     recipient = idir_info["mail"]
@@ -338,6 +339,7 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb):
     total_gb = int(math.floor(total_gb/1000)*1000)
     total_h_drive_cost = int(math.floor(total_h_drive_cost/1000)*1000)
     total_h_drive_count = int(math.floor(total_h_drive_count/1000)*1000)
+    biggest_drop_cost = biggest_drop * 2.7
 
     # build email content and metadata
     year = last_month_sample["sample_datetime"].year
@@ -349,66 +351,72 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb):
     <html><head></head><body><p>
         Hi {name}!<br><br>
 
-        IITD is providing you with personalized H: Drive Usage Reports to raise awareness and encourage you to proactively keep costs down.<br><br>
+        The <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
+         is providing you with personalized H: Drive usage reports to help raise awareness and encourage
+          you to proactively keep costs down.<br><br>
 
-        <b>Why is My Data Usage Important?</b><br>
-        There are over {total_h_drive_count:,} H: Drives, and lots of small actions add up to big savings.
+        <b>Why is knowing my data usage important?</b><br>
         <ul>
-        <li>Data storage on the H: Drive is expensive and billed at $2.70 per GB, per month.</li>
-        <li>The NRM has over {total_gb:,}GB of data in H: Drives, billed at over ${total_h_drive_cost:,} per month.</li>
+        <li>Data storage on your H: Drive is expensive, costing $2.70 per GB per month.</li>
+        <li>There are over {total_h_drive_count:,} H: Drives in the Ministry of {ministry_name}.</li>
+        <li>Your Ministry has over {total_gb:,}GB of data in H: Drives, billed at over ${total_h_drive_cost:,} per month.</li>
+        <li>Keeping your H: Drive under 1.5GB helps avoid extra costs to your Ministry.</li>
+        </ul>
         """
 
-    html_snapshot_taken = ""
+    html_personal_metrics = f"""<b>What are my personal metrics?</b><br><br>
+    Last month your H: Drive consumption was {last_month_gb:,}GB, costing is ${last_month_cost:,.2f}. This has """
     if month_before_last_sample is not None:
         difference = round(last_month_gb-month_before_last_gb, 2)
         difference_cost = round((last_month_cost-month_before_last_cost), 2)
         if difference == 0:
-            html_snapshot_taken = html_snapshot_taken + """<li>There was no change to the size of your H: Drive last month.</li>"""
+            html_personal_metrics = html_personal_metrics + """not changed since last month."""
         elif difference > 0:
-            html_snapshot_taken = html_snapshot_taken + f"""<li>Your H: Drive consumption <span style="color:#D8292F;">increased</span> by {difference}GB,
-            costing an additional ${difference_cost} per month.</li>"""
+            html_personal_metrics = html_personal_metrics + f"""<span style="color:#D8292F;"><b>increased</b></span> by <b>{difference:,}GB</b> since last month,
+            costing an additional <b>${difference_cost:,.2f}</b> per month."""
         elif difference < 0:
             difference = abs(difference)
             difference_cost = abs(difference_cost)
-            html_snapshot_taken = html_snapshot_taken + f"""<li>Your H: Drive consumption <span style="color:#2E8540;">decreased</span> by {difference}GB,
-            saving ${difference_cost} per month.</li>"""
-    html_snapshot_taken = html_snapshot_taken + """</ul>"""
+            html_personal_metrics = html_personal_metrics + f"""<span style="color:#2E8540;"><b>decreased</b></span> by <b>{difference:,}GB</b> since last month,
+            saving <b>${difference_cost:,.2f}</b> per month."""
 
     number_names = ["", "two ", "three ", "four ", "five ", "six ", "seven "]
     month_count = number_names[len(samples)-1]
     month_plural = ""
     if month_before_last_sample is not None:
         month_plural = "s"
-    html_img = f"Below, you will find a graph highlighting your H: Drive usage for the past {month_count}month{month_plural}."
-    html_img = html_img + """<br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">
-    <p style="font-size: 10px">H: Drive usage information is provided mid-month from the Office of the Chief Information Officer (OCIO).</p>"""
-    html_why_important = """
-    <b>Did the cost of your H: Drive go up this month?</b><br>
-    This happens from time to time. Here are 3 simple actions to help you reduce your storage expense "footprint":
+    html_img = f"<br><br>Below, you will find a graph highlighting your H: Drive cost for the past {month_count}month{month_plural}:"
+    html_img = html_img + """<br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">"""
+    html_why_important = f"""
+    <br><b>Did the cost of your H: Drive go up this month?</b><br><br>
+    This happens from time to time. Here are three simple actions to help you reduce your storage expense "footprint":
     <ol>
+        <li>Move <a href="https://intranet.gov.bc.ca/iit/onedrive/what-not-to-move-onto-onedrive">appropriate</a>
+         files to <a href="https://intranet.gov.bc.ca/iit/onedrive">OneDrive</a> (time suggested: 20 mins)</li>
         <li>Delete <a href="https://intranet.gov.bc.ca/assets/intranet/iit/pdfs-and-docs/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
         <li><a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info#Emptyyourrecycling">Empty</a>
         your Recycle Bin (time suggested: 1 min)</li>
-        <li>Move <a href="https://intranet.gov.bc.ca/iit/onedrive/what-not-to-move-onto-onedrive">appropriate</a> files to OneDrive (time suggested: 20 mins)</li>
     </ol>
+    <b>Storage Saving Kudos:</b><br>
+    <ul>
+        <li>Last month the largest H: Drive savings from a single user was {biggest_drop:,.2f}GB saving ${biggest_drop_cost:,.2f} per month!</li>
+    </ul>
     """
     html_footer = """
     More suggestions on how to reduce can be found on our
-    <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">StorageTips and Information page</a>.<br>
+    <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>.<br>
     <br>
-    We welcome your questions, comments, and ideas! Connect with us at IITD.Optimize@gov.bc.ca.<br>
+    Thank-you for taking the time to review and manage your digital storage!
     <br>
-    Signed,<br>
-    Your Friendly Neighbourhood Optimization Team<br>
-    (Chris, Hannah, Heather, Joseph, Kristal, Kulbir, Lolanda, and Peter)<br>
-    <br>
-    <br>
+    Questions? Comments? Ideas? Connect with us at <a href="mailto:IITD.Optimize@gov.bc.ca">IITD.Optimize@gov.bc.ca</a>.<br>
+    <br><br>
     </p>
-    <p style="font-size: 10px">If you do not wish to receive these monthly emails, please reply with the subject line "unsubscribe".</p>
+    <p style="font-size: 10px">H: Drive usage information is captured mid-month from the Office of the Chief Information Officer (OCIO).
+     If you do not wish to receive these monthly emails, please reply with the subject line "unsubscribe".</p>
     </body>
     </html>
     """
-    html = (html_intro + html_snapshot_taken + html_img + html_why_important + html_footer)
+    html = (html_intro + html_personal_metrics + html_img + html_why_important + html_footer)
     msg.attach(MIMEText(html, "html"))
 
     msgImage = MIMEImage(get_graph_bytes(idir_info))
@@ -441,21 +449,45 @@ def main(argv):
 
     # Get NRM metrics
     nrm_metrics = get_h_drive_summary()
-    total_h_drive_count = nrm_metrics["total_h_drive_count"]
-    total_gb = nrm_metrics["total_gb"]
+    if nrm_metrics is None:
+        return
+
+    # Assign Ministry Names
+    long_ministry_names = {
+        "AFF": "Agriculture, Food and Fisheries",
+        "EMLI": "Energy, Mines and Low Carbon Innovation",
+        "ENV": "Environment",
+        "FLNR": "Forests, Lands, Natural Resource Operations & Rural Development",
+        "FPRO": "Forest Protection Branch",
+        "IRR": "Indigenous Relations & Reconciliation"
+    }
+
+    # Get Biggest Drop of the month
+    biggest_drop = 0
+    for idir in data:
+        samples = data[idir]["samples"]
+        if len(samples) >= 2:
+            last_month = samples[len(samples)-1]['gb']
+            month_before_last = samples[len(samples)-2]['gb']
+            drop = month_before_last - last_month
+            if drop > biggest_drop:
+                biggest_drop = drop
+
+    sendlist = []
+    if constants.EMAIL_SENDLIST:
+        sendlist_raw = constants.EMAIL_SENDLIST.split(',')
+        for email in sendlist_raw:
+            sendlist.append(email.lower())
 
     for idir in data:
-        # print the samples for development
-        for sample in data[idir]["samples"]:
-            gb = sample["gb"]
-            sample_datetime = sample["sample_datetime"]
-            month = sample["month"]
-            LOGGER.debug(f"GB: {gb}, Datetime: {sample_datetime}, Month: {month}")
-        # send email to user
-        LOGGER.debug(idir)
-
-        if constants.EMAIL_WHITELIST and data[idir]["mail"] is not None and data[idir]["mail"].lower() in constants.EMAIL_WHITELIST.split(','):
-            send_idir_email(data[idir], total_h_drive_count, total_gb)
+        idir_info = data[idir]
+        if idir_info["mail"] is not None:
+            if len(sendlist) and idir_info["mail"].lower() in sendlist:
+                ministry_acronym = idir_info["ministry"]
+                h_drive_count = nrm_metrics[ministry_acronym]["h_drive_count"]
+                ministry_gb = nrm_metrics[ministry_acronym]["gb"]
+                ministry_name = long_ministry_names[ministry_acronym]
+                send_idir_email(data[idir], h_drive_count, ministry_gb, ministry_name, biggest_drop)
 
 
 if __name__ == "__main__":

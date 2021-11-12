@@ -10,7 +10,7 @@ if os.path.exists(envPath):
     SMTP_SERVER=apps.smtp.gov.bc.ca
     DEBUG_IDIR=jsmith
     DEBUG_EMAIL=john.smith@gov.bc.ca
-    EMAIL_WHITELIST=recipient1@gov.bc.ca,recipient2@gov.bc.ca,recipient3@gov.bc.ca
+    EMAIL_SENDLIST=recipient1@gov.bc.ca,recipient2@gov.bc.ca,recipient3@gov.bc.ca
     POSTGRES_USER=database_user
     POSTGRES_PASSWORD=database_password
     POSTGRES_HOST=localhost
@@ -23,7 +23,7 @@ if os.path.exists(envPath):
 SMTP_SERVER = os.environ['SMTP_SERVER']
 DEBUG_IDIR = os.environ['DEBUG_IDIR']
 DEBUG_EMAIL = os.environ['DEBUG_EMAIL']
-EMAIL_WHITELIST = os.environ['EMAIL_WHITELIST']
+EMAIL_SENDLIST = os.environ['EMAIL_SENDLIST']
 POSTGRES_USER = os.environ['POSTGRES_USER']
 POSTGRES_PASSWORD = os.environ['POSTGRES_PASSWORD']
 POSTGRES_HOST = os.environ['POSTGRES_HOST']
