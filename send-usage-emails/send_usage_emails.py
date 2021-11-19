@@ -22,6 +22,7 @@ import calendar
 import constants
 import ldap_helper as ldap
 import math
+import numpy as np
 import os
 import psycopg2
 import seaborn as sns
@@ -245,45 +246,78 @@ def get_graph_bytes(idir_info):
     idir = idir_info["name"]
 
     # Select plot theme, with seaborn
-    sns.set()
+    sns.set(rc={'figure.figsize': (8, 4.5)})
     sns.set_theme(style="whitegrid")
     fig = plt.figure()
 
-    # Set custom colour palette and build bar chart
-    previous_months_color = "#234075"
-    last_month_color = "#e3a82b"
-    colors = []
+    # Set custom colour palette and build bar chart "#2E8540" # green
+    color_under = "#003366" # blue
+    color_over = "#e3a82b" # yellow
+    color_goal = "#D8292F" # red
     axis_dates = []
     for idx, sample in enumerate(samples):
         axis_dates.append(sample["sample_datetime"].strftime("%Y-%m-%d"))
-        if idx == len(samples) - 1:
-            colors.append(last_month_color)
-            sample["color"] = last_month_color
-        else:
-            colors.append(previous_months_color)
-            sample["color"] = previous_months_color
-    sns.set_palette(sns.color_palette(colors))
 
     # convert samples array into dictionary of arrays
-    barplot_formatted_samples = {
+    under_bars = {
         'gb': [],
         'datetime': [],
         'month': [],
-        'cost': [],
-        'color': []
+        'cost': []
     }
+
+    over_bars = {
+        'gb': [],
+        'datetime': [],
+        'month': [],
+        'cost': []
+    }
+
+    # 1.5GB x 2.7 is actuall 4.05, but rounding for ease of consumption
+    threshold = 4.00
     for sample in samples:
-        barplot_formatted_samples['gb'].append(sample['gb'])
-        barplot_formatted_samples['datetime'].append(sample['sample_datetime'])
-        barplot_formatted_samples['month'].append(sample['month'])
-        barplot_formatted_samples['cost'].append(sample['cost'])
-        barplot_formatted_samples['color'].append(sample['color'])
+        if sample['cost'] <= threshold:
+            under_bars['gb'].append(sample['gb'])
+            under_bars['datetime'].append(sample['sample_datetime'])
+            under_bars['month'].append(sample['month'])
+            under_bars['cost'].append(sample['cost'])
+
+            over_bars['gb'].append(0)
+            over_bars['datetime'].append(sample['sample_datetime'])
+            over_bars['month'].append(sample['month'])
+            over_bars['cost'].append(0)
+        else:
+            under_bars['gb'].append(1.5)
+            under_bars['datetime'].append(sample['sample_datetime'])
+            under_bars['month'].append(sample['month'])
+            under_bars['cost'].append(4.05)
+
+            over_bars['gb'].append(sample['gb'])
+            over_bars['datetime'].append(sample['sample_datetime'])
+            over_bars['month'].append(sample['month'])
+            over_bars['cost'].append(sample['cost'])
+
+    sns.barplot(
+        x="month",
+        y="cost",
+        data=over_bars,
+        color=color_over
+    )
     g = sns.barplot(
         x="month",
         y="cost",
-        data=barplot_formatted_samples,
+        data=under_bars,
+        color=color_under
     )
 
+    # add patterns to the bars
+    # hatches = ['/', '//', '+', '-', 'x', '\\', '*', 'o', 'O', '.']
+    # for i, bar in enumerate(g.patches):
+    #     hatch = hatches[i]
+    #    bar.set_hatch(hatch)
+
+    g.axhline(threshold, label="$4.00 (1.5 GB)", color=color_goal, linewidth=6)
+    plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
     # Format y axis labels as dollar values
     ylabels = []
     for ytick in g.get_yticks():
@@ -291,11 +325,12 @@ def get_graph_bytes(idir_info):
     g.set_yticklabels(ylabels)
 
     plt.title(f"{idir} - H: Drive Cost", fontsize=14)
+
     plt.ylabel("H: Drive Cost", fontsize=13)
     plt.xlabel("", fontsize=10)
 
-    caption = " "
-    fig.text(0.5, 0.01, caption, ha="center")
+    caption = "If all H: Drives\nwere under 1.5GB\nthere would be\nno additional costs!"
+    fig.text(0.78, 0.68, caption, ha="left")
     plt.tight_layout()
     plt.ylim(bottom=0)
 
@@ -303,6 +338,7 @@ def get_graph_bytes(idir_info):
     # filepath = '/tmp/graph.png'
     filepath = 'c:/temp/graph.png'
     plt.savefig(filepath)
+    plt.show()
     # open image and read as binary
     fp = open(filepath, "rb")
     image_bytes = fp.read()
@@ -357,15 +393,14 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
 
         <b>Why is knowing my data usage important?</b><br>
         <ul>
-        <li>Data storage on your H: Drive is expensive, costing $2.70 per GB per month.</li>
+        <li>Storing data on your H: Drive is expensive, costing $2.70 per GB per month.</li>
         <li>There are over {total_h_drive_count:,} H: Drives in the Ministry of {ministry_name}.</li>
         <li>Your Ministry has over {total_gb:,}GB of data in H: Drives, billed at over ${total_h_drive_cost:,} per month.</li>
-        <li>Keeping your H: Drive under 1.5GB helps avoid extra costs to your Ministry.</li>
         </ul>
         """
 
     html_personal_metrics = f"""<b>What are my personal metrics?</b><br><br>
-    Last month your H: Drive consumption was {last_month_gb:,}GB, costing ${last_month_cost:,.2f}. This has """
+    Last month your H: Drive usage was {last_month_gb:,}GB, costing ${last_month_cost:,.2f}. This has """
     if month_before_last_sample is not None:
         difference = round(last_month_gb-month_before_last_gb, 2)
         difference_cost = round((last_month_cost-month_before_last_cost), 2)
@@ -406,8 +441,9 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
     More suggestions on how to reduce can be found on our
     <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>.<br>
     <br>
-    Thank-you for taking the time to review and manage your digital storage. Questions? Comments? Ideas?
-    Connect with us at <a href="mailto:IITD.Optimize@gov.bc.ca">IITD.Optimize@gov.bc.ca</a>.<br>
+    Thank-you for taking the time to review and manage your digital storage. This email is transitory and should be deleted after review.
+    <br><br>
+    Questions? Comments? Ideas? Connect with us at <a href="mailto:IITD.Optimize@gov.bc.ca">IITD.Optimize@gov.bc.ca</a>.<br>
     <br><br>
     </p>
     <p style="font-size: 10px">H: Drive usage information is captured mid-month from the Office of the Chief Information Officer (OCIO).
@@ -433,6 +469,25 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
 
     # log send complete
     LOGGER.info(f"Email sent to {recipient}.")
+
+
+def get_fake_idir_info():
+    idir_info = {
+        'idir': 'PPLATTEN',
+        'mail': 'Peter.Platten@gov.bc.ca',
+        'name': 'Peter',
+        'ministry': 'ENV',
+        'samples': [
+            get_sample(0.0, datetime(2021, 6, 1, 0, 0)),
+            get_sample(0, datetime(2021, 7, 1, 0, 0)),
+            get_sample(0, datetime(2021, 8, 1, 0, 0)),
+            get_sample(0, datetime(2021, 9, 1, 0, 0)),
+            get_sample(0, datetime(2021, 10, 1, 0, 0)),
+            get_sample(0, datetime(2021, 11, 1, 0, 0))
+        ]
+    }
+
+    return idir_info
 
 
 def main(argv):
@@ -491,5 +546,8 @@ def main(argv):
 
 
 if __name__ == "__main__":
+
+    # get_graph_bytes(get_fake_idir_info())
+
     main(sys.argv[1:])
     # time.sleep(300)
