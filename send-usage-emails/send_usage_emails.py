@@ -245,7 +245,7 @@ def get_graph_bytes(idir_info):
     idir = idir_info["name"]
 
     # Select plot theme, with seaborn
-    sns.set(rc={'figure.figsize': (8, 4.5)})
+    sns.set(rc={'figure.figsize': (9, 4.5)})
     sns.set_theme(style="whitegrid")
     fig = plt.figure()
 
@@ -330,15 +330,15 @@ def get_graph_bytes(idir_info):
 
     caption = "1.5 GB of Shared\nFile and H: drive\nstorage is allocated\nfor each BCPS\nemployee."
     caption = caption + "\n\nKeeping your digital\nstorage use under\n1.5 GB helps prevent\nadditional costs\nfor your ministry."
-    fig.text(0.79, 0.39, caption, ha="left")
+    fig.text(0.8, 0.34, caption, ha="left")
     plt.tight_layout()
     plt.ylim(bottom=0)
 
+    # plt.show()
     # Save the plot to file
     filepath = '/tmp/graph.png'
     # filepath = 'c:/temp/graph.png'
     plt.savefig(filepath)
-    # plt.show()
     # open image and read as binary
     fp = open(filepath, "rb")
     image_bytes = fp.read()
@@ -545,7 +545,7 @@ def main(argv):
 
 if __name__ == "__main__":
 
-    # get_graph_bytes(get_fake_idir_info())
+    get_graph_bytes(get_fake_idir_info())
 
-    main(sys.argv[1:])
-    time.sleep(300)
+    #main(sys.argv[1:])
+    #time.sleep(300)
