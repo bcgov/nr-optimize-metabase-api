@@ -22,7 +22,6 @@ import calendar
 import constants
 import ldap_helper as ldap
 import math
-import numpy as np
 import os
 import psycopg2
 import seaborn as sns
@@ -250,10 +249,10 @@ def get_graph_bytes(idir_info):
     sns.set_theme(style="whitegrid")
     fig = plt.figure()
 
-    # Set custom colour palette and build bar chart "#2E8540" # green
-    color_under = "#003366" # blue
-    color_over = "#e3a82b" # yellow
-    color_goal = "#D8292F" # red
+    # Set custom colour palette and build bar chart "#2E8540"  # green
+    color_under = "#003366"  # blue
+    color_over = "#e3a82b"  # yellow
+    color_goal = "#D8292F"  # red
     axis_dates = []
     for idx, sample in enumerate(samples):
         axis_dates.append(sample["sample_datetime"].strftime("%Y-%m-%d"))
@@ -324,21 +323,22 @@ def get_graph_bytes(idir_info):
         ylabels.append(f"${ytick:,.2f}")
     g.set_yticklabels(ylabels)
 
-    plt.title(f"{idir} - H: Drive Cost", fontsize=14)
+    plt.title(f"{idir}'s H: Drive Cost by Month", fontsize=14)
 
     plt.ylabel("H: Drive Cost", fontsize=13)
     plt.xlabel("", fontsize=10)
 
-    caption = "If all H: Drives\nwere under 1.5GB\nthere would be\nno additional costs!"
-    fig.text(0.78, 0.68, caption, ha="left")
+    caption = "1.5 GB of Shared\nFile and H: drive\nstorage is allocated\nfor each BCPS\nemployee."
+    caption = caption + "\n\nKeeping your digital\nstorage use under\n1.5 GB helps prevent\nadditional costs\nfor your ministry."
+    fig.text(0.79, 0.39, caption, ha="left")
     plt.tight_layout()
     plt.ylim(bottom=0)
 
     # Save the plot to file
-    # filepath = '/tmp/graph.png'
-    filepath = 'c:/temp/graph.png'
+    filepath = '/tmp/graph.png'
+    # filepath = 'c:/temp/graph.png'
     plt.savefig(filepath)
-    plt.show()
+    # plt.show()
     # open image and read as binary
     fp = open(filepath, "rb")
     image_bytes = fp.read()
@@ -388,18 +388,18 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
     <html><head></head><body><p>
         Hi {name},<br><br>
 
-        The purpose of this personalized H: Drive usage report from the <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
-         is to help raise awareness and encourage you to proactively keep costs down.<br><br>
+        The report from the <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
+         is provided to help raise awareness of monthly storage costs associated with your personal home (H:) drive.<br><br>
 
-        <b>Why is knowing my data usage important?</b><br>
+        <b>Why is knowing my data usage important?</b>
         <ul>
         <li>Storing data on your H: Drive is expensive, costing $2.70 per GB per month.</li>
         <li>There are over {total_h_drive_count:,} H: Drives in the Ministry of {ministry_name}.</li>
-        <li>Your Ministry has over {total_gb:,}GB of data in H: Drives, billed at over ${total_h_drive_cost:,} per month.</li>
+        <li>Your Ministry has over {total_gb:,}GB of data in H: Drives, billed at more than ${total_h_drive_cost:,} per month.</li>
         </ul>
         """
 
-    html_personal_metrics = f"""<b>What are my personal metrics?</b><br><br>
+    html_personal_metrics = f"""<b>What are my personal metrics?</b><br>
     Last month your H: Drive usage was {last_month_gb:,}GB, costing ${last_month_cost:,.2f}. This has """
     if month_before_last_sample is not None:
         difference = round(last_month_gb-month_before_last_gb, 2)
@@ -420,10 +420,10 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
     month_plural = ""
     if month_before_last_sample is not None:
         month_plural = "s"
-    html_img = f"<br><br>Below, you will find a graph highlighting your H: Drive cost for the past {month_count}month{month_plural}:"
+    html_img = f"<br>Below, you will find a graph highlighting your H: Drive cost for the past {month_count}month{month_plural}:"
     html_img = html_img + """<br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">"""
     html_why_important = f"""
-    <br><b>Did the cost of your H: Drive go up this month?</b><br><br>
+    <br><br><b>Did the cost of your H: Drive go up this month?</b><br>
     This happens from time to time. Here are three simple actions to help you reduce your storage expense "footprint":
     <ol>
         <li>Move <a href="https://intranet.gov.bc.ca/iit/onedrive/what-not-to-move-onto-onedrive">appropriate</a>
@@ -432,19 +432,17 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
         <li><a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info#Emptyyourrecycling">Empty</a>
         your Recycle Bin (time suggested: 1 min)</li>
     </ol>
-    <b>Storage Saving Kudos:</b><br>
-    <ul>
-        <li>Last month the largest H: Drive savings from a single user was {biggest_drop:,.3g}GB saving ${biggest_drop_cost:,.2f} per month!</li>
-    </ul>
+    More suggestions on how to reduce can be found on our
+    <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>.<br><br>
+    <b>Storage Saving Kudo:</b><br>
+    Last month the largest H: Drive savings from a single user was {biggest_drop:,.3g}GB saving ${biggest_drop_cost:,.2f} per month!<br>
     """
     html_footer = """
-    More suggestions on how to reduce can be found on our
-    <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>.<br>
     <br>
-    Thank-you for taking the time to review and manage your digital storage. This email is transitory and should be deleted after review.
-    <br><br>
-    Questions? Comments? Ideas? Connect with us at <a href="mailto:IITD.Optimize@gov.bc.ca">IITD.Optimize@gov.bc.ca</a>.<br>
-    <br><br>
+    This email is transitory and can be deleted when no longer needed. Thank you for taking the time to manage your digital storage!<br>
+    <br>
+    Questions? Comments? Ideas? Connect with the Optimization Team at <a href="mailto:IITD.Optimize@gov.bc.ca">IITD.Optimize@gov.bc.ca</a>.<br>
+    <br>
     </p>
     <p style="font-size: 10px">H: Drive usage information is captured mid-month from the Office of the Chief Information Officer (OCIO).
      If you do not wish to receive these monthly emails, please reply with the subject line "unsubscribe".
@@ -550,4 +548,4 @@ if __name__ == "__main__":
     # get_graph_bytes(get_fake_idir_info())
 
     main(sys.argv[1:])
-    # time.sleep(300)
+    time.sleep(300)
