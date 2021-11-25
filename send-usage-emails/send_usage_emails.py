@@ -545,7 +545,7 @@ def main(argv):
 
 if __name__ == "__main__":
 
-    get_graph_bytes(get_fake_idir_info())
+    # get_graph_bytes(get_fake_idir_info())
 
-    #main(sys.argv[1:])
-    #time.sleep(300)
+    main(sys.argv[1:])
+    time.sleep(300)
