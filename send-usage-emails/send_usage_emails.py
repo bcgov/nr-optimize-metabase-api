@@ -445,7 +445,6 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
     </ul>
     """
     html_footer = """
-    <br>
     This email is transitory and can be deleted when no longer needed. Thank you for taking the time to manage your digital storage!<br>
     <br>
     Questions? Comments? Ideas? Connect with the Optimization Team at <a href="mailto:IITD.Optimize@gov.bc.ca">IITD.Optimize@gov.bc.ca</a>.<br>
