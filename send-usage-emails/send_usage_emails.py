@@ -141,6 +141,9 @@ def get_hdrive_data():
 
     for result in all_results:
         idir = result[0]
+        # Filter out all IDIRs that don't start with A and B for quick Dev.
+        # if not (idir[0] == "A" or idir[0] == "B"):
+        #     continue
         gb = result[1]
         sample_datetime = result[2]
         ministry = result[3]
@@ -349,7 +352,7 @@ def get_graph_bytes(idir_info):
 
 
 # Send an email to the user containing usage information
-def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, biggest_drop):
+def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, biggest_drop, biggest_drops):
     samples = idir_info["samples"]
     name = idir_info["name"]
     recipient = idir_info["mail"]
@@ -377,6 +380,7 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
     total_h_drive_cost = int(math.floor(total_h_drive_cost/1000)*1000)
     total_h_drive_count = int(math.floor(total_h_drive_count/1000)*1000)
     biggest_drop_cost = biggest_drop * 2.7
+    biggest_drops_cost = biggest_drops * 2.7
 
     # build email content and metadata
     year = last_month_sample["sample_datetime"].year
@@ -388,14 +392,14 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
     <html><head></head><body><p>
         Hi {name},<br><br>
 
-        The report from the <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
+        This report from the <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
          is provided to help raise awareness of monthly storage costs associated with your personal home (H:) drive.<br><br>
 
         <b>Why is knowing my data usage important?</b>
         <ul>
         <li>Storing data on your H: Drive is expensive, costing $2.70 per GB per month.</li>
         <li>There are over {total_h_drive_count:,} H: Drives in the Ministry of {ministry_name}.</li>
-        <li>Your Ministry has over {total_gb:,}GB of data in H: Drives, billed at more than ${total_h_drive_cost:,} per month.</li>
+        <li>Your Ministry has over {total_gb:,}GB of data in H: Drives, costing more than ${total_h_drive_cost:,} per month.</li>
         </ul>
         """
 
@@ -434,8 +438,11 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
     </ol>
     More suggestions on how to reduce can be found on our
     <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>.<br><br>
-    <b>Storage Saving Kudo:</b><br>
-    Last month the largest H: Drive savings from a single user was {biggest_drop:,.3g}GB saving ${biggest_drop_cost:,.2f} per month!<br>
+    <b>Storage Saving Kudos:</b>
+    <ul>
+        <li>Last month the largest H: Drive savings from a single user was <b>{biggest_drop:,.3g}GB</b> saving <b>${biggest_drop_cost:,.2f}</b> per month!</li>
+        <li>Last month five users saved a combined total of <b>${biggest_drops_cost:,.2f}</b> per month!</li>
+    </ul>
     """
     html_footer = """
     <br>
@@ -517,6 +524,7 @@ def main(argv):
 
     # Get Biggest Drop of the month
     biggest_drop = 0
+    biggest_drops_list = []
     for idir in data:
         samples = data[idir]["samples"]
         if len(samples) >= 2:
@@ -525,7 +533,14 @@ def main(argv):
             drop = month_before_last - last_month
             if drop > biggest_drop:
                 biggest_drop = drop
+            if len(biggest_drops_list) < 5:
+                biggest_drops_list.append(drop)
+                biggest_drops_list.sort()
+            elif biggest_drops_list[0] < drop:
+                biggest_drops_list[0] = drop
+                biggest_drops_list.sort()
 
+    biggest_drops = sum(biggest_drops_list)
     sendlist = []
     if constants.EMAIL_SENDLIST:
         sendlist_raw = constants.EMAIL_SENDLIST.split(',')
@@ -540,7 +555,7 @@ def main(argv):
                 h_drive_count = nrm_metrics[ministry_acronym]["h_drive_count"]
                 ministry_gb = nrm_metrics[ministry_acronym]["gb"]
                 ministry_name = long_ministry_names[ministry_acronym]
-                send_idir_email(data[idir], h_drive_count, ministry_gb, ministry_name, biggest_drop)
+                send_idir_email(data[idir], h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
 
 
 if __name__ == "__main__":
