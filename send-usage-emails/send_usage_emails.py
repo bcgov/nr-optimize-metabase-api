@@ -24,12 +24,14 @@ import ldap_helper as ldap
 import math
 import os
 import psycopg2
+import re
 import seaborn as sns
 import socket
 import sys
 import smtplib
 import time
 import matplotlib.pyplot as plt
+import numpy
 
 from datetime import datetime
 from email.mime.image import MIMEImage
@@ -557,7 +559,17 @@ def main(argv):
                 send_idir_email(data[idir], h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
 
 
+def convert_email_addresses(long_format_addresses):
+    # pattern matches all email addresses between < > with letters, numbers, and the following characters: .-_@
+    pattern = re.compile(r'(?<=\<)[a-zA-Z\.\-\_\@\0-9]*(?=\>)')
+    short_format_addresses = pattern.findall(long_format_addresses)
+    return ",".join(numpy.array(short_format_addresses))
+
+
 if __name__ == "__main__":
+
+    if constants.EMAIL_SENDLIST.endswith(">"):
+        constants.EMAIL_SENDLIST = convert_email_addresses(constants.EMAIL_SENDLIST)
 
     # get_graph_bytes(get_fake_idir_info())
 
