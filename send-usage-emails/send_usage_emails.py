@@ -544,9 +544,7 @@ def main(argv):
     biggest_drops = sum(biggest_drops_list)
     sendlist = []
     if constants.EMAIL_SENDLIST:
-        sendlist_raw = constants.EMAIL_SENDLIST.split(',')
-        for email in sendlist_raw:
-            sendlist.append(email.lower())
+        sendlist = constants.EMAIL_SENDLIST
 
     for idir in data:
         idir_info = data[idir]
@@ -559,6 +557,7 @@ def main(argv):
                 send_idir_email(data[idir], h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
 
 
+# Handle MS Outlook email format
 def convert_email_addresses(long_format_addresses):
     # pattern matches all email addresses between < > with letters, numbers, and the following characters: .-_@
     pattern = re.compile(r'(?<=\<)[a-zA-Z\.\-\_\@\0-9]*(?=\>)')
@@ -566,10 +565,25 @@ def convert_email_addresses(long_format_addresses):
     return ",".join(numpy.array(short_format_addresses))
 
 
-if __name__ == "__main__":
-
+# Handle formatting, ensure uniqueness, and remove omit emails
+def refine_sendlist():
     if constants.EMAIL_SENDLIST.endswith(">"):
         constants.EMAIL_SENDLIST = convert_email_addresses(constants.EMAIL_SENDLIST)
+    if constants.EMAIL_OMITLIST.endswith(">"):
+        constants.EMAIL_OMITLIST = convert_email_addresses(constants.EMAIL_OMITLIST)
+    temp_dict = {}
+    for email in constants.EMAIL_SENDLIST.split(","):
+        temp_dict[email.lower()] = True
+    for email in constants.EMAIL_OMITLIST.split(","):
+        del temp_dict[email.lower()]
+    constants.EMAIL_SENDLIST = []
+    for email in temp_dict:
+        constants.EMAIL_SENDLIST.append(email)
+
+
+if __name__ == "__main__":
+
+    refine_sendlist()
 
     # get_graph_bytes(get_fake_idir_info())
 
