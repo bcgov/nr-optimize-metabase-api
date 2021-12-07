@@ -572,10 +572,12 @@ def refine_sendlist():
     if constants.EMAIL_OMITLIST.endswith(">"):
         constants.EMAIL_OMITLIST = convert_email_addresses(constants.EMAIL_OMITLIST)
     temp_dict = {}
-    for email in constants.EMAIL_SENDLIST.split(","):
-        temp_dict[email.lower()] = True
-    for email in constants.EMAIL_OMITLIST.split(","):
-        del temp_dict[email.lower()]
+    if constants.EMAIL_SENDLIST:
+        for email in constants.EMAIL_SENDLIST.split(","):
+            temp_dict[email.lower()] = True
+        if constants.EMAIL_OMITLIST:
+            for email in constants.EMAIL_OMITLIST.split(","):
+                del temp_dict[email.lower()]
     constants.EMAIL_SENDLIST = []
     for email in temp_dict:
         constants.EMAIL_SENDLIST.append(email)
