@@ -565,7 +565,7 @@ def convert_email_addresses(long_format_addresses):
     return ",".join(numpy.array(short_format_addresses))
 
 
-# Handle formatting, ensure uniqueness, and remove omit emails
+# Handle formatting, ensure uniqueness, and omit emails
 def refine_sendlist():
     if constants.EMAIL_SENDLIST.endswith(">"):
         constants.EMAIL_SENDLIST = convert_email_addresses(constants.EMAIL_SENDLIST)
@@ -577,7 +577,8 @@ def refine_sendlist():
             temp_dict[email.lower()] = True
         if constants.EMAIL_OMITLIST:
             for email in constants.EMAIL_OMITLIST.split(","):
-                del temp_dict[email.lower()]
+                if email in temp_dict:
+                    del temp_dict[email.lower()]
     constants.EMAIL_SENDLIST = []
     for email in temp_dict:
         constants.EMAIL_SENDLIST.append(email)
