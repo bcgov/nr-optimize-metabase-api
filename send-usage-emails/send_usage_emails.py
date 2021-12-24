@@ -98,13 +98,19 @@ def get_hdrive_data():
         # create a cursor
         cur = conn.cursor()
 
-        LOGGER.debug('H Drive data from the last six months:')
+        LOGGER.debug('H Drive data from the last six months, but only for idirs which have data last month:')
         sql_expression = """
         SELECT idir, datausage, date, ministry FROM hdriveusage WHERE (date_trunc('month',
          CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now()
          AS timestamp) + (INTERVAL '-6 month')) AS timestamp)) AND
-         date_trunc('month', CAST(now() AS timestamp)) AND idir <> 'Soft
-         deleted Home Drives') ORDER BY idir ASC;
+         date_trunc('month', CAST(now() AS timestamp))) AND IDIR IN (
+
+            SELECT idir FROM hdriveusage WHERE (date_trunc('month',
+            CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now()
+            AS timestamp) + (INTERVAL '-1 month')) AS timestamp)) AND
+            date_trunc('month', CAST(now() AS timestamp)) AND idir <> 'Soft
+            deleted Home Drives'))
+          ORDER BY idir ASC;
         """
         cur.execute(sql_expression)
         all_results = cur.fetchall()
@@ -181,6 +187,8 @@ def get_hdrive_data():
         data[idir]["samples"].sort(
             key=lambda s: s["sample_datetime"]
         )
+    # fakedata = get_fake_idir_info()
+    # data = fakedata
 
     if len(attribute_error_idirs) > 0 or len(other_error_idirs) > 0:
         message_detail = "The send_usage_emails script failed to find all IDIRs. " \
@@ -353,6 +361,15 @@ def get_graph_bytes(idir_info):
     return image_bytes
 
 
+def get_gold_star():
+    filepath = '/tmp/gold-star.png'
+    # filepath = 'send-usage-emails/gold-star.png'
+    fp = open(filepath, "rb")
+    image_bytes = fp.read()
+    fp.close()
+    return image_bytes
+
+
 # Send an email to the user containing usage information
 def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, biggest_drop, biggest_drops):
     samples = idir_info["samples"]
@@ -395,9 +412,12 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
         Hi {name},<br><br>
 
         This report from the <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
-         is provided to help raise awareness of monthly storage costs associated with your personal home (H:) drive.<br><br>
+         is provided to help raise awareness of monthly storage costs associated with your personal home (H:) drive."""
 
-        <b>Why is knowing my data usage important?</b>
+    if last_month_gb < 1 and month_before_last_gb < 1:
+        html_intro += """<br><br><img src="cid:image2" alt="Gold Star"> Congratulations! You seem to be managing your storage well. <img src="cid:image2" alt="Gold Star">"""
+
+    html_why_data_important = f"""<br><br><b>Why is knowing my data usage important?</b>
         <ul>
         <li>Storing data on your H: Drive is expensive, costing $2.70 per GB per month.</li>
         <li>There are over {total_h_drive_count:,} H: Drives in the Ministry of {ministry_name}.</li>
@@ -458,12 +478,19 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
     </body>
     </html>
     """
-    html = (html_intro + html_personal_metrics + html_img + html_why_important + html_footer)
+    html = (html_intro + html_why_data_important + html_personal_metrics + html_img + html_why_important + html_footer)
     msg.attach(MIMEText(html, "html"))
 
     msgImage = MIMEImage(get_graph_bytes(idir_info))
     msgImage.add_header("Content-ID", "<image1>")
     msg.attach(msgImage)
+
+    msgImage = MIMEImage(get_gold_star())
+    msgImage.add_header("Content-ID", "<image2>")
+    msg.attach(msgImage)
+
+    # add header which suppresses out of office requests
+    msg.add_header("X-Auto-Response-Suppress", "OOF, DR, RN, NRN")
 
     # send email
     s = smtplib.SMTP(constants.SMTP_SERVER)
@@ -496,14 +523,25 @@ def get_fake_idir_info():
     return idir_info
 
 
+def test_email(recipient, subject):
+    msg = MIMEMultipart("related")
+    msg["Subject"] = subject
+    msg["From"] = "peter.platten@gov.bc.ca"
+    msg["To"] = recipient
+    html = """<img src="cid:image2" alt="Gold Star"> Congratulations! You seem to be managing your storage well.
+         If you feel you do not need this email consider unsubscribing. <img src="cid:image2" alt="Gold Star">"""
+    msg.attach(MIMEText(html, "html"))
+    s = smtplib.SMTP(constants.SMTP_SERVER)
+    msg.add_header("X-Auto-Response-Suppress", "OOF, DR, RN, NRN")
+    msgImage = MIMEImage(get_gold_star())
+    msgImage.add_header("Content-ID", "<image2>")
+    msg.attach(msgImage)
+    s.sendmail(msg["From"], recipient, msg.as_string())
+    s.quit()
+
+
 def main(argv):
-    # get a dictionary, format:
-    # { idir : {
-    #       name, email, idir, samples : [{
-    #           gb, sample_datetime, month, cost
-    #       }]
-    #   }
-    # }
+
     data = get_hdrive_data()
     if data is None:
         return
@@ -586,6 +624,7 @@ def refine_sendlist():
 
 if __name__ == "__main__":
 
+    # test_email("peter.platten@gov.bc.ca", "test email from Peter!")
     refine_sendlist()
 
     # get_graph_bytes(get_fake_idir_info())
