@@ -362,7 +362,7 @@ def get_graph_bytes(idir_info):
 
 
 def get_gold_star():
-    filepath = '/tmp/gold-star.png'
+    filepath = 'gold-star.png'
     # filepath = 'send-usage-emails/gold-star.png'
     fp = open(filepath, "rb")
     image_bytes = fp.read()
@@ -623,6 +623,8 @@ def refine_sendlist():
 
 
 if __name__ == "__main__":
+    # check that gold star file can be found before trying to gather lots of info (test)
+    get_gold_star()
 
     # test_email("peter.platten@gov.bc.ca", "test email from Peter!")
     refine_sendlist()
