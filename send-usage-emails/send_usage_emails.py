@@ -415,7 +415,7 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
          is provided to help raise awareness of monthly storage costs associated with your personal home (H:) drive."""
 
     if last_month_gb < 1 and month_before_last_gb < 1:
-        html_intro += """<br><br><img src="cid:image2" alt="Gold Star"> Congratulations! You seem to be managing your storage well. <img src="cid:image2" alt="Gold Star">"""
+        html_intro += """<br><br><img src="cid:image2" alt="Gold Star">&nbspCongratulations! You seem to be managing your storage well. <img src="cid:image2" alt="Gold Star">"""
 
     html_why_data_important = f"""<br><br><b>Why is knowing my data usage important?</b>
         <ul>
@@ -528,7 +528,7 @@ def test_email(recipient, subject):
     msg["Subject"] = subject
     msg["From"] = "peter.platten@gov.bc.ca"
     msg["To"] = recipient
-    html = """<img src="cid:image2" alt="Gold Star"> Congratulations! You seem to be managing your storage well.
+    html = """<img src="cid:image2" alt="Gold Star">&nbspCongratulations! You seem to be managing your storage well.
          If you feel you do not need this email consider unsubscribing. <img src="cid:image2" alt="Gold Star">"""
     msg.attach(MIMEText(html, "html"))
     s = smtplib.SMTP(constants.SMTP_SERVER)
@@ -623,8 +623,6 @@ def refine_sendlist():
 
 
 if __name__ == "__main__":
-    # check that gold star file can be found before trying to gather lots of info (test)
-    get_gold_star()
 
     # test_email("peter.platten@gov.bc.ca", "test email from Peter!")
     refine_sendlist()
