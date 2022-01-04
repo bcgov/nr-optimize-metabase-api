@@ -150,8 +150,8 @@ def get_hdrive_data():
     for result in all_results:
         idir = result[0]
         # Filter out all IDIRs that don't start with A and B for quick Dev.
-        # if not (idir[0] == "A" or idir[0] == "B"):
-        #     continue
+        if not (idir[0] == "C" or idir[0] == "B"):
+            continue
         gb = result[1]
         sample_datetime = result[2]
         ministry = result[3]
@@ -187,8 +187,6 @@ def get_hdrive_data():
         data[idir]["samples"].sort(
             key=lambda s: s["sample_datetime"]
         )
-    # fakedata = get_fake_idir_info()
-    # data = fakedata
 
     if len(attribute_error_idirs) > 0 or len(other_error_idirs) > 0:
         message_detail = "The send_usage_emails script failed to find all IDIRs. " \
@@ -285,7 +283,7 @@ def get_graph_bytes(idir_info):
         'cost': []
     }
 
-    # 1.5GB x 2.7 is actuall 4.05, but rounding for ease of consumption
+    # 1.5GB x 2.7 is actually 4.05, but rounding for ease of consumption
     threshold = 4.00
     for sample in samples:
         if sample['cost'] <= threshold:
@@ -321,12 +319,6 @@ def get_graph_bytes(idir_info):
         data=under_bars,
         color=color_under
     )
-
-    # add patterns to the bars
-    # hatches = ['/', '//', '+', '-', 'x', '\\', '*', 'o', 'O', '.']
-    # for i, bar in enumerate(g.patches):
-    #     hatch = hatches[i]
-    #    bar.set_hatch(hatch)
 
     g.axhline(threshold, label="$4.00 (1.5 GB)", color=color_goal, linewidth=6)
     plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
@@ -414,6 +406,7 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
         This report from the <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
          is provided to help raise awareness of monthly storage costs associated with your personal home (H:) drive."""
 
+    # JUST TEST IF month_before_last_gb IS NOT NONE! Leaving for now as want to test failure case.
     if last_month_gb < 1 and month_before_last_gb < 1:
         html_intro += """<br><br><img src="cid:image2" alt="Gold Star">&nbspCongratulations! You seem to be managing your storage well. <img src="cid:image2" alt="Gold Star">"""
 
@@ -494,7 +487,8 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
 
     # send email
     s = smtplib.SMTP(constants.SMTP_SERVER)
-    s.sendmail(msg["From"], recipient, msg.as_string())
+    # TEMPORARILY DON'T ACTUALLY SEND THE EMAILS - Debugging the script...
+    # s.sendmail(msg["From"], recipient, msg.as_string())
     s.quit()
 
     # ensure we're following smtp server guidelines of max 30 emails/minute
@@ -541,58 +535,71 @@ def test_email(recipient, subject):
 
 
 def main(argv):
+    emails_sent_to = []
+    try:
+        data = get_hdrive_data()
+        if data is None:
+            return
 
-    data = get_hdrive_data()
-    if data is None:
-        return
+        # Get NRM metrics
+        nrm_metrics = get_h_drive_summary()
+        if nrm_metrics is None:
+            return
 
-    # Get NRM metrics
-    nrm_metrics = get_h_drive_summary()
-    if nrm_metrics is None:
-        return
+        # Assign Ministry Names
+        long_ministry_names = {
+            "AFF": "Agriculture, Food and Fisheries",
+            "EMLI": "Energy, Mines and Low Carbon Innovation",
+            "ENV": "Environment",
+            "FLNR": "Forests, Lands, Natural Resource Operations & Rural Development",
+            "FPRO": "Forest Protection Branch",
+            "IRR": "Indigenous Relations & Reconciliation"
+        }
 
-    # Assign Ministry Names
-    long_ministry_names = {
-        "AFF": "Agriculture, Food and Fisheries",
-        "EMLI": "Energy, Mines and Low Carbon Innovation",
-        "ENV": "Environment",
-        "FLNR": "Forests, Lands, Natural Resource Operations & Rural Development",
-        "FPRO": "Forest Protection Branch",
-        "IRR": "Indigenous Relations & Reconciliation"
-    }
+        # Get Biggest Drop of the month
+        biggest_drop = 0
+        biggest_drops_list = []
+        for idir in data:
+            samples = data[idir]["samples"]
+            if len(samples) >= 2:
+                last_month = samples[len(samples)-1]['gb']
+                month_before_last = samples[len(samples)-2]['gb']
+                drop = month_before_last - last_month
+                if drop > biggest_drop:
+                    biggest_drop = drop
+                if len(biggest_drops_list) < 5:
+                    biggest_drops_list.append(drop)
+                    biggest_drops_list.sort()
+                elif biggest_drops_list[0] < drop:
+                    biggest_drops_list[0] = drop
+                    biggest_drops_list.sort()
 
-    # Get Biggest Drop of the month
-    biggest_drop = 0
-    biggest_drops_list = []
-    for idir in data:
-        samples = data[idir]["samples"]
-        if len(samples) >= 2:
-            last_month = samples[len(samples)-1]['gb']
-            month_before_last = samples[len(samples)-2]['gb']
-            drop = month_before_last - last_month
-            if drop > biggest_drop:
-                biggest_drop = drop
-            if len(biggest_drops_list) < 5:
-                biggest_drops_list.append(drop)
-                biggest_drops_list.sort()
-            elif biggest_drops_list[0] < drop:
-                biggest_drops_list[0] = drop
-                biggest_drops_list.sort()
+        biggest_drops = sum(biggest_drops_list)
+        sendlist = []
+        if constants.EMAIL_SENDLIST:
+            sendlist = constants.EMAIL_SENDLIST
 
-    biggest_drops = sum(biggest_drops_list)
-    sendlist = []
-    if constants.EMAIL_SENDLIST:
-        sendlist = constants.EMAIL_SENDLIST
+        for idir in data:
+            idir_info = data[idir]
+            if idir_info["mail"] is not None:
+                if len(sendlist) and idir_info["mail"].lower() in sendlist:
+                    ministry_acronym = idir_info["ministry"]
+                    h_drive_count = nrm_metrics[ministry_acronym]["h_drive_count"]
+                    ministry_gb = nrm_metrics[ministry_acronym]["gb"]
+                    ministry_name = long_ministry_names[ministry_acronym]
+                    send_idir_email(data[idir], h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
+                    emails_sent_to.append(idir_info["mail"])
+    except (Exception, psycopg2.DatabaseError) as error:
+        LOGGER.info(error)
+        message_detail = "The send_usage_emails script encountered an error sending emails to users. " \
+            + "<br />Message Detail: " + str(error)
+        send_admin_email(message_detail)
+    finally:
+        message_detail = "The send_usage_emails script sent emails to the following users: " \
+            + "<br />" + ",".join(emails_sent_to)
 
-    for idir in data:
-        idir_info = data[idir]
-        if idir_info["mail"] is not None:
-            if len(sendlist) and idir_info["mail"].lower() in sendlist:
-                ministry_acronym = idir_info["ministry"]
-                h_drive_count = nrm_metrics[ministry_acronym]["h_drive_count"]
-                ministry_gb = nrm_metrics[ministry_acronym]["gb"]
-                ministry_name = long_ministry_names[ministry_acronym]
-                send_idir_email(data[idir], h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
+        LOGGER.info(message_detail)
+        send_admin_email(message_detail)
 
 
 # Handle MS Outlook email format
