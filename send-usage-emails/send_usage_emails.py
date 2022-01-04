@@ -150,7 +150,7 @@ def get_hdrive_data():
     for result in all_results:
         idir = result[0]
         # Filter out all IDIRs that don't start with A and B for quick Dev.
-        if not (idir[0] == "C" or idir[0] == "B"):
+        if not (idir[0] == "C" or idir[0] == "P"):
             continue
         gb = result[1]
         sample_datetime = result[2]
@@ -341,22 +341,20 @@ def get_graph_bytes(idir_info):
 
     # plt.show()
     # Save the plot to file
-    filepath = '/tmp/graph.png'
-    # filepath = 'c:/temp/graph.png'
-    plt.savefig(filepath)
+    # constants.GRAPH_FILE_PATH = '/tmp/graph.png'
+    plt.savefig(constants.GRAPH_FILE_PATH)
     # open image and read as binary
-    fp = open(filepath, "rb")
+    fp = open(constants.GRAPH_FILE_PATH, "rb")
     image_bytes = fp.read()
     fp.close()
-    os.remove(filepath)
+    os.remove(constants.GRAPH_FILE_PATH)
 
     return image_bytes
 
 
 def get_gold_star():
-    filepath = 'gold-star.png'
-    # filepath = 'send-usage-emails/gold-star.png'
-    fp = open(filepath, "rb")
+    # filepath = 'gold-star.png'
+    fp = open(constants.GOLD_STAR_FILE_PATH, "rb")
     image_bytes = fp.read()
     fp.close()
     return image_bytes
@@ -488,7 +486,7 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
     # send email
     s = smtplib.SMTP(constants.SMTP_SERVER)
     # TEMPORARILY DON'T ACTUALLY SEND THE EMAILS - Debugging the script...
-    # s.sendmail(msg["From"], recipient, msg.as_string())
+    s.sendmail(msg["From"], recipient, msg.as_string())
     s.quit()
 
     # ensure we're following smtp server guidelines of max 30 emails/minute

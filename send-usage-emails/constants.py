@@ -19,12 +19,15 @@ if os.path.exists(envPath):
     LDAP_PASSWORD=AD password
     """
 
-
 SMTP_SERVER = os.environ['SMTP_SERVER']
 DEBUG_IDIR = os.environ['DEBUG_IDIR']
 DEBUG_EMAIL = os.environ['DEBUG_EMAIL']
 EMAIL_SENDLIST = os.environ['EMAIL_SENDLIST']
 EMAIL_OMITLIST = os.environ['EMAIL_OMITLIST']
+
+GRAPH_FILE_PATH = os.environ['GRAPH_FILE_PATH']
+GOLD_STAR_FILE_PATH = os.environ['GOLD_STAR_FILE_PATH']
+
 POSTGRES_USER = os.environ['POSTGRES_USER']
 POSTGRES_PASSWORD = os.environ['POSTGRES_PASSWORD']
 POSTGRES_HOST = os.environ['POSTGRES_HOST']
