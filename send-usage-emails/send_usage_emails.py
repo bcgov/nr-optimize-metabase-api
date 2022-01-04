@@ -615,7 +615,7 @@ def refine_sendlist():
             temp_dict[email.lower()] = True
         if constants.EMAIL_OMITLIST:
             for email in constants.EMAIL_OMITLIST.split(","):
-                if email in temp_dict:
+                if email.lower() in temp_dict:
                     del temp_dict[email.lower()]
     constants.EMAIL_SENDLIST = []
     for email in temp_dict:
