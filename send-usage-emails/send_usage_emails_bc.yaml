@@ -75,8 +75,8 @@ spec:
       kind: ImageStreamTag
       name: 'send-usage-emails:latest'
   resources: {}
-  successfulBuildsHistoryLimit: 5
-  failedBuildsHistoryLimit: 5
+  successfulBuildsHistoryLimit: 1
+  failedBuildsHistoryLimit: 1
   strategy:
     type: Docker
     dockerStrategy:
