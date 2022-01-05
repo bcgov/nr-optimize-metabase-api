@@ -149,9 +149,9 @@ def get_hdrive_data():
 
     for result in all_results:
         idir = result[0]
-        # Filter out all IDIRs that don't start with A and B for quick Dev.
-        if not (idir[0] == "C" or idir[0] == "P"):
-            continue
+        # Filter out all IDIRs that don't start with C and P for quicker Dev iterations.
+        # if not (idir[0] == "C" or idir[0] == "P"):
+        #     continue
         gb = result[1]
         sample_datetime = result[2]
         ministry = result[3]
@@ -341,7 +341,6 @@ def get_graph_bytes(idir_info):
 
     # plt.show()
     # Save the plot to file
-    # constants.GRAPH_FILE_PATH = '/tmp/graph.png'
     plt.savefig(constants.GRAPH_FILE_PATH)
     # open image and read as binary
     fp = open(constants.GRAPH_FILE_PATH, "rb")
@@ -364,8 +363,7 @@ def get_gold_star():
 def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, biggest_drop, biggest_drops):
     samples = idir_info["samples"]
     name = idir_info["name"]
-    # recipient = idir_info["mail"]
-    recipient = "peter.platten@gov.bc.ca"
+    recipient = idir_info["mail"]
     msg = MIMEMultipart("related")
 
     # last_month is the most recent reporting month
