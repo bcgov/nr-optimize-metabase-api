@@ -406,8 +406,9 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
          is provided to help raise awareness of monthly storage costs associated with your personal home (H:) drive."""
 
     # JUST TEST IF month_before_last_gb IS NOT NONE! Leaving for now as want to test failure case.
-    if last_month_gb < 1 and month_before_last_gb is not None and month_before_last_gb < 1:
-        html_intro += """<br><br><img src="cid:image2" alt="Gold Star">&nbspCongratulations! You seem to be managing your storage well. <img src="cid:image2" alt="Gold Star">"""
+    if last_month_gb < 1 and month_before_last_gb is not None:
+        if month_before_last_gb < 1:
+            html_intro += """<br><br><img src="cid:image2" alt="Gold Star">&nbspCongratulations! You seem to be managing your storage well. <img src="cid:image2" alt="Gold Star">"""
 
     html_why_data_important = f"""<br><br><b>Why is knowing my data usage important?</b>
         <ul>
