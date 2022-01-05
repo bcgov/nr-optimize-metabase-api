@@ -364,7 +364,8 @@ def get_gold_star():
 def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, biggest_drop, biggest_drops):
     samples = idir_info["samples"]
     name = idir_info["name"]
-    recipient = idir_info["mail"]
+    # recipient = idir_info["mail"]
+    recipient = "peter.platten@gov.bc.ca"
     msg = MIMEMultipart("related")
 
     # last_month is the most recent reporting month
@@ -485,7 +486,6 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
 
     # send email
     s = smtplib.SMTP(constants.SMTP_SERVER)
-    # TEMPORARILY DON'T ACTUALLY SEND THE EMAILS - Debugging the script...
     s.sendmail(msg["From"], recipient, msg.as_string())
     s.quit()
 
