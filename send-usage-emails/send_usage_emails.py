@@ -405,7 +405,7 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
 
     if last_month_gb < 1 and month_before_last_sample is not None:
         if month_before_last_gb < 1:
-            html_intro += """<br><br><img src="cid:image2" alt="Gold Star">&nbspCongratulations! You seem to be managing your storage well. <img src="cid:image2" alt="Gold Star">"""
+            html_intro += """<br><br><img src="cid:image2" alt="Gold Star">&nbspCongratulations! You've kept your H: Drive under 1gb for at least two months straight, and appear to be managing your storage well. Keep up the great work! <img src="cid:image2" alt="Gold Star">"""
 
     html_why_data_important = f"""<br><br><b>Why is knowing my data usage important?</b>
         <ul>
