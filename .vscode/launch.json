@@ -13,10 +13,10 @@
             "console": "integratedTerminal"
         },       
         {
-            "name": "Python: constants_example",
+            "name": "Python: push_onedrive",
             "type": "python",
             "request": "launch",
-            "program": "scripts\\constants_example.py",
+            "program": "push-data-to-metabase/push_onedrive_to_metabase.py",
             "args": [],
             "console": "integratedTerminal"
         },  
