@@ -1,6 +1,10 @@
 REM This task is just a helper script to bind the OC port to a dev PC
+REM There are two run methods, Service Account and Personal OCP login
 
-REM Run using: open_postgres_port_dev.bat SA_KEY CLUSTER_URL OBJSTOR_ADMIN OBJSTOR_PASS
+REM To run using Personal OCP login, log into OCP on the command prompt using your OCP login command, 
+REM   then copy all lines from this script after the oc login into command prompt
+
+REM To run using Service Account, In command prompt enter: open_postgres_port_dev.bat SA_KEY CLUSTER_URL OBJSTOR_ADMIN OBJSTOR_PASS
 REM SA_KEY is the service account key from OpenShift.
 REM CLUSTER_URL is https://api.silver.devops.gov.bc.ca:6443
 REM OBJSTOR_ADMIN is an account which can access the bucket metadata
