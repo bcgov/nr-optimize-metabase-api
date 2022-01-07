@@ -14,7 +14,7 @@
 # usage: send_usage_emails.py
 # Requires:
 #   1.) Postgres database to be "localhost". On Dev PCs this is done using port binding with open_postgres_port_dev.bat
-#   2.) A .env file to exist with valid credentials. See the constants.py for the required values.
+#   2.) A .env file or environment variables set with values. See the constants.py for the required values.
 # -------------------------------------------------------------------------------
 
 
@@ -43,11 +43,11 @@ from log_helper import LOGGER
 # Get a simple formatted "sample" object
 def get_sample(gb, sample_datetime: datetime):
     gb = float(gb)
-    # Calculate and Format $ cost by GB, encouraging users to have "up to" 1.5gb
+    # METHOD 1: Calculate and Format $ cost by GB, encouraging users to have "up to" 1.5gb
     # cost = round((gb - 1.5) * 2.7, 2)
     # if cost < 0:
     #    cost = 0
-    # Calculate and Format $ cost by GB, with 1.5gb discount applied at ministry level
+    # METHOD 2: Calculate and Format $ cost by GB, with 1.5gb discount applied at ministry level
     cost = round(gb * 2.7, 2)
 
     return {
@@ -58,7 +58,7 @@ def get_sample(gb, sample_datetime: datetime):
     }
 
 
-# Send an email to the admin with error message
+# Send an email to the admin with a message
 def send_admin_email(message_detail):
     msg = MIMEMultipart("related")
     msg["Subject"] = "Script Report"
@@ -114,8 +114,6 @@ def get_hdrive_data():
         """
         cur.execute(sql_expression)
         all_results = cur.fetchall()
-
-        # close the communication with the PostgreSQL
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         LOGGER.info(error)
@@ -129,9 +127,8 @@ def get_hdrive_data():
             conn.close()
             LOGGER.debug('Database connection closed.')
 
-    data = {}
-
     try:
+        # Attempt to sign into AD using LDAP credentials
         ldap_util = ldap.LDAPUtil(constants.LDAP_USER, constants.LDAP_PASSWORD)
     except (Exception) as error:
         LOGGER.info(error)
@@ -141,12 +138,11 @@ def get_hdrive_data():
         send_admin_email(message_detail)
         quit()
 
+    data = {}
     attribute_error_idirs = []
     other_error_idirs = []
     conn = ldap_util.getLdapConnection()
-
-    # Block which filters results to just one for quick debugging.
-
+    # For each H: Drive row, Add new user to "data" dictionary if not there, and add a data sample.
     for result in all_results:
         idir = result[0]
         # Filter out all IDIRs that don't start with C and P for quicker Dev iterations.
@@ -157,7 +153,9 @@ def get_hdrive_data():
         ministry = result[3]
         if idir not in attribute_error_idirs and idir not in other_error_idirs:
             if idir not in data:
+                # User is not in the "data" dictionary yet, create user entry while adding first sample.
                 try:
+                    # Connect to AD to get user info
                     ad_info = ldap_util.getADInfo(idir, conn)
                 except (Exception, AttributeError) as error:
                     print(f"Unable to find {idir} due to error {error}")
@@ -171,6 +169,7 @@ def get_hdrive_data():
                 if ad_info is None or ad_info["mail"] is None or ad_info["givenName"] is None:
                     other_error_idirs.append(idir)
                 else:
+                    # Create user entry, add first sample
                     data[idir] = {
                         "idir": idir,
                         "samples": [
@@ -181,13 +180,17 @@ def get_hdrive_data():
                         "ministry": ministry
                     }
             else:
+                # Add sample to existing user data
                 data[idir]["samples"].append(get_sample(gb, sample_datetime))
+
+    # Sort the samples
     for idir in data:
-        # sort the samples
         data[idir]["samples"].sort(
             key=lambda s: s["sample_datetime"]
         )
 
+    # If errors existed, email them to the admin.
+    # (There will always be errors, due to service accounts or employees who have left during the month)
     if len(attribute_error_idirs) > 0 or len(other_error_idirs) > 0:
         message_detail = "The send_usage_emails script failed to find all IDIRs. " \
             + "<br /><br />IDIRs not found due to attribute error: " + ",".join(attribute_error_idirs) \
@@ -197,6 +200,7 @@ def get_hdrive_data():
     return data
 
 
+# Query metabase database to simply get ministry-wide metrics
 def get_h_drive_summary():
     conn = None
     try:
@@ -210,7 +214,7 @@ def get_h_drive_summary():
         # create a cursor
         cur = conn.cursor()
 
-        LOGGER.debug('H Drive data from the last six months:')
+        LOGGER.debug('Get summarized H: Drive counts by ministry from the last month:')
         sql_expression = """
         SELECT count(*) AS "COUNT", sum(datausage) AS "DATAUSAGE", ministry AS "MINISTRY" FROM hdriveusage WHERE (date_trunc('month',
          CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now()
@@ -221,8 +225,6 @@ def get_h_drive_summary():
         """
         cur.execute(sql_expression)
         all_results = cur.fetchall()
-
-        # close the communication with the PostgreSQL
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         LOGGER.info(error)
@@ -240,10 +242,13 @@ def get_h_drive_summary():
         "total_h_drive_count": 0,
         "total_gb": 0
     }
+
+    # For each ministry record, aggregate data in dictionary
     for result in all_results:
         nrm_metrics["total_h_drive_count"] += result[0]
         nrm_metrics["total_gb"] += result[1]
-        nrm_metrics[result[2]] = {
+        ministry = result[2]
+        nrm_metrics[ministry] = {
             "h_drive_count": result[0],
             "gb": result[1]
         }
@@ -264,95 +269,109 @@ def get_graph_bytes(idir_info):
     color_under = "#003366"  # blue
     color_over = "#e3a82b"  # yellow
     color_goal = "#D8292F"  # red
+
+    # Add sample dates to graph axis
     axis_dates = []
     for idx, sample in enumerate(samples):
         axis_dates.append(sample["sample_datetime"].strftime("%Y-%m-%d"))
 
-    # convert samples array into dictionary of arrays
-    under_bars = {
+    # Convert samples array into dictionary of arrays
+    # To have the graph change color below and above the 1.5GB bar, add them as different datasets
+    under_bar = {
         'gb': [],
         'datetime': [],
         'month': [],
         'cost': []
     }
 
-    over_bars = {
+    over_bar = {
         'gb': [],
         'datetime': [],
         'month': [],
         'cost': []
     }
 
-    # 1.5GB x 2.7 is actually 4.05, but rounding for ease of consumption
+    # Bar/threshold of 1.5GB x 2.7 is actually 4.05, but rounding for ease of consumption
     threshold = 4.00
+    # For each month sample, add to data dictionaries
     for sample in samples:
         if sample['cost'] <= threshold:
-            under_bars['gb'].append(sample['gb'])
-            under_bars['datetime'].append(sample['sample_datetime'])
-            under_bars['month'].append(sample['month'])
-            under_bars['cost'].append(sample['cost'])
+            # Users month was <= to the bar, so add data under bar, and empty data behind it
+            under_bar['gb'].append(sample['gb'])
+            under_bar['datetime'].append(sample['sample_datetime'])
+            under_bar['month'].append(sample['month'])
+            under_bar['cost'].append(sample['cost'])
 
-            over_bars['gb'].append(0)
-            over_bars['datetime'].append(sample['sample_datetime'])
-            over_bars['month'].append(sample['month'])
-            over_bars['cost'].append(0)
+            over_bar['gb'].append(0)
+            over_bar['datetime'].append(sample['sample_datetime'])
+            over_bar['month'].append(sample['month'])
+            over_bar['cost'].append(0)
         else:
-            under_bars['gb'].append(1.5)
-            under_bars['datetime'].append(sample['sample_datetime'])
-            under_bars['month'].append(sample['month'])
-            under_bars['cost'].append(4.05)
+            # Users month was > the bar, so add maximum data under bar, and actual data behind it that looks "over" the bar
+            under_bar['gb'].append(1.5)
+            under_bar['datetime'].append(sample['sample_datetime'])
+            under_bar['month'].append(sample['month'])
+            under_bar['cost'].append(4.05)
 
-            over_bars['gb'].append(sample['gb'])
-            over_bars['datetime'].append(sample['sample_datetime'])
-            over_bars['month'].append(sample['month'])
-            over_bars['cost'].append(sample['cost'])
+            over_bar['gb'].append(sample['gb'])
+            over_bar['datetime'].append(sample['sample_datetime'])
+            over_bar['month'].append(sample['month'])
+            over_bar['cost'].append(sample['cost'])
 
+    # Give bars color and plot them
     sns.barplot(
         x="month",
         y="cost",
-        data=over_bars,
+        data=over_bar,
         color=color_over
     )
     g = sns.barplot(
         x="month",
         y="cost",
-        data=under_bars,
+        data=under_bar,
         color=color_under
     )
 
+    # Add threshold bar
     g.axhline(threshold, label="$4.00 (1.5 GB)", color=color_goal, linewidth=6)
+
+    # Add legend
     plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
+
     # Format y axis labels as dollar values
     ylabels = []
     for ytick in g.get_yticks():
         ylabels.append(f"${ytick:,.2f}")
     g.set_yticklabels(ylabels)
 
+    # Add various text components
     plt.title(f"{idir}'s H: Drive Cost by Month", fontsize=14)
-
     plt.ylabel("H: Drive Cost", fontsize=13)
     plt.xlabel("", fontsize=10)
-
     caption = "1.5 GB of Shared\nFile and H: drive\nstorage is allocated\nfor each BCPS\nemployee."
     caption = caption + "\n\nKeeping your digital\nstorage use under\n1.5 GB helps prevent\nadditional costs\nfor your ministry."
     fig.text(0.8, 0.34, caption, ha="left")
     plt.tight_layout()
     plt.ylim(bottom=0)
 
+    # Show the graph in a window on a dev computer
     # plt.show()
+
     # Save the plot to file
     plt.savefig(constants.GRAPH_FILE_PATH)
-    # open image and read as binary
+    # open image and read as binary data
     fp = open(constants.GRAPH_FILE_PATH, "rb")
     image_bytes = fp.read()
+
+    # Close and delete the file
     fp.close()
     os.remove(constants.GRAPH_FILE_PATH)
 
     return image_bytes
 
 
+# Get bytes from an image file
 def get_gold_star():
-    # filepath = 'gold-star.png'
     fp = open(constants.GOLD_STAR_FILE_PATH, "rb")
     image_bytes = fp.read()
     fp.close()
@@ -360,19 +379,27 @@ def get_gold_star():
 
 
 # Send an email to the user containing usage information
-def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, biggest_drop, biggest_drops):
+def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_drop, biggest_drops):
+    # Variable Definitions:
+    # idir_info         Dictionary of info for a user
+    # h_drive_count     H: drives for the users ministry
+    # total_gb          Total gb for the users ministry
+    # biggest_drop      Biggest single user reduction last month
+    # biggest_drops     Sum of five biggest reductions last month
+    # last_month        The most recent reporting month
+    # month_before_last The reporting month before last_month
+
     samples = idir_info["samples"]
     name = idir_info["name"]
     recipient = idir_info["mail"]
     msg = MIMEMultipart("related")
 
-    # last_month is the most recent reporting month
-    # month_before_last is the month before last_month
-    # copy out values for use in fstrings
+    # Copy out values to variables for use in fstrings
     last_month_sample = samples[len(samples)-1]
-    last_month_name = last_month_sample["month"]
+    last_month_name = last_month_sample["month"]  # i.e. January
     last_month_gb = last_month_sample["gb"]
     last_month_cost = last_month_sample["cost"]
+    year = last_month_sample["sample_datetime"].year
     month_before_last_sample = None
     if len(samples) > 1:
         month_before_last_sample = samples[len(samples)-2]
@@ -381,21 +408,23 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
         month_before_last_name = month_before_last_sample["month"]
 
     total_gb = float(total_gb)
-    total_h_drive_count = float(total_h_drive_count)
-    total_h_drive_cost = (total_gb - (total_h_drive_count*1.5)) * 2.7
-    # round down to nearest thousand
-    total_gb = int(math.floor(total_gb/1000)*1000)
-    total_h_drive_cost = int(math.floor(total_h_drive_cost/1000)*1000)
-    total_h_drive_count = int(math.floor(total_h_drive_count/1000)*1000)
+    h_drive_count = float(h_drive_count)
+    # Get the cost of ministry H: Drives and biggest drops
+    total_h_drive_cost = (total_gb - (h_drive_count*1.5)) * 2.7
     biggest_drop_cost = biggest_drop * 2.7
     biggest_drops_cost = biggest_drops * 2.7
 
-    # build email content and metadata
-    year = last_month_sample["sample_datetime"].year
+    # Round down to nearest thousand for legibility
+    total_gb = int(math.floor(total_gb/1000)*1000)
+    total_h_drive_cost = int(math.floor(total_h_drive_cost/1000)*1000)
+    h_drive_count = int(math.floor(h_drive_count/1000)*1000)
+
+    # Build email content and metadata
     msg["Subject"] = f"Transitory: Your H: Drive Usage Report for {last_month_name} {year}"
     msg["From"] = "IITD.Optimize@gov.bc.ca"
     msg["To"] = recipient
 
+    # Greet the user and provide introduction
     html_intro = f"""
     <html><head></head><body><p>
         Hi {name},<br><br>
@@ -403,18 +432,23 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
         This report from the <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
          is provided to help raise awareness of monthly storage costs associated with your personal home (H:) drive."""
 
+    # Reward the user with a gold star if data looks well managed
     if last_month_gb < 1 and month_before_last_sample is not None:
         if month_before_last_gb < 1:
-            html_intro += """<br><br><img src="cid:image2" alt="Gold Star">&nbspCongratulations! You've kept your H: Drive under 1gb for at least two months straight, and appear to be managing your storage well. Keep up the great work! <img src="cid:image2" alt="Gold Star">"""
+            html_intro += """<br><br><img src="cid:image2" alt="Gold Star">&nbspCongratulations!
+                 You've kept your H: Drive under 1gb for at least two months straight, and appear to be managing your storage well.
+                 Keep up the great work! <img src="cid:image2" alt="Gold Star">"""
 
+    # Remind user why storage costs are important as a ministry
     html_why_data_important = f"""<br><br><b>Why is knowing my data usage important?</b>
         <ul>
         <li>Storing data on your H: Drive is expensive, costing $2.70 per GB per month.</li>
-        <li>There are over {total_h_drive_count:,} H: Drives in the Ministry of {ministry_name}.</li>
+        <li>There are over {h_drive_count:,} H: Drives in the Ministry of {ministry_name}.</li>
         <li>Your Ministry has over {total_gb:,}GB of data in H: Drives, costing more than ${total_h_drive_cost:,} per month.</li>
         </ul>
         """
 
+    # Inform user of personal metrics
     html_personal_metrics = f"""<b>What are my personal metrics?</b><br>
     Last month your H: Drive usage was {last_month_gb:,}GB, costing ${last_month_cost:,.2f}. This has """
     if month_before_last_sample is not None:
@@ -438,7 +472,9 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
         month_plural = "s"
     html_img = f"<br>Below, you will find a graph highlighting your H: Drive cost for the past {month_count}month{month_plural}:"
     html_img = html_img + """<br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">"""
-    html_why_important = f"""
+
+    # Provide solutions to the user to help with H: Drive faqs/issues
+    html_why_important = """
     <br><br><b>Did the cost of your H: Drive go up this month?</b><br>
     This happens from time to time. Here are three simple actions to help you reduce your storage expense "footprint":
     <ol>
@@ -449,13 +485,18 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
         your Recycle Bin (time suggested: 1 min)</li>
     </ol>
     More suggestions on how to reduce can be found on our
-    <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>.<br><br>
-    <b>Storage Saving Kudos:</b>
+    <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>."""
+
+    # Share the successes of peers
+    html_kudos = f"""
+    <br><br><b>Storage Saving Kudos:</b>
     <ul>
         <li>Last month the largest H: Drive savings from a single user was <b>{biggest_drop:,.3g}GB</b> saving <b>${biggest_drop_cost:,.2f}</b> per month!</li>
         <li>Last month five users saved a combined total of <b>${biggest_drops_cost:,.2f}</b> per month!</li>
     </ul>
     """
+
+    # Email sign-off
     html_footer = """
     This email is transitory and can be deleted when no longer needed. Thank you for taking the time to manage your digital storage!<br>
     <br>
@@ -468,9 +509,12 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
     </body>
     </html>
     """
-    html = (html_intro + html_why_data_important + html_personal_metrics + html_img + html_why_important + html_footer)
+
+    # Merge html parts and attach to email
+    html = (html_intro + html_why_data_important + html_personal_metrics + html_img + html_why_important + html_kudos + html_footer)
     msg.attach(MIMEText(html, "html"))
 
+    # Get and attach images to email
     msgImage = MIMEImage(get_graph_bytes(idir_info))
     msgImage.add_header("Content-ID", "<image1>")
     msg.attach(msgImage)
@@ -479,21 +523,22 @@ def send_idir_email(idir_info, total_h_drive_count, total_gb, ministry_name, big
     msgImage.add_header("Content-ID", "<image2>")
     msg.attach(msgImage)
 
-    # add header which suppresses out of office requests
+    # Add header which suppresses out of office requests
     msg.add_header("X-Auto-Response-Suppress", "OOF, DR, RN, NRN")
 
-    # send email
+    # Send email to recipient
     s = smtplib.SMTP(constants.SMTP_SERVER)
     s.sendmail(msg["From"], recipient, msg.as_string())
     s.quit()
 
-    # ensure we're following smtp server guidelines of max 30 emails/minute
+    # Following smtp server guidelines of max 30 emails/minute
     time.sleep(2)
 
     # log send complete
     LOGGER.info(f"Email sent to {recipient}.")
 
 
+# Create fake idir info item for development/testing purposes
 def get_fake_idir_info():
     idir_info = {
         'idir': 'PPLATTEN',
@@ -513,6 +558,7 @@ def get_fake_idir_info():
     return idir_info
 
 
+# A quickly edited email template to test while developing without needing to gather data
 def test_email(recipient, subject):
     msg = MIMEMultipart("related")
     msg["Subject"] = subject
@@ -530,14 +576,51 @@ def test_email(recipient, subject):
     s.quit()
 
 
+# Convert MS Outlook email format to comma seperated addresses
+def convert_email_addresses(long_format_addresses):
+    # pattern matches all email addresses between < > with letters, numbers, and the following characters: .-_@
+    pattern = re.compile(r'(?<=\<)[a-zA-Z\.\-\_\@\0-9]*(?=\>)')
+    short_format_addresses = pattern.findall(long_format_addresses)
+    return ",".join(numpy.array(short_format_addresses))
+
+
+# Handle address formatting, ensure uniqueness, and filter out addresses using omitlist
+def refine_sendlist():
+    # Handle email address format
+    if constants.EMAIL_SENDLIST.endswith(">"):
+        constants.EMAIL_SENDLIST = convert_email_addresses(constants.EMAIL_SENDLIST)
+    if constants.EMAIL_OMITLIST.endswith(">"):
+        constants.EMAIL_OMITLIST = convert_email_addresses(constants.EMAIL_OMITLIST)
+
+    temp_dict = {}
+    if constants.EMAIL_SENDLIST:
+        # Add all emails to dictionary as key (unique set)
+        for email in constants.EMAIL_SENDLIST.split(","):
+            temp_dict[email.lower()] = True
+        # Remove omit emails from unique set if it exists
+        if constants.EMAIL_OMITLIST:
+            for email in constants.EMAIL_OMITLIST.split(","):
+                if email.lower() in temp_dict:
+                    del temp_dict[email.lower()]
+
+    # Rebuild the sendlist
+    constants.EMAIL_SENDLIST = []
+    for email in temp_dict:
+        constants.EMAIL_SENDLIST.append(email)
+
+
 def main(argv):
     emails_sent_to = []
     try:
+        # Handle address formatting, ensure uniqueness, and filter out addresses using omitlist
+        refine_sendlist()
+
+        # Query db for h drive data dictionary by idir
         data = get_hdrive_data()
         if data is None:
             return
 
-        # Get NRM metrics
+        # Query db to simply get ministry-wide metrics
         nrm_metrics = get_h_drive_summary()
         if nrm_metrics is None:
             return
@@ -552,17 +635,19 @@ def main(argv):
             "IRR": "Indigenous Relations & Reconciliation"
         }
 
-        # Get Biggest Drop of the month
+        # Get Biggest Drop (storage reduction) of the month
         biggest_drop = 0
         biggest_drops_list = []
         for idir in data:
             samples = data[idir]["samples"]
             if len(samples) >= 2:
-                last_month = samples[len(samples)-1]['gb']
-                month_before_last = samples[len(samples)-2]['gb']
-                drop = month_before_last - last_month
+                last_month_gb = samples[len(samples)-1]['gb']
+                month_before_last_gb = samples[len(samples)-2]['gb']
+                drop = month_before_last_gb - last_month_gb
+                # Get biggest drop
                 if drop > biggest_drop:
                     biggest_drop = drop
+                # Get biggest 5 drops
                 if len(biggest_drops_list) < 5:
                     biggest_drops_list.append(drop)
                     biggest_drops_list.sort()
@@ -570,7 +655,9 @@ def main(argv):
                     biggest_drops_list[0] = drop
                     biggest_drops_list.sort()
 
+        # Calculate the sum of the 5 biggest drops
         biggest_drops = sum(biggest_drops_list)
+
         sendlist = []
         if constants.EMAIL_SENDLIST:
             sendlist = constants.EMAIL_SENDLIST
@@ -584,53 +671,26 @@ def main(argv):
                     ministry_gb = nrm_metrics[ministry_acronym]["gb"]
                     ministry_name = long_ministry_names[ministry_acronym]
                     send_idir_email(data[idir], h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
+
+                    # Track successful send
                     emails_sent_to.append(idir_info["mail"])
+
     except (Exception, psycopg2.DatabaseError) as error:
         LOGGER.info(error)
         message_detail = "The send_usage_emails script encountered an error sending emails to users. " \
             + "<br />Message Detail: " + str(error)
         send_admin_email(message_detail)
     finally:
+        # Report successful sends for tracking purposes, even if the script as a whole had an exception.
         message_detail = "The send_usage_emails script sent emails to the following users: " \
             + "<br />" + ",".join(emails_sent_to)
-
         LOGGER.info(message_detail)
         send_admin_email(message_detail)
 
 
-# Handle MS Outlook email format
-def convert_email_addresses(long_format_addresses):
-    # pattern matches all email addresses between < > with letters, numbers, and the following characters: .-_@
-    pattern = re.compile(r'(?<=\<)[a-zA-Z\.\-\_\@\0-9]*(?=\>)')
-    short_format_addresses = pattern.findall(long_format_addresses)
-    return ",".join(numpy.array(short_format_addresses))
-
-
-# Handle formatting, ensure uniqueness, and omit emails
-def refine_sendlist():
-    if constants.EMAIL_SENDLIST.endswith(">"):
-        constants.EMAIL_SENDLIST = convert_email_addresses(constants.EMAIL_SENDLIST)
-    if constants.EMAIL_OMITLIST.endswith(">"):
-        constants.EMAIL_OMITLIST = convert_email_addresses(constants.EMAIL_OMITLIST)
-    temp_dict = {}
-    if constants.EMAIL_SENDLIST:
-        for email in constants.EMAIL_SENDLIST.split(","):
-            temp_dict[email.lower()] = True
-        if constants.EMAIL_OMITLIST:
-            for email in constants.EMAIL_OMITLIST.split(","):
-                if email.lower() in temp_dict:
-                    del temp_dict[email.lower()]
-    constants.EMAIL_SENDLIST = []
-    for email in temp_dict:
-        constants.EMAIL_SENDLIST.append(email)
-
-
 if __name__ == "__main__":
-
-    # test_email("peter.platten@gov.bc.ca", "test email from Peter!")
-    refine_sendlist()
-
-    # get_graph_bytes(get_fake_idir_info())
-
     main(sys.argv[1:])
+
+    # Give developers time to look at OCP pod terminal/details after a failure/success before terminating.
+    LOGGER.info("Script Complete, pausing for 5 minutes...")
     time.sleep(300)
