@@ -1,6 +1,17 @@
 {
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [         
+    "configurations": [  
+        {
+            "name": "Python: access_ldap",
+            "type": "python",
+            "request": "launch",
+            "program": "send-usage-emails\\access_ldap.py",
+            "args": [],
+            "console": "integratedTerminal"
+        },       
         {
             "name": "Python: push_onedrive",
             "type": "python",
@@ -13,7 +24,7 @@
             "name": "Python: clean_incremental_data",
             "type": "python",
             "request": "launch",
-            "program": "C:/bitbucket/optimize-metabase-api/scripts/clean_incremental_data.py",
+            "program": "scripts\\clean_incremental_data.py",
             "args": [
                 "-i", "C:/TEMP/data"
             ],
@@ -23,7 +34,7 @@
             "name": "Python: clean_expense_report_csv",
             "type": "python",
             "request": "launch",
-            "program": "C:/bitbucket/optimize-metabase-api/scripts/clean_expense_report_csv.py",
+            "program": "scripts\\clean_expense_report_csv.py",
             "args": [
                 "-i", "C:/TEMP/data/Hosting Services Expense Report.txt",
                 "-c", "C:/TEMP/data/OptimizeLookupCategories.csv",
@@ -33,10 +44,10 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: send_usage_graph_v2",
+            "name": "Python: send_usage_emails",
             "type": "python",
             "request": "launch",
-            "program": "C:/bitbucket/optimize-metabase-api/scripts/send_usage_graph_v2.py",
+            "program": "send-usage-emails\\send_usage_emails.py",
             "args": [
                 "-i", "C:/TEMP/data/inputcsvs",
                 "-r", "2021-05_H_Drive_NRM_Usage.csv",
