@@ -1,0 +1,264 @@
+---
+author: "Copyright: Optimization Team 2021"
+date: "Compiled on `r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  prettydoc::html_pretty:
+    theme: architect
+params:
+  data:
+    label: "Input file:"
+    value: "*.csv"
+    input: text
+  share:
+    label: "Share Name to Search:"
+    value: "S01234"
+    input: text
+  quarter:
+    label: "Quarter:"
+    value: Q1
+    input: select
+    choices: [Q1, Q2, Q3, Q4]
+  fiscal:
+    label: "Fiscal Year:"
+    value: FY21-22
+    input: select
+    choices: [FY19-20, FY20-21, FY21-22, FY22-23]
+  collected:
+    label: "datestamp on OCIO file:"
+    value: 2021-12-22
+    input: text
+title: "SFP Enhanced Report on `r params$share`" 
+subtitle: "`r params$quarter` `r params$fiscal` (data collected on `r params$collected`)"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dbplyr)
+library(dplyr)
+library(forcats)
+library(glue)
+library(here)
+library(htmltools)
+library(knitr)
+library(lubridate)
+library(scales)
+library(stringr)
+library(stringi)
+library(tidyverse)
+library(writexl)
+library(shiny)
+```
+
+```{r set system environment, include = FALSE}
+# This chunk is helpful if you're using an IDE like VS Code
+# You can find the correct directory by typing Sys.getenv("RSTUDIO_PANDOC")
+Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
+```
+
+```{r apply team logo, echo=FALSE}
+htmltools::img(src = knitr::image_uri(file.path(here("scripts"), "GFX_OptimizationLogo-Icon_v2.png")), 
+               alt = 'logo', 
+               style = 'position:bottom:0; left:0; padding:10px;',
+               width = "350px",
+               heigth = "350px")
+```
+
+```{r load data, include = FALSE}
+here::here()
+sfp_enhanced <- read_csv(here("source", {params$data}), col_names = TRUE)
+```
+
+```{r folder search, include = FALSE}
+search_folder <- sfp_enhanced %>%
+  filter(str_detect(share, {params$share})) %>%
+  select(filename, path, share, sizemb, lastaccessdate, lastmodifieddate) %>%
+  mutate(sizegb = sizemb / 1000) %>% 
+  mutate(sizegb = round(sizegb, 3)) %>% 
+  mutate(lastaccessdate = as_date(lastaccessdate, tz = NULL)) %>% 
+  mutate(lastmodifieddate = as_date(lastmodifieddate, tz = NULL)) %>%
+  mutate(filetype = str_extract(filename, "[^.]+$")) %>%
+  mutate(filetype = tolower(filetype)) %>% 
+  mutate(monthly_cost = sizegb * 2.7) %>% 
+  mutate(cost = dollar(monthly_cost)) %>% 
+  mutate(obj_store_cost = sizegb * 0.07) %>% 
+  mutate(object_storage_cost = dollar(obj_store_cost)) %>% 
+  select(filename, filetype, path, sizemb, sizegb, lastaccessdate, lastmodifieddate, monthly_cost, cost, obj_store_cost, object_storage_cost)
+```
+
+```{r find duplicate files, include = FALSE}
+duplicate_files <- search_folder %>% 
+  group_by(filename, sizemb) %>% 
+  filter( n() > 1 )
+
+#duplicate_files <- duplicate_files %>% 
+#  group_by(sizemb) %>% 
+#  filter( n() > 1 ) 
+
+duplicate_files_formatted <- duplicate_files %>% 
+  select (filename,	filetype,	path,	sizemb,	sizegb,	lastaccessdate,	lastmodifieddate, cost)
+```
+
+```{r calculate share size, include = FALSE}
+calculate_sharesize <- search_folder %>%
+  group_by(filetype) %>% 
+  summarize(foldersizemb = sum(sizemb), foldersizegb = sum(sizegb))
+```
+
+```{r calculate folder size, include = FALSE}
+calculate_folder_size <- search_folder %>%
+  group_by(path) %>% 
+  summarize(foldersizemb = sum(sizemb), foldersizegb = sum(sizegb), foldercost = sum(monthly_cost), objstorcost = sum(obj_store_cost)) %>% 
+  mutate(foldercost = dollar(foldercost)) %>% 
+  mutate(objstorcost = dollar(objstorcost))
+```
+
+```{r calculate filetype size by folder, include = FALSE}
+calculate_folder_filetype_size <- search_folder %>%
+  group_by(path, filetype, cost, object_storage_cost) %>% 
+  summarize(foldersizemb = sum(sizemb), foldersizegb = sum(sizegb))
+```
+
+```{r tally files per folder, include = FALSE}
+folder_filetally <- search_folder %>%
+  group_by(path) %>% 
+  summarise("number of files" = n())
+```
+
+```{r tally unique file types in share, include = FALSE}
+share_filetype_tally <- search_folder %>% 
+  group_by(filetype) %>% 
+  summarise(amount = n()) %>% 
+  arrange(desc(amount))
+```
+
+```{r tally unique file types per folder, include = FALSE}
+folder_filetype_tally <- search_folder %>% 
+  group_by(filetype, path) %>% 
+  summarise(amount = n()) %>% 
+  select(path, filetype, amount)
+```
+
+```{r create table with folder size & file tally, include = FALSE}
+table_pathsize_tallyfiles <- inner_join(calculate_folder_size,folder_filetally, by = "path") 
+```
+
+```{r create table with share file type size & tally, include = FALSE}
+table_sharesize_tallyfiles <- inner_join(calculate_sharesize,share_filetype_tally,by="filetype") %>% 
+  select(filetype, amount, foldersizemb, foldersizegb)
+```
+
+```{r create table with folder file type size & file type tally, include = FALSE}
+table_foldersize_tallyfiles <- inner_join(calculate_folder_filetype_size,folder_filetally,by="path") %>% 
+  select(path, filetype, "number of files", "total_filetype_sizemb" = foldersizemb, "total_filetype_sizegb" = foldersizegb, cost)
+```
+
+```{r calculate folder depth, include = FALSE}
+# Count the number of '\'s in each element of string
+table_pathsize_tallyfiles$folderdepth <- str_count(table_pathsize_tallyfiles$path, "\\\\") 
+# Subtract 4 because the folder depth count starts after \\SERVER\SHARE\
+table_pathsize_tallyfiles$folderdepth <- table_pathsize_tallyfiles$folderdepth - 4
+```
+
+```{r tally folders based on folder depth, include = FALSE}
+table_folderdepth_tallyfolders <- table_pathsize_tallyfiles %>%
+  group_by(folderdepth) %>% 
+  tally(name = "folderdepth_count")
+```
+
+```{r folder count, echo = FALSE}
+# tailor this statement to the specific share
+folder_count <- unique(search_folder$path)
+folder_count <- length(folder_count)
+folder_count <- format(folder_count, big.mark = ",", scientific = FALSE)
+```
+
+```{r average folder depth, echo = FALSE}
+# tailor this statement to the specific path
+mean_depth <- as.integer(mean(table_pathsize_tallyfiles$folderdepth))
+max_depth <- as.integer(max(table_pathsize_tallyfiles$folderdepth))
+```
+
+```{r size of entire share in GB, echo = FALSE}
+# tailor this statement to the specific share
+share_size <- sum(table_foldersize_tallyfiles$total_filetype_sizegb)
+sharesize <- format(share_size, big.mark = ",", scientific = FALSE)
+```
+
+```{r share cost, echo = FALSE}
+# calculated at $2.70 per GB
+# tailor this statement to the specific share
+sharecost <- sum(share_size) * 2.7
+share_cost <- dollar(sharecost)
+objstorecost <- sum(share_size) * 0.07
+objstore_cost <- dollar(objstorecost)
+annualsavings <- sum(sharecost - objstorecost) * 12
+annual_savings <- dollar(annualsavings)
+```
+
+```{r duplicates cost, echo = FALSE}
+# calculated at $2.70 per GB
+dup_cost <- sum(duplicate_files$monthly_cost)
+dup_cost <- dollar(dup_cost)
+
+dup_cost_half <- (sum(duplicate_files$monthly_cost)) / 2
+dup_cost_half <- dollar(dup_cost_half)
+```
+
+```{r find paths with spaces, echo=FALSE}
+# count the number of pathnames that have a blank space
+pathname_spaces <- table_pathsize_tallyfiles %>%
+  filter(str_detect(path, " ")) %>%
+  select(path)
+
+# count number of empty folders
+spaced_pathname_count <- unique(pathname_spaces$path)
+spaced_pathname_count <- length(spaced_pathname_count)
+spaced_pathname_count <- format(spaced_pathname_count, big.mark = ",", scientific = FALSE) 
+```
+
+```{r determine character length of paths, echo=FALSE}
+# count the number of characters in each subfolder path, omitting "\"
+table_pathsize_tallyfiles$pathname_length <- stri_length(table_pathsize_tallyfiles$path) - stri_count_fixed(table_pathsize_tallyfiles$path, "\\")
+
+# count the number of Pathnames over 260 characters
+sfp_data_long_path <- table_pathsize_tallyfiles %>% 
+  filter(pathname_length >= 260) %>% 
+  select(path, pathname_length)
+
+long_path_count <- length(sfp_data_long_path$path)
+long_path_count <- format(long_path_count, big.mark = ",", scientific = FALSE)
+```
+
+```{r just the facts, echo = FALSE}
+glue('The size of the {params$share} share is {share_size} GB.')
+
+glue('There are {folder_count} folders in {params$share}.')
+
+glue('The maximum folder depth in {params$share} is {max_depth}.')
+
+glue('The average folder depth in {params$share} is {mean_depth}.')
+
+knitr::kable(table_folderdepth_tallyfolders, caption = params$share)
+
+glue('There are {spaced_pathname_count} pathnames that contain a blank space in {params$share}.')
+
+glue('There are {long_path_count} pathnames over 260 characters in {params$share}.')
+
+glue('The monthly cost of the {params$share} share is {share_cost}.')
+
+glue('If this data were held in Object Storage, the monthly cost would be {objstore_cost}. 
+The annual savings would be {annual_savings}!')
+
+glue('There are files saved in more than one location on the {params$share} share that total a monthly cost of {dup_cost}.') 
+
+glue('If the duplicates in {params$share} were found & removed, at least half this amount ({dup_cost_half}) could be saved!')
+```
+
+```{r dynamic output name, include = FALSE}
+# create output file name based on parameters
+output_file = paste0("SFP_Enhanced_Report_", params$share, "_", params$quarter, "_", params$fiscal, ".xlsx")
+```
+
+```{r write output to Excel file, include = FALSE}
+write_xlsx(list("Path Details" = table_pathsize_tallyfiles, "Folder File Type Tally" = table_foldersize_tallyfiles, "Share File Type Tally" = table_sharesize_tallyfiles, "Duplicate Files" = duplicate_files_formatted, "Paths with Spaces" = pathname_spaces, "Long Paths" = sfp_data_long_path), path = here("output", output_file))
+```
