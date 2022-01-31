@@ -30,6 +30,7 @@ import socket
 import sys
 import smtplib
 import time
+import matplotlib.ticker as mticker
 import matplotlib.pyplot as plt
 import numpy
 
@@ -146,7 +147,7 @@ def get_hdrive_data():
     for result in all_results:
         idir = result[0]
         # Filter out all IDIRs that don't start with C and P for quicker Dev iterations.
-        # if not (idir[0] == "C" or idir[0] == "P"):
+        # if not (idir[0] == "S"):
         #     continue
         gb = result[1]
         sample_datetime = result[2]
@@ -158,12 +159,12 @@ def get_hdrive_data():
                     # Connect to AD to get user info
                     ad_info = ldap_util.getADInfo(idir, conn)
                 except (Exception, AttributeError) as error:
-                    print(f"Unable to find {idir} due to error {error}")
-                    attribute_error_idirs.append(idir)
-                    continue
-                except (Exception) as error:
-                    print(f"Unable to find {idir} due to error {error}")
-                    other_error_idirs.append(idir)
+                    if AttributeError:
+                        print(f"Unable to find {idir} due to error {error}")
+                        attribute_error_idirs.append(idir)
+                    else:
+                        print(f"Unable to find {idir} due to error {error}")
+                        other_error_idirs.append(idir)
                     continue
 
                 if ad_info is None or ad_info["mail"] is None or ad_info["givenName"] is None:
@@ -180,8 +181,17 @@ def get_hdrive_data():
                         "ministry": ministry
                     }
             else:
-                # Add sample to existing user data
-                data[idir]["samples"].append(get_sample(gb, sample_datetime))
+                # Add sample to existing user data, handling edge case:
+                # Users who transfer ministry get two records in a single month, so flatten those.
+                duplicate_found = False
+                new_sample = get_sample(gb, sample_datetime)
+                for sample in data[idir]["samples"]:
+                    if sample["sample_datetime"] == new_sample["sample_datetime"]:
+                        sample['gb'] += new_sample['gb']
+                        sample['cost'] += new_sample['cost']
+                        duplicate_found = True
+                if not duplicate_found:
+                    data[idir]["samples"].append(new_sample)
 
     # Sort the samples
     for idir in data:
@@ -339,10 +349,15 @@ def get_graph_bytes(idir_info):
     plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
 
     # Format y axis labels as dollar values
-    ylabels = []
-    for ytick in g.get_yticks():
-        ylabels.append(f"${ytick:,.2f}")
-    g.set_yticklabels(ylabels)
+    # ylabels = []
+    # for ytick in g.get_yticks():
+    #     ylabels.append(f"${ytick:,.2f}")
+    # g.set_yticklabels(ylabels)
+
+    label_format = '{:,.2f}'
+    ticks_loc = g.get_yticks().tolist()
+    g.yaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
+    g.set_yticklabels([label_format.format(x) for x in ticks_loc])
 
     # Add various text components
     plt.title(f"{idir}'s H: Drive Cost by Month", fontsize=14)
@@ -366,6 +381,7 @@ def get_graph_bytes(idir_info):
     # Close and delete the file
     fp.close()
     os.remove(constants.GRAPH_FILE_PATH)
+    plt.close()
 
     return image_bytes
 
@@ -465,7 +481,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             html_personal_metrics = html_personal_metrics + f"""<span style="color:#2E8540;"><b>decreased</b></span> by <b>{difference:,.2g}GB</b> since {month_before_last_name},
             saving <b>${difference_cost:,.2f}</b> per month."""
 
-    number_names = ["", "two ", "three ", "four ", "five ", "six ", "seven "]
+    number_names = ["", "two ", "three ", "four ", "five ", "six ", "seven ", " eight"]
     month_count = number_names[len(samples)-1]
     month_plural = ""
     if month_before_last_sample is not None:
@@ -491,8 +507,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     html_kudos = f"""
     <br><br><b>Storage Saving Kudos:</b>
     <ul>
-        <li>Last month the largest H: Drive savings from a single user was <b>{biggest_drop:,.3g}GB</b> saving <b>${biggest_drop_cost:,.2f}</b> per month!</li>
-        <li>Last month five users saved a combined total of <b>${biggest_drops_cost:,.2f}</b> per month!</li>
+        <li>Last month the largest H: Drive savings from a single NRM user was <b>{biggest_drop:,.3g}GB</b> saving <b>${biggest_drop_cost:,.2f}</b> per month!</li>
+        <li>Last month five NRM users saved a combined total of <b>${biggest_drops_cost:,.2f}</b> per month!</li>
     </ul>
     """
 
