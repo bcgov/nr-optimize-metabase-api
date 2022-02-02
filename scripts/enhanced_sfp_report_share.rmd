@@ -41,11 +41,11 @@ library(here)
 library(htmltools)
 library(knitr)
 library(lubridate)
+library(openxlsx)
 library(scales)
 library(stringr)
 library(stringi)
 library(tidyverse)
-library(writexl)
 library(shiny)
 ```
 
@@ -260,5 +260,58 @@ output_file = paste0("SFP_Enhanced_Report_", params$share, "_", params$quarter, 
 ```
 
 ```{r write output to Excel file, include = FALSE}
-write_xlsx(list("Path Details" = table_pathsize_tallyfiles, "Folder File Type Tally" = table_foldersize_tallyfiles, "Share File Type Tally" = table_sharesize_tallyfiles, "Duplicate Files" = duplicate_files_formatted, "Paths with Spaces" = pathname_spaces, "Long Paths" = sfp_data_long_path), path = here("output", output_file))
+# create workbook
+excel <- createWorkbook(output_excel)
+
+# create sheet names
+firstSheet = "Path Details"
+secondSheet = "Folder File Type Tally"
+thirdSheet = "Share File Type Tally"
+fourthSheet = "Duplicate Files"
+fifthSheet = "Paths with Spaces"
+sixthSheet = "Long Paths"
+
+# add worksheets to workbook
+sheet.names <- function(.data) {
+addWorksheet(excel, .data)
+}
+sheet.names(firstSheet)
+sheet.names(secondSheet)
+sheet.names(thirdSheet)
+sheet.names(fourthSheet)
+sheet.names(fifthSheet)
+sheet.names(sixthSheet)
+
+# assign data tables to worksheets, apply filter across all sheets
+dt.worksheets <- function(x, .data) {
+writeDataTable(excel, sheet = x, .data, colNames = TRUE, withFilter = TRUE)
+}
+dt.worksheets(1,table_pathsize_tallyfiles) 
+dt.worksheets(2,table_foldersize_tallyfiles) 
+dt.worksheets(3,table_sharesize_tallyfiles) 
+dt.worksheets(4,duplicate_files_formatted) 
+dt.worksheets(5,pathname_spaces) 
+dt.worksheets(6,sfp_data_long_path)
+
+# freeze top row of all sheets
+freeze.panes <- function(x) {
+freezePane(excel, x, firstRow = TRUE)
+}
+freeze.panes(1)
+freeze.panes(2)
+freeze.panes(3)
+freeze.panes(4)
+freeze.panes(5)
+freeze.panes(6)
+
+# set custom column widths for all sheets
+setColWidths(excel, sheet = 1, cols = c(1:8), widths = c(75, 20, 20, 20, 20, 20, 20, 20))
+setColWidths(excel, sheet = 2, cols = c(1:6), widths = c(75, 20, 20, 20, 20, 20))
+setColWidths(excel, sheet = 3, cols = c(1:4), widths = 20)
+setColWidths(excel, sheet = 4, cols = c(1, 2, 3, 4:8), widths = c(50, 20, 75, 20, 20, 20, 20, 20))
+setColWidths(excel, sheet = 5, cols = 1, widths = 75)
+setColWidths(excel, sheet = 6, cols = c(1, 2), widths = c(75, 20))
+
+# save the workbook to file
+saveWorkbook(excel, file = here("output", output_excel), overwrite = TRUE)
 ```
