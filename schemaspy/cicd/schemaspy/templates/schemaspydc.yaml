@@ -1,0 +1,99 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: schemaspy
+  annotations:
+    app: schemaspy
+spec:
+  strategy:
+    type: Rolling
+    rollingParams:
+      updatePeriodSeconds: 1
+      intervalSeconds: 1
+      timeoutSeconds: 600
+      maxUnavailable: 25%
+      maxSurge: 25%
+    resources: {}
+    activeDeadlineSeconds: 21600
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - schemaspy
+        from:
+          kind: ImageStreamTag
+          namespace: 15be76-tools
+          name: 'schema-spy:latest'
+        lastTriggeredImage: >-
+          image-registry.openshift-image-registry.svc:5000/15be76-tools/schema-spy@sha256:51a5fa493620596a9322a6790a84fdd92733d11ad476a8980ecf65aee34b0c4d
+  replicas: 1
+  revisionHistoryLimit: 10
+  test: false
+  selector:
+    name: schemaspy
+  template:
+    metadata:
+      name: schemaspy
+      creationTimestamp: null
+      labels:
+        name: schemaspy
+    spec:
+      containers:
+        - resources:
+            limits:
+              cpu: '1'
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 300
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          name: schemaspy
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 300
+            timeoutSeconds: 300
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: DATABASE_HOST
+              value: postgresql
+            - name: DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: database-name
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: database-user
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: database-password
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          terminationMessagePolicy: File
+          image: >-
+            image-registry.openshift-image-registry.svc:5000/15be76-tools/schema-spy@sha256:51a5fa493620596a9322a6790a84fdd92733d11ad476a8980ecf65aee34b0c4d
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
