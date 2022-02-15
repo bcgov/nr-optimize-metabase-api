@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
+  repository: image-registry.openshift-image-registry.svc:5000/15be76-tools/schema-spy
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "schema-spy:latest"
 
 imagePullSecrets: []
 nameOverride: ""
