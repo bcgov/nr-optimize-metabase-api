@@ -1,0 +1,14 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: schemaspy
+spec:
+  host: schemaspy-15be76-dev.apps.silver.devops.gov.bc.ca
+  to:
+    kind: Service
+    name: schemaspy
+    weight: 100
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

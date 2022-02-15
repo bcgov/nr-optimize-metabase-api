@@ -1,0 +1,19 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: schemaspy
+  annotations:
+    description: Exposes and load balances the application pods
+spec:
+  ports:
+    - name: 8080-tcp
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    name: schemaspy
+  type: ClusterIP
+  sessionAffinity: None
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
