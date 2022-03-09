@@ -11,7 +11,7 @@ spec:
       updatePeriodSeconds: 1
       intervalSeconds: 1
       timeoutSeconds: 600
-      maxUnavailable: 25%
+      maxUnavailable: 0%
       maxSurge: 25%
     resources: {}
     activeDeadlineSeconds: 21600
@@ -28,7 +28,7 @@ spec:
           name: 'schema-spy:latest'
         lastTriggeredImage: >-
           image-registry.openshift-image-registry.svc:5000/15be76-tools/schema-spy@sha256:51a5fa493620596a9322a6790a84fdd92733d11ad476a8980ecf65aee34b0c4d
-  replicas: 1
+  replicas: 2
   revisionHistoryLimit: 10
   test: false
   selector:
@@ -47,7 +47,7 @@ spec:
               memory: 1Gi
           readinessProbe:
             httpGet:
-              path: /
+              path: /index.html
               port: 8080
               scheme: HTTP
             initialDelaySeconds: 60
@@ -59,7 +59,7 @@ spec:
           name: schemaspy
           livenessProbe:
             httpGet:
-              path: /
+              path: /index.html
               port: 8080
               scheme: HTTP
             initialDelaySeconds: 300

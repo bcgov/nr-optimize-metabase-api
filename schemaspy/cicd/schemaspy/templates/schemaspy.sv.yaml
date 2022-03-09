@@ -12,6 +12,7 @@ spec:
       targetPort: 8080
   selector:
     name: schemaspy
+    deploymentconfig: schemaspy
   type: ClusterIP
   sessionAffinity: None
   ipFamilies:
