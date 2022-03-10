@@ -612,7 +612,6 @@ def refine_sendlist():
                 email_send_list.append(recipient.lower())
         return email_send_list, idir_send_list
 
-
     else:
         # sendlist is empty
         return [], []
