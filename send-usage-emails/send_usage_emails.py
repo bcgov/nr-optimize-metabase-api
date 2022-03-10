@@ -30,8 +30,8 @@ import socket
 import sys
 import smtplib
 import time
+import matplotlib.ticker as mticker
 import matplotlib.pyplot as plt
-import numpy
 
 from datetime import datetime
 from email.mime.image import MIMEImage
@@ -146,7 +146,7 @@ def get_hdrive_data():
     for result in all_results:
         idir = result[0]
         # Filter out all IDIRs that don't start with C and P for quicker Dev iterations.
-        # if not (idir[0] == "C" or idir[0] == "P"):
+        # if not (idir[0] == "S"):
         #     continue
         gb = result[1]
         sample_datetime = result[2]
@@ -158,12 +158,12 @@ def get_hdrive_data():
                     # Connect to AD to get user info
                     ad_info = ldap_util.getADInfo(idir, conn)
                 except (Exception, AttributeError) as error:
-                    print(f"Unable to find {idir} due to error {error}")
-                    attribute_error_idirs.append(idir)
-                    continue
-                except (Exception) as error:
-                    print(f"Unable to find {idir} due to error {error}")
-                    other_error_idirs.append(idir)
+                    if AttributeError:
+                        print(f"Unable to find {idir} due to error {error}")
+                        attribute_error_idirs.append(idir)
+                    else:
+                        print(f"Unable to find {idir} due to error {error}")
+                        other_error_idirs.append(idir)
                     continue
 
                 if ad_info is None or ad_info["mail"] is None or ad_info["givenName"] is None:
@@ -180,8 +180,17 @@ def get_hdrive_data():
                         "ministry": ministry
                     }
             else:
-                # Add sample to existing user data
-                data[idir]["samples"].append(get_sample(gb, sample_datetime))
+                # Add sample to existing user data, handling edge case:
+                # Users who transfer ministry get two records in a single month, so flatten those.
+                duplicate_found = False
+                new_sample = get_sample(gb, sample_datetime)
+                for sample in data[idir]["samples"]:
+                    if sample["sample_datetime"] == new_sample["sample_datetime"]:
+                        sample['gb'] += new_sample['gb']
+                        sample['cost'] += new_sample['cost']
+                        duplicate_found = True
+                if not duplicate_found:
+                    data[idir]["samples"].append(new_sample)
 
     # Sort the samples
     for idir in data:
@@ -339,10 +348,15 @@ def get_graph_bytes(idir_info):
     plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
 
     # Format y axis labels as dollar values
-    ylabels = []
-    for ytick in g.get_yticks():
-        ylabels.append(f"${ytick:,.2f}")
-    g.set_yticklabels(ylabels)
+    # ylabels = []
+    # for ytick in g.get_yticks():
+    #     ylabels.append(f"${ytick:,.2f}")
+    # g.set_yticklabels(ylabels)
+
+    label_format = '{:,.2f}'
+    ticks_loc = g.get_yticks().tolist()
+    g.yaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
+    g.set_yticklabels([label_format.format(x) for x in ticks_loc])
 
     # Add various text components
     plt.title(f"{idir}'s H: Drive Cost by Month", fontsize=14)
@@ -366,6 +380,7 @@ def get_graph_bytes(idir_info):
     # Close and delete the file
     fp.close()
     os.remove(constants.GRAPH_FILE_PATH)
+    plt.close()
 
     return image_bytes
 
@@ -465,7 +480,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             html_personal_metrics = html_personal_metrics + f"""<span style="color:#2E8540;"><b>decreased</b></span> by <b>{difference:,.2g}GB</b> since {month_before_last_name},
             saving <b>${difference_cost:,.2f}</b> per month."""
 
-    number_names = ["", "two ", "three ", "four ", "five ", "six ", "seven "]
+    number_names = ["", "two ", "three ", "four ", "five ", "six ", "seven ", " eight"]
     month_count = number_names[len(samples)-1]
     month_plural = ""
     if month_before_last_sample is not None:
@@ -491,8 +506,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     html_kudos = f"""
     <br><br><b>Storage Saving Kudos:</b>
     <ul>
-        <li>Last month the largest H: Drive savings from a single user was <b>{biggest_drop:,.3g}GB</b> saving <b>${biggest_drop_cost:,.2f}</b> per month!</li>
-        <li>Last month five users saved a combined total of <b>${biggest_drops_cost:,.2f}</b> per month!</li>
+        <li>Last month the largest H: Drive savings from a single NRM user was <b>{biggest_drop:,.3g}GB</b> saving <b>${biggest_drop_cost:,.2f}</b> per month!</li>
+        <li>Last month five NRM users saved a combined total of <b>${biggest_drops_cost:,.2f}</b> per month!</li>
     </ul>
     """
 
@@ -576,44 +591,36 @@ def test_email(recipient, subject):
     s.quit()
 
 
-# Convert MS Outlook email format to comma seperated addresses
-def convert_email_addresses(long_format_addresses):
-    # pattern matches all email addresses between < > with letters, numbers, and the following characters: .-_@
-    pattern = re.compile(r'(?<=\<)[a-zA-Z\.\-\_\@\0-9]*(?=\>)')
-    short_format_addresses = pattern.findall(long_format_addresses)
-    return ",".join(numpy.array(short_format_addresses))
-
-
 # Handle address formatting, ensure uniqueness, and filter out addresses using omitlist
 def refine_sendlist():
-    # Handle email address format
-    if constants.EMAIL_SENDLIST.endswith(">"):
-        constants.EMAIL_SENDLIST = convert_email_addresses(constants.EMAIL_SENDLIST)
-    if constants.EMAIL_OMITLIST.endswith(">"):
-        constants.EMAIL_OMITLIST = convert_email_addresses(constants.EMAIL_OMITLIST)
 
-    temp_dict = {}
+    # pattern matches all email addresses between < > with letters, numbers, and the following characters: .-_@
+    pattern = re.compile(r'(?<=\<)[a-zA-Z\.\-\_\@\0-9]*(?=\>)')
+
+    email_send_list = []
+    idir_send_list = []
     if constants.EMAIL_SENDLIST:
-        # Add all emails to dictionary as key (unique set)
-        for email in constants.EMAIL_SENDLIST.split(","):
-            temp_dict[email.lower()] = True
-        # Remove omit emails from unique set if it exists
-        if constants.EMAIL_OMITLIST:
-            for email in constants.EMAIL_OMITLIST.split(","):
-                if email.lower() in temp_dict:
-                    del temp_dict[email.lower()]
+        for recipient in constants.EMAIL_SENDLIST.split(";"):
+            if recipient.endswith(">"):
+                # Convert from MS Outlook email format
+                recipient = pattern.findall(recipient)[0]
+                email_send_list.append(recipient.lower())
+            elif recipient.find("@") == -1:
+                # Entry isn't an email address, assume IDIR
+                idir_send_list.append(recipient.lower())
+            else:
+                email_send_list.append(recipient.lower())
+        return email_send_list, idir_send_list
 
-    # Rebuild the sendlist
-    constants.EMAIL_SENDLIST = []
-    for email in temp_dict:
-        constants.EMAIL_SENDLIST.append(email)
+
+    else:
+        # sendlist is empty
+        return [], []
 
 
 def main(argv):
     emails_sent_to = []
     try:
-        # Handle address formatting, ensure uniqueness, and filter out addresses using omitlist
-        refine_sendlist()
 
         # Query db for h drive data dictionary by idir
         data = get_hdrive_data()
@@ -658,22 +665,36 @@ def main(argv):
         # Calculate the sum of the 5 biggest drops
         biggest_drops = sum(biggest_drops_list)
 
-        sendlist = []
-        if constants.EMAIL_SENDLIST:
-            sendlist = constants.EMAIL_SENDLIST
+        # Split input idirs and email addresses, and handle address formatting
+        email_send_list, idir_send_list = refine_sendlist()
 
+        # Filter out non-emails, and if sendlist then also users not on the sendlist
+        filtered_data = {}
         for idir in data:
             idir_info = data[idir]
-            if idir_info["mail"] is not None:
-                if len(sendlist) and idir_info["mail"].lower() in sendlist:
-                    ministry_acronym = idir_info["ministry"]
-                    h_drive_count = nrm_metrics[ministry_acronym]["h_drive_count"]
-                    ministry_gb = nrm_metrics[ministry_acronym]["gb"]
-                    ministry_name = long_ministry_names[ministry_acronym]
-                    send_idir_email(data[idir], h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
+            email = idir_info["mail"]
+            if email is not None:
+                if constants.EMAIL_SENDLIST:
+                    if idir.lower() in idir_send_list or email.lower() in email_send_list:
+                        filtered_data[idir] = idir_info
+                else:
+                    filtered_data[idir] = idir_info
+        data = filtered_data
 
-                    # Track successful send
-                    emails_sent_to.append(idir_info["mail"])
+        # Send email for each user
+        omit_list = constants.EMAIL_OMITLIST.split(",")
+        for idir in data:
+            idir_info = data[idir]
+            email = idir_info["mail"]
+            if email.lower() not in omit_list:
+                ministry_acronym = idir_info["ministry"]
+                h_drive_count = nrm_metrics[ministry_acronym]["h_drive_count"]
+                ministry_gb = nrm_metrics[ministry_acronym]["gb"]
+                ministry_name = long_ministry_names[ministry_acronym]
+                send_idir_email(idir_info, h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
+
+                # Track successful send
+                emails_sent_to.append(idir_info["mail"])
 
     except (Exception, psycopg2.DatabaseError) as error:
         LOGGER.info(error)
