@@ -32,7 +32,6 @@ import smtplib
 import time
 import matplotlib.ticker as mticker
 import matplotlib.pyplot as plt
-import numpy
 
 from datetime import datetime
 from email.mime.image import MIMEImage
@@ -592,44 +591,35 @@ def test_email(recipient, subject):
     s.quit()
 
 
-# Convert MS Outlook email format to comma seperated addresses
-def convert_email_addresses(long_format_addresses):
-    # pattern matches all email addresses between < > with letters, numbers, and the following characters: .-_@
-    pattern = re.compile(r'(?<=\<)[a-zA-Z\.\-\_\@\0-9]*(?=\>)')
-    short_format_addresses = pattern.findall(long_format_addresses)
-    return ",".join(numpy.array(short_format_addresses))
-
-
 # Handle address formatting, ensure uniqueness, and filter out addresses using omitlist
 def refine_sendlist():
-    # Handle email address format
-    if constants.EMAIL_SENDLIST.endswith(">"):
-        constants.EMAIL_SENDLIST = convert_email_addresses(constants.EMAIL_SENDLIST)
-    if constants.EMAIL_OMITLIST.endswith(">"):
-        constants.EMAIL_OMITLIST = convert_email_addresses(constants.EMAIL_OMITLIST)
 
-    temp_dict = {}
+    # pattern matches all email addresses between < > with letters, numbers, and the following characters: .-_@
+    pattern = re.compile(r'(?<=\<)[a-zA-Z\.\-\_\@\0-9]*(?=\>)')
+
+    email_send_list = []
+    idir_send_list = []
     if constants.EMAIL_SENDLIST:
-        # Add all emails to dictionary as key (unique set)
-        for email in constants.EMAIL_SENDLIST.split(","):
-            temp_dict[email.lower()] = True
-        # Remove omit emails from unique set if it exists
-        if constants.EMAIL_OMITLIST:
-            for email in constants.EMAIL_OMITLIST.split(","):
-                if email.lower() in temp_dict:
-                    del temp_dict[email.lower()]
+        for recipient in constants.EMAIL_SENDLIST.split(";"):
+            if recipient.endswith(">"):
+                # Convert from MS Outlook email format
+                recipient = pattern.findall(recipient)[0]
+                email_send_list.append(recipient.lower())
+            elif recipient.find("@") == -1:
+                # Entry isn't an email address, assume IDIR
+                idir_send_list.append(recipient.lower())
+            else:
+                email_send_list.append(recipient.lower())
+        return email_send_list, idir_send_list
 
-    # Rebuild the sendlist
-    constants.EMAIL_SENDLIST = []
-    for email in temp_dict:
-        constants.EMAIL_SENDLIST.append(email)
+    else:
+        # sendlist is empty
+        return [], []
 
 
 def main(argv):
     emails_sent_to = []
     try:
-        # Handle address formatting, ensure uniqueness, and filter out addresses using omitlist
-        refine_sendlist()
 
         # Query db for h drive data dictionary by idir
         data = get_hdrive_data()
@@ -674,22 +664,36 @@ def main(argv):
         # Calculate the sum of the 5 biggest drops
         biggest_drops = sum(biggest_drops_list)
 
-        sendlist = []
-        if constants.EMAIL_SENDLIST:
-            sendlist = constants.EMAIL_SENDLIST
+        # Split input idirs and email addresses, and handle address formatting
+        email_send_list, idir_send_list = refine_sendlist()
 
+        # Filter out non-emails, and if sendlist then also users not on the sendlist
+        filtered_data = {}
         for idir in data:
             idir_info = data[idir]
-            if idir_info["mail"] is not None:
-                if len(sendlist) and idir_info["mail"].lower() in sendlist:
-                    ministry_acronym = idir_info["ministry"]
-                    h_drive_count = nrm_metrics[ministry_acronym]["h_drive_count"]
-                    ministry_gb = nrm_metrics[ministry_acronym]["gb"]
-                    ministry_name = long_ministry_names[ministry_acronym]
-                    send_idir_email(data[idir], h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
+            email = idir_info["mail"]
+            if email is not None:
+                if constants.EMAIL_SENDLIST:
+                    if idir.lower() in idir_send_list or email.lower() in email_send_list:
+                        filtered_data[idir] = idir_info
+                else:
+                    filtered_data[idir] = idir_info
+        data = filtered_data
 
-                    # Track successful send
-                    emails_sent_to.append(idir_info["mail"])
+        # Send email for each user
+        omit_list = constants.EMAIL_OMITLIST.split(",")
+        for idir in data:
+            idir_info = data[idir]
+            email = idir_info["mail"]
+            if email.lower() not in omit_list:
+                ministry_acronym = idir_info["ministry"]
+                h_drive_count = nrm_metrics[ministry_acronym]["h_drive_count"]
+                ministry_gb = nrm_metrics[ministry_acronym]["gb"]
+                ministry_name = long_ministry_names[ministry_acronym]
+                send_idir_email(idir_info, h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
+
+                # Track successful send
+                emails_sent_to.append(idir_info["mail"])
 
     except (Exception, psycopg2.DatabaseError) as error:
         LOGGER.info(error)
