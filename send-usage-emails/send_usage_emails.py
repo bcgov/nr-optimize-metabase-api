@@ -464,28 +464,39 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         """
 
     # Inform user of personal metrics
-    html_personal_metrics = f"""<b>What are my personal metrics?</b><br>
-    Last month your H: Drive usage was {last_month_gb:,}GB, costing ${last_month_cost:,.2f}. This has """
-    if month_before_last_sample is not None:
+    html_personal_metrics = "<b>What are my personal metrics?</b><br><ul>"
+
+    if month_before_last_sample is None:
+        # Only one month of data
+        html_personal_metrics += f"<li>In {last_month_name} your H: Drive data usage billed to your ministry was {last_month_gb:,}GB, costing ${last_month_cost:,.2f}.</li>"
+    else:
         difference = round(last_month_gb-month_before_last_gb, 2)
         difference_cost = round((last_month_cost-month_before_last_cost), 2)
         if difference == 0:
-            html_personal_metrics = html_personal_metrics + f"""not changed since {month_before_last_name}."""
-        elif difference > 0:
-            html_personal_metrics = html_personal_metrics + f"""<span style="color:#D8292F;"><b>increased</b></span> by <b>{difference:,.3g}GB</b> since {month_before_last_name},
-            costing an additional <b>${difference_cost:,.2f}</b> per month."""
-        elif difference < 0:
-            difference = abs(difference)
-            difference_cost = abs(difference_cost)
-            html_personal_metrics = html_personal_metrics + f"""<span style="color:#2E8540;"><b>decreased</b></span> by <b>{difference:,.2g}GB</b> since {month_before_last_name},
-            saving <b>${difference_cost:,.2f}</b> per month."""
+            html_personal_metrics += f"""<li>In {month_before_last_name} and {last_month_name} your H: Drive data usage billed to your ministry was {last_month_gb:,}GB,
+             costing ${last_month_cost:,.2f}.</li>"""
+        else:
+            html_personal_metrics += f"""<li>In {month_before_last_name} your H: Drive data usage billed to your ministry was {month_before_last_gb:,}GB,
+             costing ${month_before_last_cost:,.2f}.</li>"""
+            html_personal_metrics += f"""<li>In {last_month_name} your H: Drive data usage billed to your ministry was {last_month_gb:,}GB,
+             costing ${last_month_cost:,.2f}.</li>"""
+            abs_difference = abs(difference)
+            abs_difference_cost = abs(difference_cost)
+            if difference > 0:
+                # Cost went up
+                html_personal_metrics += f"""<li>Between {month_before_last_name} and {last_month_name} your consumption
+                <span style="color:#D8292F;"><b>increased</b></span> by <b>{abs_difference:,.3g}GB</b>, costing an additional <b>${abs_difference_cost:,.2f}</b> per month.</li>"""
+            else:
+                # Cost went down
+                html_personal_metrics += f"""<li>Between {month_before_last_name} and {last_month_name} your consumption
+                <span style="color:#2E8540;"><b>decreased</b></span> by <b>{abs_difference:,.3g}GB</b>, saving <b>${abs_difference_cost:,.2f}</b> per month.</li>"""
 
     number_names = ["", "two ", "three ", "four ", "five ", "six ", "seven ", " eight"]
     month_count = number_names[len(samples)-1]
     month_plural = ""
     if month_before_last_sample is not None:
         month_plural = "s"
-    html_img = f"<br>Below, you will find a graph highlighting your H: Drive cost for the past {month_count}month{month_plural}:"
+    html_img = f"</ul>Below, you will find a graph highlighting your H: Drive cost for the past {month_count}month{month_plural}:<br>"
     html_img = html_img + """<br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">"""
 
     # Provide solutions to the user to help with H: Drive faqs/issues
@@ -514,8 +525,6 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     # Email sign-off
     html_footer = """
     This email is transitory and can be deleted when no longer needed. Thank you for taking the time to manage your digital storage!<br>
-    <br>
-    Questions? Comments? Ideas? Connect with the Optimization Team at <a href="mailto:IITD.Optimize@gov.bc.ca">IITD.Optimize@gov.bc.ca</a>.<br>
     <br>
     </p>
     <p style="font-size: 10px">H: Drive usage information is captured mid-month from the Office of the Chief Information Officer (OCIO).
@@ -558,19 +567,18 @@ def get_fake_idir_info():
     idir_info = {
         'idir': 'PPLATTEN',
         'mail': 'Peter.Platten@gov.bc.ca',
-        'name': 'Peter',
+        'name': 'NRM Staff Member',
         'ministry': 'ENV',
         'samples': [
-            get_sample(0.0, datetime(2021, 6, 1, 0, 0)),
-            get_sample(0, datetime(2021, 7, 1, 0, 0)),
-            get_sample(0, datetime(2021, 8, 1, 0, 0)),
-            get_sample(0, datetime(2021, 9, 1, 0, 0)),
-            get_sample(0, datetime(2021, 10, 1, 0, 0)),
-            get_sample(0, datetime(2021, 11, 1, 0, 0))
+            get_sample(0.74, datetime(2021, 6, 1, 0, 0)),
+            get_sample(1.11, datetime(2021, 7, 1, 0, 0)),
+            get_sample(1.75, datetime(2021, 8, 1, 0, 0)),
+            get_sample(1.25, datetime(2021, 9, 1, 0, 0)),
+            get_sample(0.7, datetime(2021, 10, 1, 0, 0))
         ]
     }
 
-    return idir_info
+    return {'PPLATTEN': idir_info}
 
 
 # A quickly edited email template to test while developing without needing to gather data
@@ -679,6 +687,8 @@ def main(argv):
                 else:
                     filtered_data[idir] = idir_info
         data = filtered_data
+
+        # data = get_fake_idir_info()
 
         # Send email for each user
         omit_list = constants.EMAIL_OMITLIST.split(",")
