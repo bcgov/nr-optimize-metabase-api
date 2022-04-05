@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [  
         {
+            "name": "Python: h-drive-tree-size",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/h-drive-tree-size/h-drive-tree-size.py",
+            "args": [],
+            "console": "integratedTerminal"
+        },       
+        {
             "name": "Python: access_ldap",
             "type": "python",
             "request": "launch",
