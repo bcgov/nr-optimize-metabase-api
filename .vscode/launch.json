@@ -55,6 +55,15 @@
                 "-e", "C:/TEMP/data/excluded_idirs.csv"
             ],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: metabase_api_test.py",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts\\metabase_api_test.py",
+            "args": [
+            ],
+            "console": "integratedTerminal"
         }
     ]
 }
