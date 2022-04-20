@@ -68,6 +68,7 @@ def main(argv):
             "mem",
             "abr",
             "fpro",
+            "bcws",
         ]
         for findname in ministries:
             if name.lower().find(findname) != -1:
