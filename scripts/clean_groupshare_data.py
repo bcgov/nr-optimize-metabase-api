@@ -57,7 +57,7 @@ def main(argv):
     for name in excel_names:
 
         # find the ministry based on the filename
-        ministries = ["agri", "aff", "empr", "mem", "emli", "env", "abr", "irr", "flnr", "fpro"]
+        ministries = ["agri", "aff", "empr", "mem", "emli", "env", "abr", "irr", "flnr", "fpro", "bcws"]
         for findname in ministries:
             if name.lower().find(findname) != -1:
                 ministryname = findname.upper()
