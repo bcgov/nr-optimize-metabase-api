@@ -20,6 +20,7 @@
 
 import calendar
 import constants
+import multiprocessing as mp
 import ldap_helper as ldap
 import math
 import os
@@ -151,6 +152,8 @@ def get_hdrive_data():
         gb = result[1]
         sample_datetime = result[2]
         ministry = result[3]
+        if ministry == "FPRO" or ministry == "BCWS":
+            ministry = "FLNR"
         if idir not in attribute_error_idirs and idir not in other_error_idirs:
             if idir not in data:
                 # User is not in the "data" dictionary yet, create user entry while adding first sample.
@@ -373,16 +376,10 @@ def get_graph_bytes(idir_info):
 
     # Save the plot to file
     plt.savefig(constants.GRAPH_FILE_PATH)
-    # open image and read as binary data
-    fp = open(constants.GRAPH_FILE_PATH, "rb")
-    image_bytes = fp.read()
 
-    # Close and delete the file
-    fp.close()
-    os.remove(constants.GRAPH_FILE_PATH)
     plt.close()
 
-    return image_bytes
+    return
 
 
 # Get bytes from an image file
@@ -485,7 +482,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             if difference > 0:
                 # Cost went up
                 html_personal_metrics += f"""<li>Between {month_before_last_name} and {last_month_name} your consumption
-                <span style="color:#D8292F;"><b>increased</b></span> by <b>{abs_difference:,.3g}GB</b>, costing an additional <b>${abs_difference_cost:,.2f}</b> per month.</li>"""
+                <span style="color:#D8292F;"><b>increased</b></span> by <b>{abs_difference:,.3g}GB</b>,
+                costing an additional <b>${abs_difference_cost:,.2f}</b> per month.</li>"""
             else:
                 # Cost went down
                 html_personal_metrics += f"""<li>Between {month_before_last_name} and {last_month_name} your consumption
@@ -539,7 +537,17 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     msg.attach(MIMEText(html, "html"))
 
     # Get and attach images to email
-    msgImage = MIMEImage(get_graph_bytes(idir_info))
+    proc = mp.Process(target=get_graph_bytes, args=(idir_info,))
+    proc.daemon = True
+    proc.start()
+    proc.join()
+    # open image and read as binary data, then close and delete the file
+    fp = open(constants.GRAPH_FILE_PATH, "rb")
+    image_bytes = fp.read()
+    fp.close()
+    os.remove(constants.GRAPH_FILE_PATH)
+
+    msgImage = MIMEImage(image_bytes)
     msgImage.add_header("Content-ID", "<image1>")
     msg.attach(msgImage)
 
@@ -556,7 +564,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     s.quit()
 
     # Following smtp server guidelines of max 30 emails/minute
-    time.sleep(2)
+    # time.sleep(2)
 
     # log send complete
     LOGGER.info(f"Email sent to {recipient}.")
@@ -607,7 +615,7 @@ def refine_sendlist():
 
     email_send_list = []
     idir_send_list = []
-    if constants.EMAIL_SENDLIST:
+    if constants.EMAIL_SENDLIST and constants.EMAIL_SENDLIST != "None":
         for recipient in constants.EMAIL_SENDLIST.split(";"):
             if recipient.endswith(">"):
                 # Convert from MS Outlook email format
@@ -645,7 +653,7 @@ def main(argv):
             "EMLI": "Energy, Mines and Low Carbon Innovation",
             "ENV": "Environment",
             "FLNR": "Forests, Lands, Natural Resource Operations & Rural Development",
-            "FPRO": "Forest Protection Branch",
+            "LWRS": "Land, Water and Resource Stewardship",
             "IRR": "Indigenous Relations & Reconciliation"
         }
 
@@ -681,7 +689,7 @@ def main(argv):
             idir_info = data[idir]
             email = idir_info["mail"]
             if email is not None:
-                if constants.EMAIL_SENDLIST:
+                if constants.EMAIL_SENDLIST and constants.EMAIL_SENDLIST != "None":
                     if idir.lower() in idir_send_list or email.lower() in email_send_list:
                         filtered_data[idir] = idir_info
                 else:
@@ -699,11 +707,14 @@ def main(argv):
                 ministry_acronym = idir_info["ministry"]
                 h_drive_count = nrm_metrics[ministry_acronym]["h_drive_count"]
                 ministry_gb = nrm_metrics[ministry_acronym]["gb"]
-                ministry_name = long_ministry_names[ministry_acronym]
-                send_idir_email(idir_info, h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
+                if ministry_acronym not in long_ministry_names:
+                    send_admin_email(f"New Ministry for user {idir} named {ministry_acronym}")
+                else:
+                    ministry_name = long_ministry_names[ministry_acronym]
+                    send_idir_email(idir_info, h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
 
-                # Track successful send
-                emails_sent_to.append(idir_info["mail"])
+                    # Track successful send
+                    emails_sent_to.append(idir_info["mail"])
 
     except (Exception, psycopg2.DatabaseError) as error:
         LOGGER.info(error)
