@@ -110,7 +110,7 @@ def get_hdrive_data():
             CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now()
             AS timestamp) + (INTERVAL '-1 month')) AS timestamp)) AND
             date_trunc('month', CAST(now() AS timestamp)) AND idir <> 'Soft
-            deleted Home Drives' and idir like 'P%'))
+            deleted Home Drives'))
           ORDER BY idir ASC;
         """
         cur.execute(sql_expression)
@@ -559,10 +559,9 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     msg.add_header("X-Auto-Response-Suppress", "OOF, DR, RN, NRN")
 
     # Send email to recipient
-    if recipient.lower() == "peter.platten@gov.bc.ca":
-        s = smtplib.SMTP(constants.SMTP_SERVER)
-        s.sendmail(msg["From"], recipient, msg.as_string())
-        s.quit()
+    s = smtplib.SMTP(constants.SMTP_SERVER)
+    s.sendmail(msg["From"], recipient, msg.as_string())
+    s.quit()
 
     # Following smtp server guidelines of max 30 emails/minute
     # time.sleep(2)
