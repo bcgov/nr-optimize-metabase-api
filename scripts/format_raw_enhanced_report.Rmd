@@ -1,0 +1,59 @@
+---
+author: "Copyright: Optimization Team 2022"
+date: "Compiled on `r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  html_document:
+title: "Format the Shared File Enhanced Report for `r params$ministry`" 
+params:
+  ministry: "AFF"
+  date: "2022-01-01"
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
+library(glue)
+library(dbplyr)
+library(dplyr)
+library(forcats)
+library(here)
+library(knitr)
+library(tidyverse)
+library(shiny)
+```
+
+```{r set system environment, include = FALSE}
+# This chunk is helpful if you're using an IDE like VS Code
+# You can find the correct directory by typing Sys.getenv("RSTUDIO_PANDOC")
+Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
+```
+
+```{r load data, include = FALSE}
+# load the csv files containing relevant SFP folder data
+here::here()
+raw_data <- fread(here("source", glue("{params$ministry}-S Size File-Level Report.csv"))) %>% 
+  rename(
+    filename = "File Name",
+    path = "Path",
+    sizemb ="Size MB",
+    lastaccessdate = "Last Access Date",
+    lastmodifieddate = "Modification Date",
+    share = "Share",
+    owner = "Owner",
+    ) %>% 
+  mutate(ministry = params$ministry) %>% 
+  mutate(date = params$date) %>% 
+  mutate(sizemb = as.numeric(gsub(",", "", sizemb)))
+
+raw_data$Container <- NULL
+```
+
+```{r dynamic output name, include = FALSE}
+# create output file name based on parameters
+output_csv = paste0(params$date, "_", params$ministry, "_Enhanced_Data.csv")
+```
+
+```{r write to csv, include = FALSE}
+fwrite(raw_data,here("source", output_csv), row.names = FALSE)
+```
