@@ -28,8 +28,9 @@ You need to install these programs from the Software Center. First install R, th
 * **RStudioDesktop 1.2.5019 Gen P0**  
 
 >
-Alternatively, you can install the latest versions from Chocolately running CMD as admin.  
-* *choco install choco install r -y*  
+Alternatively, you can install the latest versions from Chocolately running CMD as admin. (This is what I prefer)
+>
+* *choco install r -y*  
 * *choco install r.studio -y*  
 
 >
@@ -84,13 +85,13 @@ You can find the correct directory by typing *Sys.getenv("RSTUDIO_PANDOC")* into
 
 ### Reference Material
 >
-[R For Data Science](https://r4ds.had.co.nz/)
+>[R For Data Science](https://r4ds.had.co.nz/)
 >
-[Using Projects](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects)
+>[Using Projects](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects)
 >
-[CRAN Packages](https://cran.r-project.org/web/packages/available_packages_by_name.html)
+>[CRAN Packages](https://cran.r-project.org/web/packages/available_packages_by_name.html)
 >
-[R Markdown: The Definitive Guide](https://bookdown.org/yihui/rmarkdown/)
+>[R Markdown: The Definitive Guide](https://bookdown.org/yihui/rmarkdown/)
 >
-[R Markdown Cookbook](https://bookdown.org/yihui/rmarkdown-cookbook/)
->
+>[R Markdown Cookbook](https://bookdown.org/yihui/rmarkdown-cookbook/)
+
