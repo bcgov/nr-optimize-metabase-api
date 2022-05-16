@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [  
         {
-            "name": "Python: access_ldap",
+            "name": "Python: ldap_helper",
             "type": "python",
             "request": "launch",
-            "program": "send-usage-emails\\access_ldap.py",
+            "program": "send-usage-emails\\ldap_helper.py",
             "args": [],
             "console": "integratedTerminal"
         },       
@@ -48,12 +48,7 @@
             "type": "python",
             "request": "launch",
             "program": "send-usage-emails\\send_usage_emails.py",
-            "args": [
-                "-i", "C:/TEMP/data/inputcsvs",
-                "-r", "2021-05_H_Drive_NRM_Usage.csv",
-                "-f", "C:/TEMP/data/output",
-                "-e", "C:/TEMP/data/excluded_idirs.csv"
-            ],
+            "args": [],
             "console": "integratedTerminal"
         },
         {
