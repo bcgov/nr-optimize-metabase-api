@@ -1,3 +1,5 @@
+REM This file assumes that the runner is already signed in to OC
+
 REM Stash the pod name into a variable via a temporary file
 REM ALLOWS_REMOTE_CONNECTIONS is a string which must match an environment value name on the pod via the deployment config
 REM Pod name cannot have . or / in the name.
