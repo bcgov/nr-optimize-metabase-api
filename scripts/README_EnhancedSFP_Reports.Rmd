@@ -2,9 +2,10 @@
 title: "README for Enhanced SFP Reports"
 author: "Heather Hay c/o Optimization Team"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: 
+output:
   html_document:
     theme: journal
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -29,13 +30,17 @@ htmltools::img(src = knitr::image_uri(file.path(here("scripts"), "GFX_Optimizati
 list.dirs(path = here(), full.names = TRUE, recursive = FALSE)
 ```
 
-> -   The raw data from OCIO should be cleaned using *clean_sfp_enhanced.py* and saved to the **source** folder (This step may be omitted in future updates)
+> -   The raw data from OCIO should be cleaned using *clean_sfp_enhanced.py* or *format_raw_enhanced_report.rmd* and saved to the **source** folder 
 >
-> -   The following 5 files should be in your **scripts** folder:
+> -   The following 7 files should be in your **scripts** folder:
+>
+>     -   enhanced_sfp_report_overview.rmd
 >
 >     -   enhanced_sfp_report_folder.rmd
 >
 >     -   enhanced_sfp_report_share.rmd
+>
+>     -   render_enhanced_sfp_report_overview.R
 >
 >     -   render_sfp_enhanced_report_folder.R
 >
@@ -43,9 +48,37 @@ list.dirs(path = here(), full.names = TRUE, recursive = FALSE)
 >
 >     -   GFX_OptimizationLogo-Icon_v2.png
 
+### Reporting on the Ministry-level SFP
+
+> -   open the file ***render_enhanced_sfp_report_overview.R***
+> -   change the bracketed text in the final line of the script to your desired parameters, like in this example:
+
+```{r}
+# render_report("2022-01-01_EMLI_Enhanced_Data.csv", "EMLI", "Q4", "FY21-22", "2021-12-22")
+```
+
+> -   there are 5 mandatory fields to enter **in order**:
+>
+>     -   the name of the csv file (you must include .csv in the file name)
+>
+>     -   the acronym of the Minstry
+>
+>     -   the fiscal quarter (please format as Q# for consistency)
+>
+>     -   the fiscal year (please format as FY##-## for consistency)
+>
+>     -   the date on the raw data file from the OCIO, so clients have an idea of when the storage snapshot was taken
+>
+> -   select all the text (ctrl-a) and then run the script by either pressing ctrl-Enter OR pressing the "Run" button in R Studio at the top right.
+>
+> The end result is 2 files in your **output** folder, named dynamically based on the parameters you input earlier.
+>
+> -   [SFP_Enhanced_Report_ministry_quarter_fiscalyear.xlsx]{style="color:blue;"}
+> -   [SFP_Enhanced_Report_ministry_quarter_fiscalyear.html]{style="color:blue;"}
+
 ### Reporting on an SFP share
 
-> -   open the file ***render_sfp_enhanced_report_share.R***
+> -   open the file ***render_enhanced_sfp_report_share.R***
 > -   change the bracketed text in the final line of the script to your desired parameters, like in this example:
 
 ```{r}
@@ -73,7 +106,7 @@ list.dirs(path = here(), full.names = TRUE, recursive = FALSE)
 
 ### Reporting on an SFP folder
 
-> -   open the file ***render_sfp_enhanced_report_folder.R***
+> -   open the file ***render_enhanced_sfp_report_folder.R***
 > -   change the bracketed text in the final line of the script to your desired parameters, like in this example:
 
 ```{r}
@@ -104,7 +137,7 @@ list.dirs(path = here(), full.names = TRUE, recursive = FALSE)
 
 ### Alternate Method of Running the Reports
 
-> -   open the file **enhanced_sfp_report_share.Rmd** or **enhanced_sfp_report_folder.Rmd**
+> -   open the file **enhanced_sfp_report_share.rmd** or **enhanced_sfp_report_folder.rmd** or **enhanced_sfp_report_overview.rmd**
 > -   press the arrow beside "Knit" and select "Knit with Parameters"
 > -   populate the fields in the resultant prompt window with your parameters, following the examples provided\
 >     ![](KWP.jpg){width="414"}
@@ -112,13 +145,16 @@ list.dirs(path = here(), full.names = TRUE, recursive = FALSE)
 >
 > The end result is an excel file in your **output** folder (named dynamically based on the parameters you input earlier), and a html file in your **scripts** folder - it will have the same name as your script so be sure to rename it so it doesn't get overwritten the next time you knit.
 >
-> -   [SFP_Enhanced_Report_foldername_quarter_fiscalyear.xlsx]{style="color:blue;"} *or* [SFP_Enhanced_Report_sharename_quarter_fiscalyear.xlsx]{style="color:blue;"}
-> -   [enhanced_sfp_report_share.html]{style="color:blue;"} *or* [enhanced_sfp_report_folder.html]{style="color:blue;"}
+> -   [SFP_Enhanced_Report_ministry_quarter_fiscalyear.xlsx]{style="color:blue;"} *or*
+[SFP_Enhanced_Report_foldername_quarter_fiscalyear.xlsx]{style="color:blue;"} *or* [SFP_Enhanced_Report_sharename_quarter_fiscalyear.xlsx]{style="color:blue;"}
+> -   [enhanced_sfp_report_overview.html]{style="color:blue;"} *or* [enhanced_sfp_report_share.html]{style="color:blue;"} *or* [enhanced_sfp_report_folder.html]{style="color:blue;"}
 
 ### Reference Material
 
-> [The here() package](https://github.com/jennybc/here_here)
->
 > [An Introduction to R](https://intro2r.com/)
 >
 > [R for Data Science](https://r4ds.had.co.nz/)
+>
+> [The here() package](https://github.com/jennybc/here_here)
+>
+> [Knitting with Parameters](https://bookdown.org/yihui/rmarkdown/params-knit.html)
