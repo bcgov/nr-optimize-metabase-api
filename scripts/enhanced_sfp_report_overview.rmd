@@ -70,7 +70,7 @@ htmltools::img(src = knitr::image_uri(file.path(here("scripts"), "GFX_Optimizati
 here::here()
 sfp_data <- read_csv(here("source", {params$data}), col_names = TRUE)
   
-#read((here("source", glue("{params$data}"))), header="auto")
+#fread((here("source", glue("{params$data}"))), header="auto")
 ```
 
 ```{r folder search, include = FALSE}
