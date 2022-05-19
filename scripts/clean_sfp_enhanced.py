@@ -9,12 +9,13 @@
 # Author:      HHAY, JMONTEBE
 #
 # Created:     2021
-# Copyright:   (c) Optimization Team 2021
+# Copyright:   (c) Optimization Team 2022
 # Licence:     mine
 #
 #
 # usage: clean_sfp_enhanced_data.py -i <input_directory> -d <first of the month report received>
 # example:  clean_sfp_enhanced_data.py -i J:\Scripts\Python\data_to_process -d 2021-01-01
+# note: run this per ministry and rename the output with the ministry acronym. 
 # -------------------------------------------------------------------------------
 
 from csv import writer
@@ -61,7 +62,7 @@ def clean_data(csv_names, convertedcsv, date):
         ministry = find_ministry(name)
 
         # open each file and parse through contents
-        with open(name, encoding="utf-8-sig") as in_file:
+        with open(name, encoding="utf-8", errors="ignore") as in_file:
             for row in csv.reader(in_file):
 
                 # find the size and container columns
@@ -123,7 +124,9 @@ def find_columns(row):
 
     if containercol != 6:
         containercol = 6
-        print(f"WARNING: Could not find container header. Setting to column: {containercol}")
+        print(
+            f"WARNING: Could not find container header. Setting to column: {containercol}"
+        )
         print("Check input and output file to ensure correct column order and format")
 
     return sizembcol, containercol
@@ -146,11 +149,16 @@ def modify_columns(row, sizembcol, containercol, ministry, date):
 
 def find_ministry(name):
     # find ministry by looking at file name for ministry names
-    ministries = ["agri", "empr", "env", "irr", "flnr", "emli", "aff"]
+    ministries = ["agri", "empr", "env", "irr", "flnr", "emli", "aff", "af", "for"]
     for findname in ministries:
         if name.lower().find(findname) != -1:
             ministryname = findname.upper()
-            ministryname = ministryname.replace("AGRI", "AFF").replace("EMPR", "EMLI")
+            ministryname = (
+                ministryname.replace("AGRI", "AF")
+                .replace("AFF", "AF")
+                .replace("EMPR", "EMLI")
+                .replace("FLNR", "FOR")
+            )
             print(f"Found ministry name: {ministryname}")
             break
 
@@ -211,7 +219,8 @@ def main(argv):
                 "path",
                 "sizemb",
                 "lastaccessdate",
-                "lastmodifieddate",
+                "modificationdate",
+                "creationdate",
                 "share",
                 "owner",
                 "ministry",
