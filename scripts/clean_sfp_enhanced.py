@@ -122,8 +122,8 @@ def find_columns(row):
         print(f"WARNING: Could not find sizemb header. Setting to column: {sizembcol}")
         print("Check input and output file to ensure correct column order and format")
 
-    if containercol != 6:
-        containercol = 6
+    if containercol != 7:
+        containercol = 7
         print(
             f"WARNING: Could not find container header. Setting to column: {containercol}"
         )
