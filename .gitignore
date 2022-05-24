@@ -140,6 +140,7 @@ send-usage-emails/send_usage_emails_docker_copy
 
 # User-specific files
 .Ruserdata
+.RProfile
 
 # Example code in package build process
 *-Ex.R
