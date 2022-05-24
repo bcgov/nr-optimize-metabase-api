@@ -427,9 +427,9 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     biggest_drops_cost = biggest_drops * 2.7
 
     # Round down to nearest thousand for legibility
-    total_gb = int(math.floor(total_gb/1000)*1000)
-    total_h_drive_cost = int(math.floor(total_h_drive_cost/1000)*1000)
-    h_drive_count = int(math.floor(h_drive_count/1000)*1000)
+    total_gb = int(math.floor(total_gb/10)*10)
+    total_h_drive_cost = int(math.floor(total_h_drive_cost/10)*10)
+    h_drive_count = int(math.floor(h_drive_count/10)*10)
 
     # Build email content and metadata
     msg["Subject"] = f"Transitory: Your H: Drive Usage Report for {last_month_name} {year}"
