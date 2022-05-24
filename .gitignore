@@ -179,3 +179,7 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# raw and processed data from R
+source/
+output/

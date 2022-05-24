@@ -4,17 +4,17 @@
 #              1.) Add a date column
 #              2.) Add a ministry column
 #              3.) Remove the container column
-#              4.) Combine all ministries into one file
+#              4.) Process mutiple <ministry>-S Size File-Level Report.csv files (per ministry) into one file
 #
 # Author:      HHAY, JMONTEBE
 #
 # Created:     2021
-# Copyright:   (c) Optimization Team 2021
+# Copyright:   (c) Optimization Team 2022
 # Licence:     mine
 #
 #
-# usage: clean_sfp_enhanced_data.py -i <input_directory> -d <first of the month report received>
-# example:  clean_sfp_enhanced_data.py -i J:\Scripts\Python\data_to_process -d 2021-01-01
+# usage: clean_sfp_enhanced_data.py -i <input_directory> -d <first of the month report received> -m <ministry acronym>
+# example:  clean_sfp_enhanced_data.py -i J:\Scripts\Python\data\data_to_process -d 2021-01-01 -m "ENV"
 # -------------------------------------------------------------------------------
 
 from csv import writer
@@ -61,7 +61,7 @@ def clean_data(csv_names, convertedcsv, date):
         ministry = find_ministry(name)
 
         # open each file and parse through contents
-        with open(name, encoding="utf-8-sig") as in_file:
+        with open(name, encoding="utf-8", errors="ignore") as in_file:
             for row in csv.reader(in_file):
 
                 # find the size and container columns
@@ -121,9 +121,11 @@ def find_columns(row):
         print(f"WARNING: Could not find sizemb header. Setting to column: {sizembcol}")
         print("Check input and output file to ensure correct column order and format")
 
-    if containercol != 6:
-        containercol = 6
-        print(f"WARNING: Could not find container header. Setting to column: {containercol}")
+    if containercol != 7:
+        containercol = 7
+        print(
+            f"WARNING: Could not find container header. Setting to column: {containercol}"
+        )
         print("Check input and output file to ensure correct column order and format")
 
     return sizembcol, containercol
@@ -146,11 +148,27 @@ def modify_columns(row, sizembcol, containercol, ministry, date):
 
 def find_ministry(name):
     # find ministry by looking at file name for ministry names
-    ministries = ["agri", "empr", "env", "irr", "flnr", "emli", "aff"]
+    ministries = [
+        "agri",
+        "empr",
+        "env",
+        "irr",
+        "flnr",
+        "emli",
+        "aff",
+        "af",
+        "for",
+        "lwrs",
+    ]
     for findname in ministries:
         if name.lower().find(findname) != -1:
             ministryname = findname.upper()
-            ministryname = ministryname.replace("AGRI", "AFF").replace("EMPR", "EMLI")
+            ministryname = (
+                ministryname.replace("AGRI", "AF")
+                .replace("AFF", "AF")
+                .replace("EMPR", "EMLI")
+                .replace("FLNR", "FOR")
+            )
             print(f"Found ministry name: {ministryname}")
             break
 
@@ -164,6 +182,7 @@ def main(argv):
 
     inputdirectory = ""
     date = ""
+    ministry = ""
     syntaxcmd = "Insufficient number of commands passed: clean_sfp_enhanced.py -i <input_file> -d <datecol> -p <path_contains>"
 
     if len(sys.argv) < 3:
@@ -189,17 +208,28 @@ def main(argv):
         metavar="string",
         type=str,
     )
+    parser.add_argument(
+        "-m",
+        "--min",
+        dest="ministry",
+        required=True,
+        help="user provided ministry acronym for output filename",
+        metavar="string",
+        type=str,
+    )
+
     args = parser.parse_args()
 
     inputdirectory = args.inputdirectory
     date = args.date
+    ministry = args.ministry
 
     csv_names = glob.glob(inputdirectory + r"\*.csv")
 
     convertedcsv = list()
     clean_data(csv_names, convertedcsv, date)
 
-    output_file = date + "_SFP_Enhanced_Data.csv"
+    output_file = date + "_" + ministry + "_SFP_Enhanced_Data.csv"
     # Open the output_file in write mode
     with open(output_file, "w", newline="", encoding="utf-8-sig") as write_obj:
         csv_writer = writer(write_obj)
@@ -211,7 +241,8 @@ def main(argv):
                 "path",
                 "sizemb",
                 "lastaccessdate",
-                "lastmodifieddate",
+                "modificationdate",
+                "creationdate",
                 "share",
                 "owner",
                 "ministry",
