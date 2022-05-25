@@ -14,6 +14,12 @@ library(here)
 library(htmltools)
 ```
 
+```{r set system environment, include = FALSE}
+# This chunk is helpful if you're using an IDE like VS Code
+# You can find the correct directory by typing Sys.getenv("RSTUDIO_PANDOC")
+Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/")
+```
+
 ```{r apply team logo, echo=FALSE}
 htmltools::img(src = knitr::image_uri(file.path(here("scripts"), "GFX_OptimizationLogo-Icon_v2.png")), 
                alt = 'logo', 
@@ -24,14 +30,14 @@ htmltools::img(src = knitr::image_uri(file.path(here("scripts"), "GFX_Optimizati
 
 ### Pre-requisites
 
-> -   Your folder structure should be set up to mimic the layout in README_R\_SETUP, like this example:
+> -   Your folder structure should be set up to mimic the layout in README_R\_SETUP, like the example below. If you wish to run the scripts from your GitHub repo, you'll need to add a "source" and "output" folder (added to the .gitignore file so the contents don't get pushed up)
 
 ```{r, css, echo=FALSE}
 list.dirs(path = here(), full.names = TRUE, recursive = FALSE)
 ```
 
-> -   The raw data from OCIO should be cleaned using *clean_sfp_enhanced.py* or *format_raw_enhanced_report.rmd* and saved to the **source** folder 
->
+> -   The raw data from OCIO should be cleaned using *clean_sfp_enhanced.py* and saved to the **source** folder
+
 > -   The following 7 files should be in your **scripts** folder:
 >
 >     -   enhanced_sfp_report_overview.rmd
@@ -54,7 +60,7 @@ list.dirs(path = here(), full.names = TRUE, recursive = FALSE)
 > -   change the bracketed text in the final line of the script to your desired parameters, like in this example:
 
 ```{r}
-# render_report("2022-01-01_EMLI_Enhanced_Data.csv", "EMLI", "Q4", "FY21-22", "2021-12-22")
+# render_report("2022-05-01_EMLI_SFP_Enhanced_Data.csv", "EMLI", "Q1", "FY22-23", "2022-04-30")
 ```
 
 > -   there are 5 mandatory fields to enter **in order**:
@@ -82,12 +88,14 @@ list.dirs(path = here(), full.names = TRUE, recursive = FALSE)
 > -   change the bracketed text in the final line of the script to your desired parameters, like in this example:
 
 ```{r}
-# render_report("2022-01-01_ENV_Enhanced_Data.csv", "S40183", "Q4", "FY21-22", "2021-12-22")
+# render_report("2022-05-01_ENV_SFP_Enhanced_Data.csv", "ENV", "S40183", "Q1", "FY22-23", "2022-05-05")
 ```
 
-> -   there are 5 mandatory fields to enter **in order**:
+> -   there are 6 mandatory fields to enter **in order**:
 >
 >     -   the name of the csv file (you must include .csv in the file name)
+>
+>     -   the acronym of the Minstry
 >
 >     -   the name of the share
 >
@@ -101,8 +109,8 @@ list.dirs(path = here(), full.names = TRUE, recursive = FALSE)
 >
 > The end result is 2 files in your **output** folder, named dynamically based on the parameters you input earlier.
 >
-> -   [SFP_Enhanced_Report_sharename_quarter_fiscalyear.xlsx]{style="color:blue;"}
-> -   [SFP_Enhanced_Report_sharename_quarter_fiscalyear.html]{style="color:blue;"}
+> -   [SFP_Enhanced_Report_ministry_sharename_quarter_fiscalyear.xlsx]{style="color:blue;"}
+> -   [SFP_Enhanced_Report_ministry_sharename_quarter_fiscalyear.html]{style="color:blue;"}
 
 ### Reporting on an SFP folder
 
@@ -110,14 +118,16 @@ list.dirs(path = here(), full.names = TRUE, recursive = FALSE)
 > -   change the bracketed text in the final line of the script to your desired parameters, like in this example:
 
 ```{r}
-# render_report("2021-04-01_ENV_SFP_Enhanced_Data.csv", "^\\\\\\\\SLEDGE\\\\S40203\\\\IRMT", "IRMT", "Q1", "FY21-22", "2021-04-27")
+# render_report("2022-05-01_ENV_SFP_Enhanced_Data.csv", "ENV",  "^\\\\\\\\sfp.idir.bcgov\\\\C100\\\\S140\\\\S40203\\\\IRMT", "IRMT", "Q1", "FY22-23", "2022-05-10")
 ```
 
-> -   there are 6 mandatory fields to enter **in order**:
+> -   there are 7 mandatory fields to enter **in order**:
 >
 >     -   the name of the csv file (you must include .csv in the file name)
 >
->     -   the folder path (please keep the caret and leading backslashes - there are 8 before the server and 4 before the share and each folder). If you have a folder name in your path that has parentheses in it, enclose the parentheses in square brackets so that they're "escaped" from the regex expression. This also applies to the step below.\
+>     -   the acronym of the Minstry
+>
+>     -   the folder path (please keep the caret and leading backslashes - there are 8 before sfp.idir.bcgov and 4 before the container, server, share and each folder). If you have a folder name in your path that has parentheses in it, enclose the parentheses in square brackets so that they're "escaped" from the regex expression. This also applies to the step below.\
 >         i.e. [ADMINISTRATION (100-499)]{style="color:teal;"} needs square brackets around [(100-499)]{style="color:teal;"}
 >
 >     -   the final folder name **exactly** as it is in the folder path. It is used as a "boundary" in the main script for when folder names are similar, but you only want to pull information from one of them. i.e. a simple filter on "ROB" might get you "ROB", "ROB FOI", and "ROBERTSON CREEK", but having the boundary applied ensures you only get "ROB".
@@ -132,8 +142,8 @@ list.dirs(path = here(), full.names = TRUE, recursive = FALSE)
 >
 > The end result is 2 files in your **output** folder, named dynamically based on the parameters you input earlier.
 >
-> -   [SFP_Enhanced_Report_foldername_quarter_fiscalyear.xlsx]{style="color:blue;"}
-> -   [SFP_Enhanced_Report_foldername_quarter_fiscalyear.html]{style="color:blue;"}
+> -   [SFP_Enhanced_Report_ministry_foldername_quarter_fiscalyear.xlsx]{style="color:blue;"}
+> -   [SFP_Enhanced_Report_ministry_foldername_quarter_fiscalyear.html]{style="color:blue;"}
 
 ### Alternate Method of Running the Reports
 
@@ -146,7 +156,8 @@ list.dirs(path = here(), full.names = TRUE, recursive = FALSE)
 > The end result is an excel file in your **output** folder (named dynamically based on the parameters you input earlier), and a html file in your **scripts** folder - it will have the same name as your script so be sure to rename it so it doesn't get overwritten the next time you knit.
 >
 > -   [SFP_Enhanced_Report_ministry_quarter_fiscalyear.xlsx]{style="color:blue;"} *or*
-[SFP_Enhanced_Report_foldername_quarter_fiscalyear.xlsx]{style="color:blue;"} *or* [SFP_Enhanced_Report_sharename_quarter_fiscalyear.xlsx]{style="color:blue;"}
+[SFP_Enhanced_Report_ministry_sharename_quarter_fiscalyear.xlsx]{style="color:blue;"} *or* 
+[SFP_Enhanced_Report_ministry_foldername_quarter_fiscalyear.xlsx]{style="color:blue;"} *or*
 > -   [enhanced_sfp_report_overview.html]{style="color:blue;"} *or* [enhanced_sfp_report_share.html]{style="color:blue;"} *or* [enhanced_sfp_report_folder.html]{style="color:blue;"}
 
 ### Reference Material

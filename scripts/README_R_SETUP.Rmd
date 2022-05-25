@@ -40,9 +40,9 @@ The chocolatey documentation is here:
 
 
 ### Setting up Your Folder Hierarchy for R
-> This is how I set up my scripting folders for R. If yours are different, you may need to adjust your *here()* function to reflect that in the scripts.  
+> This is how I set up my scripting folders for R. If yours are different, you may need to adjust your *here()* function to reflect that in the scripts (for example, if you wanted to work out of your GitHub folder).  
 >
-**RStudio_Heather**   (*This is my working directory and I also keep my __.Proj__ files here*)      
+**RStudio_Heather**   (*This is my working directory and I also keep my __.RProj__ and __.RProfile__ files here*)      
 * figure  
 * output  
 * scripts  
@@ -68,14 +68,14 @@ Note that some packages aren't compatible with older versions of R, in which cas
 
 
 ### Ease of Use - Packages
-> Keep your R package library on the same drive as your scripts. For example, having the library in a folder on your home drive (H:) and your scripts in OneDrive (cached to a folder on C:) causes untenable lag caused by trying to connect to the network where your home drive lives. To check this, go to RStudio console and enter *.libPaths()* and ensure the directory is pointing to a folder on C:, such as *C:\\Users\\<IDIR>\\OneDrive - Government of BC\\R\\win-library\\4.0* or *C:\\Program Files\\R\\R-4.1.2\\library* or similar. You can get R Studio to change this setting by creating a file called **.RProfile** in the root folder of your working directory and putting this information inside it: *.libPaths("C:\\Users\\<IDIR>\\OneDrive - Government of BC\\Documents\\R\\win-library\\4.1")*
+> Keep your R package library on the same drive as your scripts. For example, having the library in a folder on your home drive (H:) and your scripts in OneDrive (cached to a folder on C:) causes untenable lag caused by trying to connect to the network where your home drive lives. To check this, go to RStudio console and enter *.libPaths()* and ensure the directory is pointing to a folder on C:, such as *C:\\Users\\<IDIR>\\OneDrive - Government of BC\\R\\win-library\\4.2* or *C:\\Program Files\\R\\R-4.2\\library* or similar. You can get R Studio to change this setting by creating a file called **.RProfile** in the root folder of your working directory and putting this information inside it: *.libPaths("C:\\Users\\<IDIR>\\OneDrive - Government of BC\\Documents\\R\\win-library\\4.2")*
 
 
 ### Running in VS Code 
 > If you choose to run this script in VS Code instead of RStudio, you will need to install *R Extension for Visual Studio Code* by Yuki Ueda.
 >
 You'll also want to set the system environment in VS Code with this line:
-**Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")**  
+**Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/")**  
 You can find the correct directory by typing *Sys.getenv("RSTUDIO_PANDOC")* into the console
 
 
@@ -90,6 +90,8 @@ You can find the correct directory by typing *Sys.getenv("RSTUDIO_PANDOC")* into
 >[Using Projects](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects)
 >
 >[CRAN Packages](https://cran.r-project.org/web/packages/available_packages_by_name.html)
+>
+>[The here() package](https://github.com/jennybc/here_here)
 >
 >[R Markdown: The Definitive Guide](https://bookdown.org/yihui/rmarkdown/)
 >
