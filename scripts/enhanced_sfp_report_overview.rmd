@@ -11,9 +11,9 @@ params:
     input: text
   ministry:
     label: "Ministry Name:"
-    value: AFF
+    value: AF
     input: select
-    choices: [AFF, EMLI, ENV, FLNR, IRR]
+    choices: [AFF, AF, EMLI, ENV, FLNR, FOR, IRR, LWRS]
   quarter:
     label: "Quarter:"
     value: Q1
@@ -21,14 +21,14 @@ params:
     choices: [Q1, Q2, Q3, Q4]
   fiscal:
     label: "Fiscal Year:"
-    value: FY21-22
+    value: FY22-23
     input: select
-    choices: [FY19-20, FY20-21, FY21-22, FY22-23]
+    choices: [FY19-20, FY20-21, FY21-22, FY22-23, FY23-24]
   collected:
     label: "datestamp on OCIO file:"
-    value: 2021-12-22
+    value: 2022-05-05
     input: text
-title: "SFP Enhanced Report on `r params$ministry`" 
+title: "SFP Enhanced Report for `r params$ministry`" 
 subtitle: "`r params$quarter` `r params$fiscal` (data collected on `r params$collected`)"
 ---
 
@@ -68,26 +68,46 @@ htmltools::img(src = knitr::image_uri(file.path(here("scripts"), "GFX_Optimizati
 
 ```{r load data, include = FALSE}
 here::here()
-sfp_data <- read_csv(here("source", {params$data}), col_names = TRUE)
+#sfp_data <- read_csv(here("source", {params$data}), col_names = TRUE)
   
-#fread((here("source", glue("{params$data}"))), header="auto")
+sfp_data <- fread((here("source", glue("{params$data}"))), select = c("filename", "path", "share", "sizemb", "lastaccessdate", "modificationdate", "creationdate"))
+```
+
+```{r functions, include = FALSE}
+convert.date <- function(.data) {
+format(as.POSIXct(.data,format='%m/%d/%Y %H:%M:%S'),format='%Y-%m-%d')
+}
+
+sheet.names <- function(.data) {
+addWorksheet(excel, .data)
+}
+
+dt.worksheets <- function(x, .data) {
+writeDataTable(excel, sheet = x, .data, colNames = TRUE, withFilter = TRUE)
+}
+
+freeze.panes <- function(x) {
+freezePane(excel, x, firstRow = TRUE)
+}
 ```
 
 ```{r folder search, include = FALSE}
 formatted_sfp_data <- sfp_data %>%
-  select(filename, path, share, sizemb, lastaccessdate, lastmodifieddate) %>%
-  mutate(root = word(path, 1, 5, sep = "\\\\")) %>%
+  #select(filename, path, share, sizemb, lastaccessdate, modificationdate, creationdate) %>%
+  mutate(share = gsub("\\", "", share, fixed=TRUE)) %>%
+  mutate(root = word(path, 1, 7, sep = "\\\\")) %>%
   mutate(folderdepth = str_count(path, "\\\\")) %>%
   mutate(folderdepth = folderdepth-5) %>% 
   mutate(sizegb = sizemb / 1000) %>% 
   mutate(sizegb = round(sizegb, 3)) %>% 
-  mutate(lastaccessdate = as_date(lastaccessdate, tz = NULL)) %>% 
-  mutate(lastmodifieddate = as_date(lastmodifieddate, tz = NULL)) %>%
   mutate(filetype = str_extract(filename, "[^.]+$")) %>%
   mutate(filetype = tolower(filetype)) %>% 
   mutate(monthly_cost = sizegb * 2.7) %>% 
   mutate(monthly_cost = round((monthly_cost), 2)) %>% 
-  select(filename, filetype, root, path, folderdepth, sizegb, lastaccessdate, lastmodifieddate, monthly_cost)
+  mutate(lastaccessdate = convert.date(lastaccessdate)) %>% 
+  mutate(modificationdate = convert.date(modificationdate)) %>% 
+  mutate(creationdate = convert.date(creationdate)) %>% 
+  select(filename, filetype, root, path, folderdepth, sizegb, lastaccessdate, modificationdate, creationdate, monthly_cost)
 ```
 
 ```{r, include = FALSE}
@@ -164,12 +184,10 @@ duplicate_files <- formatted_sfp_data %>%
   group_by(filename) %>% 
   filter( n() > 1 )
 
-duplicate_files <- duplicate_files %>% 
-  group_by(sizegb) %>% 
-  filter( n() > 1 ) 
-
 duplicate_files_formatted <- duplicate_files %>% 
-  select (filename,	path,	sizegb,	lastaccessdate,	lastmodifieddate)
+  select (filename,	path,	sizegb,	lastaccessdate,	modificationdate, creationdate, monthly_cost) %>% 
+  arrange(filename) %>% 
+  arrange(desc(monthly_cost))
 ```
 
 ```{r duplicates cost, echo = FALSE}
@@ -189,17 +207,17 @@ dt_less5 <- ymd(date) - years(5)
 # files last accessed more than 5 years ago
 files_accessed_5plus <- formatted_sfp_data %>% 
   filter(lastaccessdate < dt_less5) %>% 
-  select(filename, path, sizegb, lastaccessdate, lastmodifieddate) 
+  select(filename, path, sizegb, lastaccessdate, modificationdate, creationdate) 
 
 files_accessed_5plus <- files_accessed_5plus[(order(as.Date(files_accessed_5plus$lastaccessdate))),]
 
 
 # files last modified more than 5 years ago
 files_modified_5plus <- formatted_sfp_data %>% 
-  filter(lastmodifieddate < dt_less5) %>% 
-  select(filename, path, sizegb, lastaccessdate, lastmodifieddate)
+  filter(modificationdate < dt_less5) %>% 
+  select(filename, path, sizegb, lastaccessdate, modificationdate, creationdate)
 
-files_modified_5plus <- files_modified_5plus[(order(as.Date(files_modified_5plus$lastmodifieddate))),]
+files_modified_5plus <- files_modified_5plus[(order(as.Date(files_modified_5plus$modificationdate))),]
 ```
 
 ```{r count the old files, include = FALSE}
@@ -212,13 +230,15 @@ lm_5plus_count  <- format(lm_count, big.mark = ",", scientific = FALSE)
 la_percent <- (la_count / count_files) * 100
 lm_percent <- (lm_count / count_files) * 100
 
-la_percent <- as.integer(la_percent)
-lm_percent <- as.integer(lm_percent)
+la_percent <- format(round(la_percent, 1), nsmall = 1)
+lm_percent <- format(round(lm_percent, 1), nsmall = 1)
 ```
 
-```{r just the facts, echo = FALSE}
-glue('DISCLAIMER: The source data for this report is collected from the OCIO and does not include any files under 1MB. This is done by design to keep the reports manageable, as including files under 1 MB would increase the report size tenfold.')
+### DISCLAIMER
 
+> -   The source data for this report is collected from the OCIO and does not include any files under 1MB. This is done by design to keep the reports manageable, as including files under 1 MB would increase the report size tenfold.
+
+```{r just the facts, echo = FALSE}
 glue('The size of the {params$ministry} SFP is {sfp_size} GB.')
 
 glue('There are {root_folder_count} root folders and {sfp_folder_count} folders in the {params$ministry} SFP total.')
@@ -242,7 +262,7 @@ glue('If the duplicates in the {params$ministry} SFP were found & removed, at le
 
 ```{r dynamic output name, include = FALSE}
 # create output file name based on parameters
-output_excel = paste0("sfp_data_Report_", params$ministry, "_", params$quarter, "_", params$fiscal, ".xlsx")
+output_excel = paste0("SFP_Enhanced_Report_", params$ministry, "_", params$quarter, "_", params$fiscal, ".xlsx")
 ```
 
 ```{r write output to Excel file, include = FALSE}
@@ -256,41 +276,33 @@ thirdSheet = "Last Accessed 5+ Years"
 fourthSheet = "Last Modified 5+ Years"
 
 # add worksheets to workbook
-sheet.names <- function(.data) {
-addWorksheet(excel, .data)
-}
 sheet.names(firstSheet)
 sheet.names(secondSheet)
 sheet.names(thirdSheet)
 sheet.names(fourthSheet)
 
 # assign data tables to worksheets, apply filter across all sheets
-dt.worksheets <- function(x, .data) {
-writeDataTable(excel, sheet = x, .data, colNames = TRUE, withFilter = TRUE)
-}
 dt.worksheets(1,table_sfp) 
 dt.worksheets(2,duplicate_files_formatted) 
 dt.worksheets(3, files_accessed_5plus)
 dt.worksheets(4, files_modified_5plus)
 
 # freeze top row of all sheets
-freeze.panes <- function(x) {
-freezePane(excel, x, firstRow = TRUE)
-}
 freeze.panes(1)
 freeze.panes(2)
 freeze.panes(3)
 freeze.panes(4)
 
 # set custom column widths for all sheets
-setColWidths(excel, sheet = 1, cols = c(1:4), widths = c(50, 20, 20, 20))
-setColWidths(excel, sheet = 2, cols = c(1:5), widths = c(50, 75, 20, 20, 20))
-setColWidths(excel, sheet = 3, cols = c(1:5), widths = c(50, 75, 20, 20, 20))
-setColWidths(excel, sheet = 4, cols = c(1:5), widths = c(50, 75, 20, 20, 20))
+setColWidths(excel, sheet = 1, cols = c(1:5), widths = c(50, 20, 20, 20))
+setColWidths(excel, sheet = 2, cols = c(1:7), widths = c(50, 75, 20, 20, 20, 20, 20))
+setColWidths(excel, sheet = 3, cols = c(1:6), widths = c(50, 75, 20, 20, 20, 20))
+setColWidths(excel, sheet = 4, cols = c(1:6), widths = c(50, 75, 20, 20, 20, 20))
 
 # set currency format on column
 sty1 = createStyle(numFmt="$0,0.00")
 addStyle(excel, sheet = 1, sty1, rows=2:(nrow(table_sfp)+1), cols=4)
+addStyle(excel, sheet = 2, sty1, rows=2:(nrow(table_sfp)+1), cols=7)
 
 # save the workbook to file
 saveWorkbook(excel, file = here("output", output_excel), overwrite = TRUE)

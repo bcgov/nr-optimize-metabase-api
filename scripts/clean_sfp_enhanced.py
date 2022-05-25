@@ -4,7 +4,7 @@
 #              1.) Add a date column
 #              2.) Add a ministry column
 #              3.) Remove the container column
-#              4.) Combine all ministries into one file
+#              4.) Process mutiple <ministry>-S Size File-Level Report.csv files (per ministry) into one file
 #
 # Author:      HHAY, JMONTEBE
 #
@@ -13,9 +13,8 @@
 # Licence:     mine
 #
 #
-# usage: clean_sfp_enhanced_data.py -i <input_directory> -d <first of the month report received>
-# example:  clean_sfp_enhanced_data.py -i J:\Scripts\Python\data_to_process -d 2021-01-01
-# note: run this per ministry and rename the output with the ministry acronym. 
+# usage: clean_sfp_enhanced_data.py -i <input_directory> -d <first of the month report received> -m <ministry acronym>
+# example:  clean_sfp_enhanced_data.py -i J:\Scripts\Python\data\data_to_process -d 2021-01-01 -m "ENV"
 # -------------------------------------------------------------------------------
 
 from csv import writer
@@ -149,7 +148,18 @@ def modify_columns(row, sizembcol, containercol, ministry, date):
 
 def find_ministry(name):
     # find ministry by looking at file name for ministry names
-    ministries = ["agri", "empr", "env", "irr", "flnr", "emli", "aff", "af", "for"]
+    ministries = [
+        "agri",
+        "empr",
+        "env",
+        "irr",
+        "flnr",
+        "emli",
+        "aff",
+        "af",
+        "for",
+        "lwrs",
+    ]
     for findname in ministries:
         if name.lower().find(findname) != -1:
             ministryname = findname.upper()
@@ -172,6 +182,7 @@ def main(argv):
 
     inputdirectory = ""
     date = ""
+    ministry = ""
     syntaxcmd = "Insufficient number of commands passed: clean_sfp_enhanced.py -i <input_file> -d <datecol> -p <path_contains>"
 
     if len(sys.argv) < 3:
@@ -197,17 +208,28 @@ def main(argv):
         metavar="string",
         type=str,
     )
+    parser.add_argument(
+        "-m",
+        "--min",
+        dest="ministry",
+        required=True,
+        help="user provided ministry acronym for output filename",
+        metavar="string",
+        type=str,
+    )
+
     args = parser.parse_args()
 
     inputdirectory = args.inputdirectory
     date = args.date
+    ministry = args.ministry
 
     csv_names = glob.glob(inputdirectory + r"\*.csv")
 
     convertedcsv = list()
     clean_data(csv_names, convertedcsv, date)
 
-    output_file = date + "_SFP_Enhanced_Data.csv"
+    output_file = date + "_" + ministry + "_SFP_Enhanced_Data.csv"
     # Open the output_file in write mode
     with open(output_file, "w", newline="", encoding="utf-8-sig") as write_obj:
         csv_writer = writer(write_obj)

@@ -57,7 +57,20 @@ def main(argv):
     for name in excel_names:
 
         # find the ministry based on the filename
-        ministries = ["agri", "aff", "empr", "mem", "emli", "env", "abr", "irr", "flnr", "fpro", "bcws"]
+        ministries = [
+            "agri",
+            "aff",
+            "empr",
+            "mem",
+            "emli",
+            "env",
+            "abr",
+            "irr",
+            "flnr",
+            "fpro",
+            "bcws",
+            "lwrs",
+        ]
         for findname in ministries:
             if name.lower().find(findname) != -1:
                 ministryname = findname.upper()
@@ -79,10 +92,12 @@ def main(argv):
         frame = frame.assign(date=datestamp)
 
         # update ministry acronyms
-        frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("AGRI", "AFF"))
+        frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("AGRI", "AF"))
+        frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("AFF", "AF"))
         frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("EMPR", "EMLI"))
         frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("MEM", "EMLI"))
         frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("ABR", "IRR"))
+        frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("FLNR", "FOR"))
 
         # remove the header row -- assumes it's the first
         frame = frame[1:]
