@@ -13,13 +13,21 @@
             "console": "integratedTerminal"
         },       
         {
-            "name": "Python: push_onedrive",
+            "name": "Python: push_onedrive_metabase",
             "type": "python",
             "request": "launch",
             "program": "push-data-to-metabase/push_onedrive_to_metabase.py",
             "args": [],
             "console": "integratedTerminal"
-        },  
+        },         
+        {
+            "name": "Python: push_objstor_metabase",
+            "type": "python",
+            "request": "launch",
+            "program": "push-data-to-metabase/push_objstor_to_metabase.py",
+            "args": [],
+            "console": "integratedTerminal"
+        }, 
         {
             "name": "Python: clean_incremental_data",
             "type": "python",

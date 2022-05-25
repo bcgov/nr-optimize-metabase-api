@@ -24,7 +24,7 @@ import os
 import sys
 from datetime import datetime
 import psycopg2
-import push_onedrive_constants as constants
+import push_postgres_constants as constants
 
 
 ministry_renames = {
