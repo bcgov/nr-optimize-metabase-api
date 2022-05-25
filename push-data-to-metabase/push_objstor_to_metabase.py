@@ -181,7 +181,6 @@ def insert_records_to_metabase(record_tuples):
         )
         cur = conn.cursor()
 
-        delete_before_insert = True
         if delete_before_insert:
             print('Deleting old data')
             cur.execute('DELETE FROM objectstorage')
