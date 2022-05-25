@@ -441,8 +441,9 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     <html><head></head><body><p>
         Hi {name},<br><br>
 
-        This report from the <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
-         is provided to help raise awareness of monthly storage costs associated with your personal home (H:) drive."""
+        This report from the <a href="https://intranet.gov.bc.ca/nrids">Natural Resource Information and Digital Services</a>
+         shows the month to month storage costs of your personal home (H:) drive.
+         Please note, ministry coding is being updated. The ministry shown in this report may not be accurate until the coding change finishes."""
 
     # Reward the user with a gold star if data looks well managed
     if last_month_gb < 1 and month_before_last_sample is not None:
@@ -502,14 +503,14 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     <br><br><b>Did the cost of your H: Drive go up this month?</b><br>
     This happens from time to time. Here are three simple actions to help you reduce your storage expense "footprint":
     <ol>
-        <li>Move <a href="https://intranet.gov.bc.ca/iit/onedrive/what-not-to-move-onto-onedrive">appropriate</a>
-         files to <a href="https://intranet.gov.bc.ca/iit/onedrive">OneDrive</a> (time suggested: 20 mins)</li>
-        <li>Delete <a href="https://intranet.gov.bc.ca/assets/intranet/iit/pdfs-and-docs/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
-        <li><a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info#Emptyyourrecycling">Empty</a>
+        <li>Move <a href="https://intranet.gov.bc.ca/nrids/onedrive/what-not-to-move-onto-onedrive">appropriate</a>
+         files to <a href="https://intranet.gov.bc.ca/nrids/onedrive">OneDrive</a> (time suggested: 20 mins)</li>
+        <li>Delete <a href="https://intranet.gov.bc.ca/assets/intranet/nrids/pdfs-and-docs/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
+        <li><a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/storage-tips-and-info#Emptyyourrecycling">Empty</a>
         your Recycle Bin (time suggested: 1 min)</li>
     </ol>
     More suggestions on how to reduce can be found on our
-    <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>."""
+    <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>."""
 
     # Share the successes of peers
     html_kudos = f"""
