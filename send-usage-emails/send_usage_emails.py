@@ -141,8 +141,6 @@ def get_hdrive_data():
 
     data = {}
     attribute_error_idirs = []
-    mail_errors = []
-    dept_errors = []
     other_error_idirs = []
     conn = ldap_util.getLdapConnection()
     # For each H: Drive row, Add new user to "data" dictionary if not there, and add a data sample.
@@ -166,10 +164,6 @@ def get_hdrive_data():
                     if AttributeError:
                         print(f"Unable to find {idir} due to error {error}")
                         attribute_error_idirs.append(idir)
-                        if error == "department":
-                            dept_errors.append(idir)
-                        elif error == "mail":
-                            mail_errors.append(idir)
                     else:
                         print(f"Unable to find {idir} due to error {error}")
                         other_error_idirs.append(idir)
@@ -186,7 +180,6 @@ def get_hdrive_data():
                         ],
                         "mail": ad_info["mail"],
                         "name": ad_info["givenName"],
-                        "department": ad_info["department"],
                         "ministry": ministry
                     }
             else:
@@ -213,8 +206,6 @@ def get_hdrive_data():
     if len(attribute_error_idirs) > 0 or len(other_error_idirs) > 0:
         message_detail = "The send_usage_emails script failed to find all IDIRs. " \
             + "<br /><br />IDIRs not found due to attribute error: " + ",".join(attribute_error_idirs) \
-            + "<br /><br />IDIRs not found due to missing mail attribute error: " + ",".join(mail_errors) \
-            + "<br /><br />IDIRs not found due to missing department attribute error: " + ",".join(dept_errors) \
             + "<br /><br />IDIRs not found due to other issue: " + ",".join(other_error_idirs)
         LOGGER.info(message_detail)
         send_admin_email(message_detail)
@@ -313,7 +304,7 @@ def get_graph_bytes(idir_info):
     }
 
     # Bar/threshold of 1.5GB x 2.7 is actually 4.05, but rounding for ease of consumption
-    threshold = 202
+    threshold = 4.00
     # For each month sample, add to data dictionaries
     for sample in samples:
         if sample['cost'] <= threshold:
@@ -329,10 +320,10 @@ def get_graph_bytes(idir_info):
             over_bar['cost'].append(0)
         else:
             # Users month was > the bar, so add maximum data under bar, and actual data behind it that looks "over" the bar
-            under_bar['gb'].append(75)
+            under_bar['gb'].append(1.5)
             under_bar['datetime'].append(sample['sample_datetime'])
             under_bar['month'].append(sample['month'])
-            under_bar['cost'].append(202)
+            under_bar['cost'].append(4.05)
 
             over_bar['gb'].append(sample['gb'])
             over_bar['datetime'].append(sample['sample_datetime'])
@@ -365,7 +356,7 @@ def get_graph_bytes(idir_info):
     #     ylabels.append(f"${ytick:,.2f}")
     # g.set_yticklabels(ylabels)
 
-    label_format = '${:,.2f}'
+    label_format = '{:,.2f}'
     ticks_loc = g.get_yticks().tolist()
     g.yaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
     g.set_yticklabels([label_format.format(x) for x in ticks_loc])
@@ -375,7 +366,7 @@ def get_graph_bytes(idir_info):
     plt.ylabel("H: Drive Cost", fontsize=13)
     plt.xlabel("", fontsize=10)
     caption = "1.5 GB of Shared\nFile and H: drive\nstorage is allocated\nfor each BCPS\nemployee."
-    caption = caption + "\n\nKeeping your groups'\ndigital storage use\nunder 75 GB helps\nprevent additional costs\nfor your ministry."
+    caption = caption + "\n\nKeeping your digital\nstorage use under\n1.5 GB helps prevent\nadditional costs\nfor your ministry."
     fig.text(0.8, 0.34, caption, ha="left")
     plt.tight_layout()
     plt.ylim(bottom=0)
@@ -450,8 +441,9 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     <html><head></head><body><p>
         Hi {name},<br><br>
 
-        This report from the <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
-         is provided to help raise awareness of monthly storage costs associated with your personal home (H:) drive."""
+        This report from the <a href="https://intranet.gov.bc.ca/nrids">Natural Resource Information and Digital Services</a>
+         shows the month to month storage costs of your personal home (H:) drive.
+         Please note, ministry coding is being updated. The ministry shown in this report may not be accurate until the coding change finishes."""
 
     # Reward the user with a gold star if data looks well managed
     if last_month_gb < 1 and month_before_last_sample is not None:
@@ -511,14 +503,14 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     <br><br><b>Did the cost of your H: Drive go up this month?</b><br>
     This happens from time to time. Here are three simple actions to help you reduce your storage expense "footprint":
     <ol>
-        <li>Move <a href="https://intranet.gov.bc.ca/iit/onedrive/what-not-to-move-onto-onedrive">appropriate</a>
-         files to <a href="https://intranet.gov.bc.ca/iit/onedrive">OneDrive</a> (time suggested: 20 mins)</li>
-        <li>Delete <a href="https://intranet.gov.bc.ca/assets/intranet/iit/pdfs-and-docs/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
-        <li><a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info#Emptyyourrecycling">Empty</a>
+        <li>Move <a href="https://intranet.gov.bc.ca/nrids/onedrive/what-not-to-move-onto-onedrive">appropriate</a>
+         files to <a href="https://intranet.gov.bc.ca/nrids/onedrive">OneDrive</a> (time suggested: 20 mins)</li>
+        <li>Delete <a href="https://intranet.gov.bc.ca/assets/intranet/nrids/pdfs-and-docs/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
+        <li><a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/storage-tips-and-info#Emptyyourrecycling">Empty</a>
         your Recycle Bin (time suggested: 1 min)</li>
     </ol>
     More suggestions on how to reduce can be found on our
-    <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>."""
+    <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>."""
 
     # Share the successes of peers
     html_kudos = f"""
@@ -584,14 +576,14 @@ def get_fake_idir_info():
     idir_info = {
         'idir': 'PPLATTEN',
         'mail': 'Peter.Platten@gov.bc.ca',
-        'name': '<Division Name>',
+        'name': 'NRM Staff Member',
         'ministry': 'ENV',
         'samples': [
-            get_sample(160, datetime(2022, 12, 1, 0, 0)),
-            get_sample(180, datetime(2022, 1, 1, 0, 0)),
-            get_sample(220, datetime(2022, 2, 1, 0, 0)),
-            get_sample(200, datetime(2022, 3, 1, 0, 0)),
-            get_sample(150, datetime(2022, 4, 1, 0, 0))
+            get_sample(0.74, datetime(2021, 6, 1, 0, 0)),
+            get_sample(1.11, datetime(2021, 7, 1, 0, 0)),
+            get_sample(1.75, datetime(2021, 8, 1, 0, 0)),
+            get_sample(1.25, datetime(2021, 9, 1, 0, 0)),
+            get_sample(0.7, datetime(2021, 10, 1, 0, 0))
         ]
     }
 
@@ -692,16 +684,6 @@ def main(argv):
         # Split input idirs and email addresses, and handle address formatting
         email_send_list, idir_send_list = refine_sendlist()
 
-        dept_dict = {}
-        for idir in data:
-            idir_info = data[idir]
-            dept_name = idir_info["department"].lower()+","+idir_info["ministry"].lower()
-            if dept_name not in dept_dict:
-                dept_dict[dept_name] = 1
-            else:
-                dept_dict[dept_name] = dept_dict[dept_name]+1
-
-        print(dept_dict)
         # Filter out non-emails, and if sendlist then also users not on the sendlist
         filtered_data = {}
         for idir in data:
@@ -715,7 +697,7 @@ def main(argv):
                     filtered_data[idir] = idir_info
         data = filtered_data
 
-        data = get_fake_idir_info()
+        # data = get_fake_idir_info()
 
         # Send email for each user
         omit_list = constants.EMAIL_OMITLIST.split(",")

@@ -51,7 +51,6 @@ class LDAPUtil():
             LOGGER.debug(conn.response)
             user_info["mail"] = conn.response[0]['attributes']['mail']
             user_info["givenName"] = conn.response[0]['attributes']['givenName']
-            user_info["department"] = conn.response[0]['attributes']['department']
         else:
             msg = f'user: {idir} not found in ldap'
             LOGGER.warning(msg)
