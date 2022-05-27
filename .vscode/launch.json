@@ -3,7 +3,7 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [  
+    "configurations": [
         {
             "name": "Python: ldap_helper",
             "type": "python",
@@ -11,7 +11,7 @@
             "program": "send-usage-emails\\ldap_helper.py",
             "args": [],
             "console": "integratedTerminal"
-        },       
+        },
         {
             "name": "Python: push_onedrive_metabase",
             "type": "python",
@@ -19,7 +19,7 @@
             "program": "push-data-to-metabase/push_onedrive_to_metabase.py",
             "args": [],
             "console": "integratedTerminal"
-        },         
+        },
         {
             "name": "Python: push_objstor_metabase",
             "type": "python",
@@ -27,14 +27,26 @@
             "program": "push-data-to-metabase/push_objstor_to_metabase.py",
             "args": [],
             "console": "integratedTerminal"
-        }, 
+        },
         {
             "name": "Python: clean_incremental_data",
             "type": "python",
             "request": "launch",
             "program": "scripts\\clean_incremental_data.py",
             "args": [
-                "-i", "C:/TEMP/data"
+                "-i",
+                "C:/TEMP/data"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: clean_h_drive_data",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts\\clean_h_drive_data.py",
+            "args": [
+                "-i",
+                "C:/TEMP/data"
             ],
             "console": "integratedTerminal"
         },
@@ -44,10 +56,14 @@
             "request": "launch",
             "program": "scripts\\clean_expense_report_csv.py",
             "args": [
-                "-i", "C:/TEMP/data/Hosting Services Expense Report.txt",
-                "-c", "C:/TEMP/data/OptimizeLookupCategories.csv",
-                "-t", "Recovery Period",
-                "-s", "Service Name"
+                "-i",
+                "C:/TEMP/data/Hosting Services Expense Report.txt",
+                "-c",
+                "C:/TEMP/data/OptimizeLookupCategories.csv",
+                "-t",
+                "Recovery Period",
+                "-s",
+                "Service Name"
             ],
             "console": "integratedTerminal"
         },
@@ -64,8 +80,7 @@
             "type": "python",
             "request": "launch",
             "program": "scripts\\metabase_api_test.py",
-            "args": [
-            ],
+            "args": [],
             "console": "integratedTerminal"
         }
     ]
