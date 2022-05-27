@@ -9,7 +9,7 @@ REM Clean up complete!
 
 REM Run Bind Port script and wait for it to run
 start "port-bind" cmd /k "bind_to_ocp_database_port.bat"
-timeout /t 25
+timeout /t 50
 
 REM Push to Objstor Table
 REM Optional parameter -d will delete records before adding new ones from csv
