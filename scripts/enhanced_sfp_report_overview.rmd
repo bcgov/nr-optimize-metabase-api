@@ -68,9 +68,8 @@ htmltools::img(src = knitr::image_uri(file.path(here("scripts"), "GFX_Optimizati
 
 ```{r load data, include = FALSE}
 here::here()
-#sfp_data <- read_csv(here("source", {params$data}), col_names = TRUE)
-  
-sfp_data <- fread((here("source", glue("{params$data}"))), select = c("filename", "path", "share", "sizemb", "lastaccessdate", "modificationdate", "creationdate"))
+
+sfp_data <- fread((here("source", glue("{params$data}"))), select = c("filename", "path", "share", "sizemb", "lastaccessdate", "modificationdate", "creationdate")), na.strings=c("","NULL.NULL"))
 ```
 
 ```{r functions, include = FALSE}
@@ -91,9 +90,9 @@ freezePane(excel, x, firstRow = TRUE)
 }
 ```
 
-```{r folder search, include = FALSE}
+```{r reshape data, include = FALSE}
 formatted_sfp_data <- sfp_data %>%
-  #select(filename, path, share, sizemb, lastaccessdate, modificationdate, creationdate) %>%
+  mutate(filename = replace_na(filename, "NULL.NULL")) %>% 
   mutate(share = gsub("\\", "", share, fixed=TRUE)) %>%
   mutate(root = word(path, 1, 7, sep = "\\\\")) %>%
   mutate(folderdepth = str_count(path, "\\\\")) %>%
