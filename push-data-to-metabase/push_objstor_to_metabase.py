@@ -31,7 +31,6 @@ import push_postgres_constants as constants
 ministry_renames = {
     "AGRI": "AFF",
     "EMPR": "EMLI",
-    "EMPR": "EMLI",
     "EAO Environmental Assessment Office": "ENV",
     "EAO": "ENV",
     "ENV Environmental Protection Division": "ENV",
@@ -49,7 +48,7 @@ ministry_renames = {
     "FLNR Resource Stewardship Division": "FLNR",
     "FLNR Strategic Initiatives": "FLNR",
     "IIT": "LWRS",
-    "IIT ENV": "LWRS"
+    "IIT ENV": "LWRS",
 }
 
 nrm_ministries = ["AFF", "EMLI", "ENV", "FLNR", "IRR", "LWRS"]
@@ -70,7 +69,7 @@ def check_column_placement(row):
             if row[i] == "Tags" and order[i] == "Tag":
                 # The FY2021 data uses 'Tags' instead of 'Tag'
                 continue
-            if len(row[i]) > 8 and row[i][len(row[i])-6:] == " (GiB)":
+            if len(row[i]) > 8 and row[i][len(row[i]) - 6 :] == " (GiB)":
                 # The FY2021 data has some column headers which end in the unit
                 continue
             print("The input csv should have the following columns in order:")
@@ -83,7 +82,7 @@ def check_column_placement(row):
 def number_of_columns(row):
     column_with_value_count = 0
     for column in row:
-        if column != '':
+        if column != "":
             column_with_value_count += 1
     return column_with_value_count
 
@@ -102,9 +101,11 @@ def get_records_from_xlsx():
         file_name = os.path.split(file_path)[1]
         file_date = None
         try:
-            file_date = datetime.strptime(file_name.lower(), 'nrs buckets %B %Y.csv')
+            file_date = datetime.strptime(file_name.lower(), "nrs buckets %B %Y.csv")
         except (Exception) as error:
-            print("Exception while getting the date from file name. Format should be: NRS Buckets %B %Y.csv")
+            print(
+                "Exception while getting the date from file name. Format should be: NRS Buckets %B %Y.csv"
+            )
             print(error)
             exit
 
@@ -133,7 +134,12 @@ def get_records_from_xlsx():
                     elif i in [3, 5, 7, 8]:
                         row[i] = float(row[i])
 
-                ministry, branch, project, environment = "No Tag", None, None, "No Tag/Name"
+                ministry, branch, project, environment = (
+                    "No Tag",
+                    None,
+                    None,
+                    "No Tag/Name",
+                )
                 # Get tags used in metabase for columns
                 if row[10] != "":
                     # Historic tags have multiple KV pairs separated by commas - replace comma to separate
@@ -177,23 +183,26 @@ def insert_records_to_metabase(record_tuples):
             host="localhost",
             database=constants.POSTGRES_DB_NAME,
             user=constants.POSTGRES_USER,
-            password=constants.POSTGRES_PASS
+            password=constants.POSTGRES_PASS,
         )
         cur = conn.cursor()
 
         if delete_before_insert:
-            print('Deleting old data')
-            cur.execute('DELETE FROM objectstorage')
-            print('Delete complete')
+            print("Deleting old data")
+            cur.execute("DELETE FROM objectstorage")
+            print("Delete complete")
 
-        print('Inserting new data')
+        print("Inserting new data")
 
-        cur.executemany('''
+        cur.executemany(
+            """
             INSERT INTO objectstorage (bucket, owner, objectcount, uploadsize, newobjects, downloadsize, deletedobjects,
               size, quota, ministry, branch, project, environment, reportdate)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
-        ''', record_tuples)
-        print('Insert Complete')
+        """,
+            record_tuples,
+        )
+        print("Insert Complete")
 
         # close the communication with the PostgreSQL
         conn.commit()
@@ -203,7 +212,7 @@ def insert_records_to_metabase(record_tuples):
     finally:
         if conn is not None:
             conn.close()
-            print('Database connection closed.')
+            print("Database connection closed.")
 
 
 if __name__ == "__main__":

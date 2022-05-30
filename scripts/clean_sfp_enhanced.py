@@ -183,7 +183,7 @@ def main(argv):
     inputdirectory = ""
     date = ""
     ministry = ""
-    syntaxcmd = "Insufficient number of commands passed: clean_sfp_enhanced.py -i <input_file> -d <datecol> -p <path_contains>"
+    syntaxcmd = "Insufficient number of commands passed: clean_sfp_enhanced.py -i <input_file> -d <datecol> -m <ministry_acronym>"
 
     if len(sys.argv) < 3:
         print(syntaxcmd)

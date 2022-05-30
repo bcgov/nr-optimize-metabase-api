@@ -23,6 +23,28 @@ import pandas as pd
 import os
 
 
+def manipulate_frame(frame, ministryname, datestamp):
+    # remove rows where User ID is blank
+    frame = frame.dropna(thresh=1)
+
+    # add ministry and date columns
+    frame = frame.assign(ministry=ministryname)
+    frame = frame.assign(date=datestamp)
+
+    # update ministry acronyms
+    frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("AGRI", "AF"))
+    frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("AFF", "AF"))
+    frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("FLNR", "FOR"))
+    frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("EMPR", "EMLI"))
+    frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("MEM", "EMLI"))
+    frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("ABR", "IRR"))
+
+    # remove the header row -- assumes it's the first
+    frame = frame[1:]
+
+    return frame
+
+
 def main(argv):
     # take a single input directory argument in
     # print ('Number of arguments:', len(sys.argv), 'arguments.')
@@ -69,6 +91,9 @@ def main(argv):
             "abr",
             "fpro",
             "bcws",
+            "af",
+            "for",
+            "lwrs",
         ]
         for findname in ministries:
             if name.lower().find(findname) != -1:
@@ -81,23 +106,17 @@ def main(argv):
 
         # read in xlsx, turn into dataframes
         excelsheet = pd.ExcelFile(name)
+
         frame = excelsheet.parse(excelsheet.sheet_names[1], header=None, index_col=None)
 
-        # remove rows where User ID is blank
-        frame = frame.dropna(thresh=1)
+        for sheet in excelsheet.sheet_names:
+            if sheet == "Home Drives - BCWS":
+                frame1 = excelsheet.parse(sheet, header=None, index_col=None)
+                frame1 = manipulate_frame(frame1, ministryname, datestamp)
+                frames.append(frame1)
+            continue
 
-        # add ministry and date columns
-        frame = frame.assign(ministry=ministryname)
-        frame = frame.assign(date=datestamp)
-
-        # update ministry acronyms
-        frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("AGRI", "AFF"))
-        frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("EMPR", "EMLI"))
-        frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("MEM", "EMLI"))
-        frame["ministry"] = frame["ministry"].apply(lambda x: x.replace("ABR", "IRR"))
-
-        # remove the header row -- assumes it's the first
-        frame = frame[1:]
+        frame = manipulate_frame(frame, ministryname, datestamp)
 
         frames.append(frame)
 
