@@ -29,6 +29,7 @@ import push_postgres_constants as constants
 
 
 ministry_renames = {
+    "": "No Tag",
     "AGRI": "AF",
     "AFF": "AF",
     "EMPR": "EMLI",
