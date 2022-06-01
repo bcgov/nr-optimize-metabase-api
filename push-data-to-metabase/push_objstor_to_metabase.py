@@ -29,7 +29,8 @@ import push_postgres_constants as constants
 
 
 ministry_renames = {
-    "AGRI": "AFF",
+    "AGRI": "AF",
+    "AFF": "AF",
     "EMPR": "EMLI",
     "EAO Environmental Assessment Office": "ENV",
     "EAO": "ENV",
@@ -41,17 +42,20 @@ ministry_renames = {
     "ENV IIT": "LWRS",
     "ENV IIT - Architecture": "LWRS",
     "CSNR": "ENV",
-    "FLNR BC Wildfire Service - BCWS": "FLNR",
-    "FLNR IROD": "FLNR",
-    "FLNR Office of the Chief Forester": "FLNR",
-    "FLNRORD": "FLNR",
-    "FLNR Resource Stewardship Division": "FLNR",
-    "FLNR Strategic Initiatives": "FLNR",
+    "FLNR BC Wildfire Service - BCWS": "FOR",
+    "FLNR IROD": "FOR",
+    "FLNR Office of the Chief Forester": "FOR",
+    "FLNRORD": "FOR",
+    "FLNR Resource Stewardship Division": "FOR",
+    "FLNR Strategic Initiatives": "FOR",
+    "FLNR": "FOR",
     "IIT": "LWRS",
     "IIT ENV": "LWRS",
+    "LWRS NRIDS": "LWRS",
+    "LWRS NRIDS - Architecture": "LWRS"
 }
 
-nrm_ministries = ["AFF", "EMLI", "ENV", "FLNR", "IRR", "LWRS"]
+nrm_ministries = ["AF", "EMLI", "ENV", "FOR", "IRR", "LWRS"]
 
 delete_before_insert = False
 
@@ -129,9 +133,9 @@ def get_records_from_xlsx():
                 for i in range(len(row)):
                     if i in [2, 3, 4, 5, 6, 7, 8, 9] and row[i] == "":
                         row[i] = 0
-                    if i in [2, 4, 6, 9]:
+                    if i in [2, 4, 9]:
                         row[i] = int(row[i])
-                    elif i in [3, 5, 7, 8]:
+                    elif i in [3, 5, 6, 7, 8]:
                         row[i] = float(row[i])
 
                 ministry, branch, project, environment = (
