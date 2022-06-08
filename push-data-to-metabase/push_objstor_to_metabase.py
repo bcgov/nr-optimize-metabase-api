@@ -92,10 +92,10 @@ def number_of_columns(row):
     return column_with_value_count
 
 
-# gets all .xlsx files from the python files directory
-def get_records_from_xlsx():
+# gets all .csv files from the python files directory
+def get_records_from_csv():
 
-    # grab all the .xlsx file names in the python file's directory
+    # grab all the .csv file names in the python file's directory
     current_file_path = os.path.dirname(os.path.realpath(__file__))
     csv_names = glob.glob(os.path.join(current_file_path, "*.csv"))
 
@@ -223,5 +223,5 @@ def insert_records_to_metabase(record_tuples):
 if __name__ == "__main__":
     if "-d" in sys.argv:
         delete_before_insert = True
-    record_tuples = get_records_from_xlsx()
+    record_tuples = get_records_from_csv()
     insert_records_to_metabase(record_tuples)
