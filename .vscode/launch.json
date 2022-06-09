@@ -21,6 +21,14 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Python: push_hostingexpenses_metabase",
+            "type": "python",
+            "request": "launch",
+            "program": "push-data-to-metabase/push_hostingexpenses_to_metabase.py",
+            "args": ["-dfy"],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python: push_objstor_metabase",
             "type": "python",
             "request": "launch",
