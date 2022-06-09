@@ -73,7 +73,7 @@ def send_admin_email(message_detail):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     host_name = socket.gethostname()
     html = "<html><head></head><body><p>" \
-        + "A scheduled script relay_bucket_data.py has sent an automated report email." \
+        + "A scheduled script send_usage_emails.py has sent an automated report email." \
         + "<br />Server: " + str(host_name) \
         + "<br />File Path: " + dir_path + "<br />" \
         + str(message_detail) \
@@ -648,12 +648,31 @@ def main(argv):
         if nrm_metrics is None:
             return
 
-        # Assign Ministry Names
+        # Update ministry names in both sets of data
+        ministry_renames = {
+            "BCWS": "FOR",
+            "FLNR": "FOR",
+            "FPRO": "FOR",
+            "AFF": "AF"
+        }
+        for idir in data:
+            idir_info = data[idir]
+            ministry_acronym = idir_info["ministry"]
+            if ministry_acronym in ministry_renames:
+                idir_info["ministry"] = ministry_renames[ministry_acronym]
+        for ministry_acronym in nrm_metrics:
+            metrics = nrm_metrics[ministry_acronym]
+            if ministry_acronym in ministry_renames:
+                new_acronym = ministry_renames[ministry_acronym]
+                nrm_metrics[new_acronym] = metrics
+                del nrm_metrics[ministry_acronym]
+
+        # Assign Ministry Names, in use they are prefixed with "Ministry of "
         long_ministry_names = {
-            "AFF": "Agriculture, Food and Fisheries",
+            "AF": "Agriculture and Food",
             "EMLI": "Energy, Mines and Low Carbon Innovation",
             "ENV": "Environment",
-            "FLNR": "Forests, Lands, Natural Resource Operations & Rural Development",
+            "FOR": "Forests",
             "LWRS": "Land, Water and Resource Stewardship",
             "IRR": "Indigenous Relations & Reconciliation"
         }

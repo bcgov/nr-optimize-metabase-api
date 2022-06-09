@@ -72,9 +72,10 @@ htmltools::img(src = knitr::image_uri(file.path(here("scripts"), "GFX_Optimizati
 
 ```{r load data, include = FALSE}
 here::here()
-#sfp_data <- read_csv(here("source", {params$data}), col_names = TRUE)
 
-sfp_data <- fread((here("source", glue("{params$data}"))), select = c("filename", "path", "share", "sizemb", "lastaccessdate", "modificationdate", "creationdate"))
+sfp_data <- fread((here("source", glue("{params$data}"))), select = c("filename", "path", "share", "sizemb", "lastaccessdate", "modificationdate", "creationdate")), na.strings=c("","NULL.NULL"))
+
+setkey(sfp_data, share)[.({params$share})]
 ```
 
 ```{r functions, include = FALSE}
@@ -97,10 +98,10 @@ freezePane(excel, x, firstRow = TRUE)
 
 ```{r folder search, include = FALSE}
 formatted_sfp_data <- sfp_data %>%
+  mutate(filename = replace_na(filename, "NULL.NULL")) %>% 
   mutate(share = gsub("\\", "", share, fixed=TRUE)) %>%
   filter(str_detect(share, {params$share})) %>%
   #select(filename, path, share, sizemb, lastaccessdate, modificationdate, creationdate) %>%
-  mutate(root = word(path, 1, 7, sep = "\\\\")) %>%
   mutate(folderdepth = str_count(path, "\\\\")) %>%
   mutate(folderdepth = folderdepth-5) %>% 
   mutate(sizegb = sizemb / 1000) %>% 
@@ -114,7 +115,7 @@ formatted_sfp_data <- sfp_data %>%
   mutate(lastaccessdate = convert.date(lastaccessdate)) %>% 
   mutate(modificationdate = convert.date(modificationdate)) %>% 
   mutate(creationdate = convert.date(creationdate)) %>% 
-  select(filename, filetype, root, path, folderdepth, sizemb, sizegb, lastaccessdate, modificationdate, creationdate, monthly_cost, obj_store_cost, object_storage_cost)
+  select(filename, filetype, path, folderdepth, sizemb, sizegb, lastaccessdate, modificationdate, creationdate, monthly_cost, obj_store_cost, object_storage_cost)
 ```
 
 ```{r, include = FALSE}

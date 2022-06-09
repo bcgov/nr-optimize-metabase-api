@@ -75,9 +75,12 @@ htmltools::img(src = knitr::image_uri(file.path(here("scripts"), "GFX_Optimizati
 ```
 
 ```{r load data, include = FALSE}
-#sfp_data <- read_csv(here("source", {params$data}), col_names = TRUE)
+# load the csv file containing relevant SFP Enhanced data
+here::here()
 
-sfp_data <- fread((here("source", glue("{params$data}"))), select = c("filename", "path", "share", "sizemb", "lastaccessdate", "modificationdate", "creationdate"))
+sfp_data <- fread((here("source", glue("{params$data}"))), fill = TRUE, select = c("filename", "path", "share", "sizemb", "lastaccessdate", "modificationdate", "creationdate"), na.strings=c("","NULL.NULL"))
+
+setkey(sfp_data, path)[.({params$path})]
 ```
 
 ```{r functions, include = FALSE}
@@ -103,12 +106,14 @@ refine_filter = paste0("\\b", params$folder, "\\b")
 ```
 
 ```{r folder search, include = FALSE}
-formatted_sfp_data <- sfp_data %>%
-  #select(filename, path, share, sizemb, lastaccessdate, modificationdate, creationdate) %>%
-  mutate(share = gsub("\\", "", share, fixed=TRUE)) %>%
+search_sfp_data <- sfp_data %>% 
   filter(str_detect(path, {params$path}))  %>%
-  filter(str_detect(path, refine_filter)) %>% 
-  mutate(root = word(path, 1, 7, sep = "\\\\")) %>%
+  filter(str_detect(path, refine_filter))
+```
+
+```{r reshape data, include = FALSE}
+formatted_sfp_data <- search_sfp_data %>%
+  mutate(filename = replace_na(filename, "NULL.NULL")) %>% 
   mutate(folderdepth = str_count(path, "\\\\")) %>%
   mutate(folderdepth = folderdepth-5) %>%
   mutate(sizegb = sizemb / 1000) %>% 
@@ -122,7 +127,9 @@ formatted_sfp_data <- sfp_data %>%
   mutate(lastaccessdate = convert.date(lastaccessdate)) %>% 
   mutate(modificationdate = convert.date(modificationdate)) %>% 
   mutate(creationdate = convert.date(creationdate)) %>% 
-  select(filename, filetype, root, path, folderdepth, sizemb, sizegb, lastaccessdate, modificationdate, creationdate, monthly_cost, obj_store_cost, object_storage_cost)
+  select(filename, filetype, path, folderdepth, sizemb, sizegb, lastaccessdate, modificationdate, creationdate, monthly_cost, obj_store_cost, object_storage_cost)
+
+head(formatted_sfp_data)
 ```
 
 ```{r, include = FALSE}

@@ -29,7 +29,9 @@ import push_postgres_constants as constants
 
 
 ministry_renames = {
-    "AGRI": "AFF",
+    "": "No Tag",
+    "AGRI": "AF",
+    "AFF": "AF",
     "EMPR": "EMLI",
     "EAO Environmental Assessment Office": "ENV",
     "EAO": "ENV",
@@ -41,17 +43,20 @@ ministry_renames = {
     "ENV IIT": "LWRS",
     "ENV IIT - Architecture": "LWRS",
     "CSNR": "ENV",
-    "FLNR BC Wildfire Service - BCWS": "FLNR",
-    "FLNR IROD": "FLNR",
-    "FLNR Office of the Chief Forester": "FLNR",
-    "FLNRORD": "FLNR",
-    "FLNR Resource Stewardship Division": "FLNR",
-    "FLNR Strategic Initiatives": "FLNR",
+    "FLNR BC Wildfire Service - BCWS": "FOR",
+    "FLNR IROD": "FOR",
+    "FLNR Office of the Chief Forester": "FOR",
+    "FLNRORD": "FOR",
+    "FLNR Resource Stewardship Division": "FOR",
+    "FLNR Strategic Initiatives": "FOR",
+    "FLNR": "FOR",
     "IIT": "LWRS",
     "IIT ENV": "LWRS",
+    "LWRS NRIDS": "LWRS",
+    "LWRS NRIDS - Architecture": "LWRS"
 }
 
-nrm_ministries = ["AFF", "EMLI", "ENV", "FLNR", "IRR", "LWRS"]
+nrm_ministries = ["AF", "EMLI", "ENV", "FOR", "IRR", "LWRS"]
 
 delete_before_insert = False
 
@@ -87,10 +92,10 @@ def number_of_columns(row):
     return column_with_value_count
 
 
-# gets all .xlsx files from the python files directory
-def get_records_from_xlsx():
+# gets all .csv files from the python files directory
+def get_records_from_csv():
 
-    # grab all the .xlsx file names in the python file's directory
+    # grab all the .csv file names in the python file's directory
     current_file_path = os.path.dirname(os.path.realpath(__file__))
     csv_names = glob.glob(os.path.join(current_file_path, "*.csv"))
 
@@ -218,5 +223,5 @@ def insert_records_to_metabase(record_tuples):
 if __name__ == "__main__":
     if "-d" in sys.argv:
         delete_before_insert = True
-    record_tuples = get_records_from_xlsx()
+    record_tuples = get_records_from_csv()
     insert_records_to_metabase(record_tuples)
