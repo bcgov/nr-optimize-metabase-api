@@ -21,9 +21,35 @@ import sys
 import argparse
 import pandas as pd
 import os
+import ldap_helper as ldap
+
+dept_errors = []
+attribute_error_idirs = []
+other_error_idirs = []
 
 
-def manipulate_frame(frame, ministryname, datestamp):
+def get_department(idir, ldap_util, conn):
+    ad_info = None
+    try:
+        # Connect to AD to get user info
+        ad_info = ldap_util.getADInfo(idir, conn)
+    except (Exception, AttributeError) as error:
+        if AttributeError:
+            print(f"Unable to find {idir} due to error {error}")
+            if error == "department" : 
+                dept_errors.append(idir)
+            else:
+                attribute_error_idirs.append(idir)
+        else:
+            print(f"Unable to find {idir} due to error {error}")
+            other_error_idirs.append(idir)
+
+    if ad_info is not None and "department" in ad_info:
+        return ad_info["department"]
+    return None
+
+
+def manipulate_frame(frame, ministryname, datestamp, ldap_util, conn):
     # remove rows where User ID is blank
     frame = frame.dropna(thresh=1)
 
@@ -41,6 +67,8 @@ def manipulate_frame(frame, ministryname, datestamp):
 
     # remove the header row -- assumes it's the first
     frame = frame[1:]
+
+    frame["division"] = frame[0].apply(lambda idir: get_department(idir, ldap_util, conn))
 
     return frame
 
@@ -68,6 +96,7 @@ def main(argv):
         metavar="string",
         type=str,
     )
+
     args = parser.parse_args()
 
     inputdirectory = args.inputdirectory
@@ -109,20 +138,26 @@ def main(argv):
 
         frame = excelsheet.parse(excelsheet.sheet_names[1], header=None, index_col=None)
 
+        ldap_util = ldap.LDAPUtil()
+        conn = ldap_util.getLdapConnection()
+
         for sheet in excelsheet.sheet_names:
             if sheet == "Home Drives - BCWS":
                 frame1 = excelsheet.parse(sheet, header=None, index_col=None)
-                frame1 = manipulate_frame(frame1, ministryname, datestamp)
+                frame1 = manipulate_frame(frame1, ministryname, datestamp, ldap_util, conn)
                 frames.append(frame1)
             continue
 
-        frame = manipulate_frame(frame, ministryname, datestamp)
+        frame = manipulate_frame(frame, ministryname, datestamp, ldap_util, conn)
 
         frames.append(frame)
 
+    with open('dept_errors.txt', 'w') as f:
+        f.write(",".join(dept_errors))
+
     # merge the datasets together, add headers back in
     combined = pd.concat(frames)
-    combined.columns = ["idir", "displayname", "datausage", "ministry", "date"]
+    combined.columns = ["idir", "displayname", "datausage", "ministry", "date", "division"]
 
     # If displayname cell is blank, copy idir name to cell
     combined.displayname.fillna(combined.idir, inplace=True)
