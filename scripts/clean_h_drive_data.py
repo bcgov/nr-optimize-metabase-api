@@ -26,6 +26,7 @@ import ldap_helper as ldap
 dept_errors = []
 attribute_error_idirs = []
 other_error_idirs = []
+not_found = []
 
 
 def get_department(idir, ldap_util, conn):
@@ -36,7 +37,7 @@ def get_department(idir, ldap_util, conn):
     except (Exception, AttributeError) as error:
         if AttributeError:
             print(f"Unable to find {idir} due to error {error}")
-            if error == "department" : 
+            if error.args[0] == "department" :
                 dept_errors.append(idir)
             else:
                 attribute_error_idirs.append(idir)
@@ -44,7 +45,10 @@ def get_department(idir, ldap_util, conn):
             print(f"Unable to find {idir} due to error {error}")
             other_error_idirs.append(idir)
 
-    if ad_info is not None and "department" in ad_info:
+    if ad_info is None or ad_info['givenName'] is None:
+        not_found.append(idir)
+        return None
+    elif "department" in ad_info:
         return ad_info["department"]
     return None
 
@@ -154,6 +158,8 @@ def main(argv):
 
     with open('dept_errors.txt', 'w') as f:
         f.write(",".join(dept_errors))
+    with open('not_found.txt', 'w') as f:
+        f.write(",".join(not_found))
 
     # merge the datasets together, add headers back in
     combined = pd.concat(frames)
