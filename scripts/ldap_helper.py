@@ -33,7 +33,7 @@ class LDAPUtil():
                 LOGGER.warning(f"Failed to connect to ldap server, error: {error}")
         return conn
 
-    def getADInfo(self, idir, conn=None):
+    def getADInfo(self, idir, conn=None, out_attributes=["givenName", "mail"]):
         user_info = {
             "givenName": None
         }
@@ -48,8 +48,12 @@ class LDAPUtil():
         conn.search(host_string, search_filter=query_String, search_scope='SUBTREE', attributes='*')
         if len(conn.response) > 0:
             LOGGER.debug(conn.response)
-            user_info["department"] = conn.response[0]['attributes']['department']
-            user_info["givenName"] = conn.response[0]['attributes']['givenName']
+            if out_attributes == '*':
+                for attribute in conn.response[0]['attributes']:
+                    user_info[attribute] = conn.response[0]['attributes'][attribute]                    
+            else:
+                for attribute in out_attributes:
+                    user_info[attribute] = conn.response[0]['attributes'][attribute]
         else:
             msg = f'user: {idir} not found in ldap'
             LOGGER.warning(msg)
