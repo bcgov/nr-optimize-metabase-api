@@ -17,6 +17,7 @@
 # -------------------------------------------------------------------------------
 
 import glob
+import math
 import sys
 import argparse
 import pandas as pd
@@ -33,7 +34,7 @@ def get_department(idir, ldap_util, conn):
     ad_info = None
     try:
         # Connect to AD to get user info
-        ad_info = ldap_util.getADInfo(idir, conn)
+        ad_info = ldap_util.getADInfo(idir, conn, ["givenName", "department"])
     except (Exception, AttributeError) as error:
         if AttributeError:
             print(f"Unable to find {idir} due to error {error}")
@@ -53,7 +54,7 @@ def get_department(idir, ldap_util, conn):
     return None
 
 
-def manipulate_frame(frame, ministryname, datestamp, ldap_util, conn):
+def manipulate_frame(frame, ministryname, datestamp):
     # remove rows where User ID is blank
     frame = frame.dropna(thresh=1)
 
@@ -72,7 +73,21 @@ def manipulate_frame(frame, ministryname, datestamp, ldap_util, conn):
     # remove the header row -- assumes it's the first
     frame = frame[1:]
 
-    frame["division"] = frame[0].apply(lambda idir: get_department(idir, ldap_util, conn))
+    ldap_util = ldap.LDAPUtil()
+    conn = ldap_util.getLdapConnection()
+
+    idir_count = len(frame)
+    departments = []
+    recent_percent = "0.0"
+    for i in range(len(frame.values)):
+        percent_complete = math.floor(i*100.0/idir_count)
+        percent_complete = f"{percent_complete:.1f}%"
+        if recent_percent != percent_complete:
+            recent_percent = percent_complete
+            print(percent_complete)
+        idir = frame.values[i][0]
+        departments.append(get_department(idir, ldap_util, conn))
+    frame['division'] = departments
 
     return frame
 
@@ -140,29 +155,56 @@ def main(argv):
         # read in xlsx, turn into dataframes
         excelsheet = pd.ExcelFile(name)
 
+        # Second tab is the primary h drive data dump
         frame = excelsheet.parse(excelsheet.sheet_names[1], header=None, index_col=None)
+        frame = manipulate_frame(frame, ministryname, datestamp)
 
-        ldap_util = ldap.LDAPUtil()
-        conn = ldap_util.getLdapConnection()
-
+        # FOR also has a BCWS tab which is seperate from the primary h drive data, so get that too
         for sheet in excelsheet.sheet_names:
             if sheet == "Home Drives - BCWS":
                 frame1 = excelsheet.parse(sheet, header=None, index_col=None)
-                frame1 = manipulate_frame(frame1, ministryname, datestamp, ldap_util, conn)
+                frame1 = manipulate_frame(frame1, ministryname, datestamp)
                 frames.append(frame1)
             continue
 
-        frame = manipulate_frame(frame, ministryname, datestamp, ldap_util, conn)
-
         frames.append(frame)
 
-    with open('dept_errors.txt', 'w') as f:
-        f.write(",".join(dept_errors))
-    with open('not_found.txt', 'w') as f:
-        f.write(",".join(not_found))
-
-    # merge the datasets together, add headers back in
+    # merge the datasets together
     combined = pd.concat(frames)
+
+    # UNCOMMENT THIS BLOCK TO STORE DETAILS ABOUT THE USERS WITHOUT DEPARTMENT
+    # print("Writing dept_errors.txt")
+    # ldap_util = ldap.LDAPUtil()
+    # conn = ldap_util.getLdapConnection()
+    # with open('dept_errors.txt', 'w') as f:
+    #     out_attributes = ['sAMAccountName', 'title', 'company', 'homeDrive', 'badPwdCount', 'userAccountControl', 'lastLogon', 'lockoutTime', 'bcgovAccountType',
+    #                       'mailboxOrgCode', 'bcgovHrDepartmentID', 'bcgovHrStatus', 'bcgovHrClientAccountCode', 'bcgovHrJobFunctionCode', 'msRTCSIP-UserEnabled',
+    #                       'bcgovEmploymentType']
+    #     f.write("\t".join(out_attributes))
+
+    #     for idir in dept_errors:
+    #         try:
+    #             # Connect to AD to get user info
+    #             # ad_info = ldap_util.getADInfo(idir, conn, ["givenName", "department"])
+    #             ad_info = ldap_util.getADInfo(idir, conn)
+    #         except (Exception, AttributeError) as error:
+    #             print(f"Error while doing follow up search for IDIR: {idir}")
+    #             print(error)
+    #         if ad_info is not None:
+    #             attribute_values = []
+    #             for attribute in out_attributes:
+    #                 if attribute in ad_info:
+    #                     attribute_values.append(str(ad_info[attribute]))
+    #                 else:
+    #                     attribute_values.append("")
+    #             f.write("\n"+"\t".join(attribute_values))
+
+    # Log the users not found in LDAP
+    with open('not_found.txt', 'w') as f:
+        for idir in not_found:
+            f.write(f"{idir}\n")
+
+    # add headers back in
     combined.columns = ["idir", "displayname", "datausage", "ministry", "date", "division"]
 
     # If displayname cell is blank, copy idir name to cell
