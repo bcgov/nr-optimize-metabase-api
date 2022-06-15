@@ -94,7 +94,7 @@ def get_records_from_xlsx():
                 row[column_map["sda party"]] = ministry_renames[ministry.strip()]
 
             # Null out broken timestamps from blank cells
-            gl_period = row[column_map["gl period"]]      
+            gl_period = row[column_map["gl period"]]
             if pd.isnull(gl_period):
                 row[column_map["gl period"]] = None
 
