@@ -6,7 +6,7 @@ from log_helper import LOGGER
 
 
 class LDAPUtil():
-    def __init__(self, user, passwd):
+    def __init__(self, user=constants.LDAP_USER, passwd=constants.LDAP_PASSWORD):
         self.user = user
         self.passwd = passwd
         self.server = None
@@ -33,10 +33,9 @@ class LDAPUtil():
                 LOGGER.warning(f"Failed to connect to ldap server, error: {error}")
         return conn
 
-    def getADInfo(self, idir, conn=None):
+    def getADInfo(self, idir, conn=None, out_attributes=["givenName", "mail"]):
         user_info = {
-            "givenName": None,
-            "mail": None
+            "givenName": None
         }
         if conn is None:
             conn = self.getLdapConnection()
@@ -49,8 +48,12 @@ class LDAPUtil():
         conn.search(host_string, search_filter=query_String, search_scope='SUBTREE', attributes='*')
         if len(conn.response) > 0:
             LOGGER.debug(conn.response)
-            user_info["mail"] = conn.response[0]['attributes']['mail']
-            user_info["givenName"] = conn.response[0]['attributes']['givenName']
+            if out_attributes == '*':
+                for attribute in conn.response[0]['attributes']:
+                    user_info[attribute] = conn.response[0]['attributes'][attribute]                    
+            else:
+                for attribute in out_attributes:
+                    user_info[attribute] = conn.response[0]['attributes'][attribute]
         else:
             msg = f'user: {idir} not found in ldap'
             LOGGER.warning(msg)
