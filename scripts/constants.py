@@ -13,7 +13,3 @@ BUCKET_SECRET = os.environ['BUCKET_SECRET']
 # Environment Variables for update_quarterly_reporting.py - government email (username) & IDIR Password
 USER_NAME = os.environ['USER_NAME']
 PASSWORD = os.environ['PASSWORD']
-
-# Environment Variables for clean_h_drive.py - AD service account
-LDAP_USER = os.environ['LDAP_USER']
-LDAP_PASSWORD = os.environ['LDAP_PASSWORD']
