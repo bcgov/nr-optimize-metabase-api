@@ -253,8 +253,8 @@ def insert_group_share_records_to_metabase(record_tuples):
 if __name__ == "__main__":
     if "-d" in sys.argv:
         delete_before_insert = True
-    # record_tuples = get_records_from_xlsx("home drives")
-    # insert_h_drive_records_to_metabase(record_tuples)
+    record_tuples = get_records_from_xlsx("home drives")
+    insert_h_drive_records_to_metabase(record_tuples)
 
     record_tuples = get_records_from_xlsx("group shares")
     insert_group_share_records_to_metabase(record_tuples)
