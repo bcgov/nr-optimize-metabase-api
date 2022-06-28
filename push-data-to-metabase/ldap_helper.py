@@ -50,7 +50,7 @@ class LDAPUtil():
             LOGGER.debug(conn.response)
             if out_attributes == '*':
                 for attribute in conn.response[0]['attributes']:
-                    user_info[attribute] = conn.response[0]['attributes'][attribute]                    
+                    user_info[attribute] = conn.response[0]['attributes'][attribute]
             else:
                 for attribute in out_attributes:
                     user_info[attribute] = conn.response[0]['attributes'][attribute]

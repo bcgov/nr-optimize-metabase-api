@@ -20,17 +20,18 @@
 
 import glob
 import ldap_helper as ldap
-import math
 import pandas as pd
 import os
 import sys
 import psycopg2
 import push_postgres_constants as constants
 
-dept_errors = []
-attribute_error_idirs = []
-other_error_idirs = []
-not_found = []
+errors = {
+    "department": [],
+    "physicalDeliveryOfficeName": [],
+    "other": [],
+    "not_found": []
+}
 
 ministry_renames = {
     "AGRI": "AF",
@@ -44,28 +45,24 @@ ministry_renames = {
 delete_before_insert = False
 
 
-def get_department(idir, ldap_util, conn):
+def get_ad_attribute(idir, ldap_util, conn, attribute="givenName"):
+    attributes = [attribute]
     ad_info = None
+
     try:
         # Connect to AD to get user info
-        ad_info = ldap_util.getADInfo(idir, conn, ["givenName", "department"])
-    except (Exception, AttributeError) as error:
-        if AttributeError:
-            print(f"Unable to find {idir} due to error {error}")
-            if error.args[0] == "department" :
-                dept_errors.append(idir)
-            else:
-                attribute_error_idirs.append(idir)
-        else:
-            print(f"Unable to find {idir} due to error {error}")
-            other_error_idirs.append(idir)
-
-    if ad_info is None or ad_info['givenName'] is None:
-        not_found.append(idir)
+        ad_info = ldap_util.getADInfo(idir, conn, attributes)
+    except (Exception, AttributeError):
+        errors[attribute].append(idir)
         return None
-    elif "department" in ad_info:
-        return ad_info["department"]
-    return None
+
+    if ad_info is None or attribute not in ad_info:
+        # attribute was not found, if it's an attribute that we track, append it.
+        if attribute in errors:
+            errors[attribute].append(idir)
+        return None
+    else:
+        return ad_info[attribute]
 
 
 def manipulate_frame(frame, ministryname, datestamp):
@@ -86,18 +83,18 @@ def manipulate_frame(frame, ministryname, datestamp):
     return frame
 
 
-def add_department(frame):
+def add_column(frame, column_ad_name, column_postgress_name):
     ldap_util = ldap.LDAPUtil()
     conn = ldap_util.getLdapConnection()
 
-    departments = []
+    values = []
     for i in range(len(frame.values)):
         idir = frame.values[i][0]
         if type(idir) == str and idir != "User ID":
-            departments.append(get_department(idir, ldap_util, conn))
+            values.append(get_ad_attribute(idir, ldap_util, conn, column_ad_name))
         else:
-            departments.append("")
-    frame['division'] = departments
+            values.append("")
+    frame[column_postgress_name] = values
 
     return frame
 
@@ -149,21 +146,32 @@ def get_records_from_xlsx(sheet_name):
                 print(f"Working on file {name} sheet {current_sheet_name}")
                 frame = excelsheet.parse(current_sheet_name, header=None, index_col=None)
                 if sheet_name.lower() == "home drives":
-                    frame = add_department(frame)
+                    frame = add_column(frame, "department", "division")
+                    frame = add_column(frame, "physicalDeliveryOfficeName", "branch")
                 frame = manipulate_frame(frame, ministryname, datestamp)
                 frames.append(frame)
 
-    # merge the datasets together
+    # Merge the datasets together
     combined = pd.concat(frames)
+
+    ldap_util = ldap.LDAPUtil()
+    conn = ldap_util.getLdapConnection()
+    for idir in errors["department"] and errors["physicalDeliveryOfficeName"]:
+        # If the user has no department or branch, maybe they have a name?
+        givenName = get_ad_attribute(idir, ldap_util, conn, "givenName")
+        if givenName is None:
+            errors["not_found"].append(idir)
+            errors["department"].remove(idir)
+            errors["physicalDeliveryOfficeName"].remove(idir)
 
     # Log the users not found in LDAP
     with open('not_found.txt', 'w') as f:
-        for idir in not_found:
+        for idir in errors["not_found"]:
             f.write(f"{idir}\n")
 
     # add headers back in
     if sheet_name.lower() == "home drives":
-        combined.columns = ["idir", "displayname", "datausage", "ministry", "division", "date"]
+        combined.columns = ["idir", "displayname", "datausage", "ministry", "division", "branch", "date"]
 
         # also fill blank displaynames with idir
         combined.displayname.fillna(combined.idir, inplace=True)
@@ -203,8 +211,8 @@ def insert_h_drive_records_to_metabase(record_tuples):
 
         print('Inserting new h drive data')
         cur.executemany('''
-            INSERT INTO hdriveusage (idir, displayname, datausage, division, ministry, date)
-            VALUES (%s, %s, %s, %s, %s, %s);
+            INSERT INTO hdriveusage (idir, displayname, datausage, division, branch, ministry, date)
+            VALUES (%s, %s, %s, %s, %s, %s, %s);
         ''', record_tuples)
         print('Insert to hdriveusage Complete')
 
