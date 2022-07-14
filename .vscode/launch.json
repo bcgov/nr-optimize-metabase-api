@@ -3,30 +3,66 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [  
+    "configurations": [
         {
-            "name": "Python: access_ldap",
+            "name": "Python: ldap_helper",
             "type": "python",
             "request": "launch",
-            "program": "send-usage-emails\\access_ldap.py",
+            "program": "send-usage-emails\\ldap_helper.py",
             "args": [],
             "console": "integratedTerminal"
-        },       
+        },
         {
-            "name": "Python: push_onedrive",
+            "name": "Python: push_h_sfp_to_metabase",
+            "type": "python",
+            "request": "launch",
+            "program": "push-data-to-metabase/push_h_sfp_to_metabase.py",
+            "args": [],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: push_onedrive_metabase",
             "type": "python",
             "request": "launch",
             "program": "push-data-to-metabase/push_onedrive_to_metabase.py",
             "args": [],
             "console": "integratedTerminal"
-        },  
+        },
+        {
+            "name": "Python: push_hostingexpenses_metabase",
+            "type": "python",
+            "request": "launch",
+            "program": "push-data-to-metabase/push_hostingexpenses_to_metabase.py",
+            "args": ["-dfy"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: push_objstor_metabase",
+            "type": "python",
+            "request": "launch",
+            "program": "push-data-to-metabase/push_objstor_to_metabase.py",
+            "args": [],
+            "console": "integratedTerminal"
+        },
         {
             "name": "Python: clean_incremental_data",
             "type": "python",
             "request": "launch",
             "program": "scripts\\clean_incremental_data.py",
             "args": [
-                "-i", "C:/TEMP/data"
+                "-i",
+                "C:/TEMP/data"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: clean_h_drive_data",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts\\clean_h_drive_data.py",
+            "args": [
+                "-i",
+                "C:/TEMP/data"
             ],
             "console": "integratedTerminal"
         },
@@ -36,10 +72,14 @@
             "request": "launch",
             "program": "scripts\\clean_expense_report_csv.py",
             "args": [
-                "-i", "C:/TEMP/data/Hosting Services Expense Report.txt",
-                "-c", "C:/TEMP/data/OptimizeLookupCategories.csv",
-                "-t", "Recovery Period",
-                "-s", "Service Name"
+                "-i",
+                "C:/TEMP/data/Hosting Services Expense Report.txt",
+                "-c",
+                "C:/TEMP/data/OptimizeLookupCategories.csv",
+                "-t",
+                "Recovery Period",
+                "-s",
+                "Service Name"
             ],
             "console": "integratedTerminal"
         },
@@ -48,12 +88,7 @@
             "type": "python",
             "request": "launch",
             "program": "send-usage-emails\\send_usage_emails.py",
-            "args": [
-                "-i", "C:/TEMP/data/inputcsvs",
-                "-r", "2021-05_H_Drive_NRM_Usage.csv",
-                "-f", "C:/TEMP/data/output",
-                "-e", "C:/TEMP/data/excluded_idirs.csv"
-            ],
+            "args": [],
             "console": "integratedTerminal"
         },
         {
@@ -61,8 +96,7 @@
             "type": "python",
             "request": "launch",
             "program": "scripts\\metabase_api_test.py",
-            "args": [
-            ],
+            "args": [],
             "console": "integratedTerminal"
         }
     ]

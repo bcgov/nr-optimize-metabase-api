@@ -1,3 +1,5 @@
+REM TODO: TEST/USE push_to_metabase.bat instead using "push_to_metabase.bat push_onedrive_to_metabase.py"
+
 REM Script requires that user is already logged in to OC with appropriate credentials
 REM Correct project must be selected
 REM Optional parameter -d will delete records before adding new ones from csv

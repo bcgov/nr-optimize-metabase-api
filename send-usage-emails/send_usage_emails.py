@@ -20,6 +20,7 @@
 
 import calendar
 import constants
+import multiprocessing as mp
 import ldap_helper as ldap
 import math
 import os
@@ -72,7 +73,7 @@ def send_admin_email(message_detail):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     host_name = socket.gethostname()
     html = "<html><head></head><body><p>" \
-        + "A scheduled script relay_bucket_data.py has sent an automated report email." \
+        + "A scheduled script send_usage_emails.py has sent an automated report email." \
         + "<br />Server: " + str(host_name) \
         + "<br />File Path: " + dir_path + "<br />" \
         + str(message_detail) \
@@ -151,6 +152,8 @@ def get_hdrive_data():
         gb = result[1]
         sample_datetime = result[2]
         ministry = result[3]
+        if ministry == "FPRO" or ministry == "BCWS":
+            ministry = "FLNR"
         if idir not in attribute_error_idirs and idir not in other_error_idirs:
             if idir not in data:
                 # User is not in the "data" dictionary yet, create user entry while adding first sample.
@@ -373,16 +376,10 @@ def get_graph_bytes(idir_info):
 
     # Save the plot to file
     plt.savefig(constants.GRAPH_FILE_PATH)
-    # open image and read as binary data
-    fp = open(constants.GRAPH_FILE_PATH, "rb")
-    image_bytes = fp.read()
 
-    # Close and delete the file
-    fp.close()
-    os.remove(constants.GRAPH_FILE_PATH)
     plt.close()
 
-    return image_bytes
+    return
 
 
 # Get bytes from an image file
@@ -430,9 +427,9 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     biggest_drops_cost = biggest_drops * 2.7
 
     # Round down to nearest thousand for legibility
-    total_gb = int(math.floor(total_gb/1000)*1000)
-    total_h_drive_cost = int(math.floor(total_h_drive_cost/1000)*1000)
-    h_drive_count = int(math.floor(h_drive_count/1000)*1000)
+    total_gb = int(math.floor(total_gb/10)*10)
+    total_h_drive_cost = int(math.floor(total_h_drive_cost/10)*10)
+    h_drive_count = int(math.floor(h_drive_count/10)*10)
 
     # Build email content and metadata
     msg["Subject"] = f"Transitory: Your H: Drive Usage Report for {last_month_name} {year}"
@@ -444,8 +441,9 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     <html><head></head><body><p>
         Hi {name},<br><br>
 
-        This report from the <a href="https://intranet.gov.bc.ca/iit">Information, Innovation and Technology Division</a>
-         is provided to help raise awareness of monthly storage costs associated with your personal home (H:) drive."""
+        This report from the <a href="https://intranet.gov.bc.ca/nrids">Natural Resource Information and Digital Services</a>
+         shows the month to month storage costs of your personal home (H:) drive.
+         Please note, ministry coding is being updated. The ministry shown in this report may not be accurate until the coding change finishes."""
 
     # Reward the user with a gold star if data looks well managed
     if last_month_gb < 1 and month_before_last_sample is not None:
@@ -485,7 +483,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             if difference > 0:
                 # Cost went up
                 html_personal_metrics += f"""<li>Between {month_before_last_name} and {last_month_name} your consumption
-                <span style="color:#D8292F;"><b>increased</b></span> by <b>{abs_difference:,.3g}GB</b>, costing an additional <b>${abs_difference_cost:,.2f}</b> per month.</li>"""
+                <span style="color:#D8292F;"><b>increased</b></span> by <b>{abs_difference:,.3g}GB</b>,
+                costing an additional <b>${abs_difference_cost:,.2f}</b> per month.</li>"""
             else:
                 # Cost went down
                 html_personal_metrics += f"""<li>Between {month_before_last_name} and {last_month_name} your consumption
@@ -504,14 +503,14 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     <br><br><b>Did the cost of your H: Drive go up this month?</b><br>
     This happens from time to time. Here are three simple actions to help you reduce your storage expense "footprint":
     <ol>
-        <li>Move <a href="https://intranet.gov.bc.ca/iit/onedrive/what-not-to-move-onto-onedrive">appropriate</a>
-         files to <a href="https://intranet.gov.bc.ca/iit/onedrive">OneDrive</a> (time suggested: 20 mins)</li>
-        <li>Delete <a href="https://intranet.gov.bc.ca/assets/intranet/iit/pdfs-and-docs/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
-        <li><a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info#Emptyyourrecycling">Empty</a>
+        <li>Move <a href="https://intranet.gov.bc.ca/nrids/onedrive/what-not-to-move-onto-onedrive">appropriate</a>
+         files to <a href="https://intranet.gov.bc.ca/nrids/onedrive">OneDrive</a> (time suggested: 20 mins)</li>
+        <li>Delete <a href="https://intranet.gov.bc.ca/assets/intranet/nrids/pdfs-and-docs/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
+        <li><a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/storage-tips-and-info#Emptyyourrecycling">Empty</a>
         your Recycle Bin (time suggested: 1 min)</li>
     </ol>
     More suggestions on how to reduce can be found on our
-    <a href="https://intranet.gov.bc.ca/iit/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>."""
+    <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>."""
 
     # Share the successes of peers
     html_kudos = f"""
@@ -539,7 +538,17 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     msg.attach(MIMEText(html, "html"))
 
     # Get and attach images to email
-    msgImage = MIMEImage(get_graph_bytes(idir_info))
+    proc = mp.Process(target=get_graph_bytes, args=(idir_info,))
+    proc.daemon = True
+    proc.start()
+    proc.join()
+    # open image and read as binary data, then close and delete the file
+    fp = open(constants.GRAPH_FILE_PATH, "rb")
+    image_bytes = fp.read()
+    fp.close()
+    os.remove(constants.GRAPH_FILE_PATH)
+
+    msgImage = MIMEImage(image_bytes)
     msgImage.add_header("Content-ID", "<image1>")
     msg.attach(msgImage)
 
@@ -556,7 +565,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     s.quit()
 
     # Following smtp server guidelines of max 30 emails/minute
-    time.sleep(2)
+    # time.sleep(2)
 
     # log send complete
     LOGGER.info(f"Email sent to {recipient}.")
@@ -607,7 +616,7 @@ def refine_sendlist():
 
     email_send_list = []
     idir_send_list = []
-    if constants.EMAIL_SENDLIST:
+    if constants.EMAIL_SENDLIST and constants.EMAIL_SENDLIST != "None":
         for recipient in constants.EMAIL_SENDLIST.split(";"):
             if recipient.endswith(">"):
                 # Convert from MS Outlook email format
@@ -639,13 +648,32 @@ def main(argv):
         if nrm_metrics is None:
             return
 
-        # Assign Ministry Names
+        # Update ministry names in both sets of data
+        ministry_renames = {
+            "BCWS": "FOR",
+            "FLNR": "FOR",
+            "FPRO": "FOR",
+            "AFF": "AF"
+        }
+        for idir in data:
+            idir_info = data[idir]
+            ministry_acronym = idir_info["ministry"]
+            if ministry_acronym in ministry_renames:
+                idir_info["ministry"] = ministry_renames[ministry_acronym]
+        for ministry_acronym in nrm_metrics:
+            metrics = nrm_metrics[ministry_acronym]
+            if ministry_acronym in ministry_renames:
+                new_acronym = ministry_renames[ministry_acronym]
+                nrm_metrics[new_acronym] = metrics
+                del nrm_metrics[ministry_acronym]
+
+        # Assign Ministry Names, in use they are prefixed with "Ministry of "
         long_ministry_names = {
-            "AFF": "Agriculture, Food and Fisheries",
+            "AF": "Agriculture and Food",
             "EMLI": "Energy, Mines and Low Carbon Innovation",
             "ENV": "Environment",
-            "FLNR": "Forests, Lands, Natural Resource Operations & Rural Development",
-            "FPRO": "Forest Protection Branch",
+            "FOR": "Forests",
+            "LWRS": "Land, Water and Resource Stewardship",
             "IRR": "Indigenous Relations & Reconciliation"
         }
 
@@ -681,7 +709,7 @@ def main(argv):
             idir_info = data[idir]
             email = idir_info["mail"]
             if email is not None:
-                if constants.EMAIL_SENDLIST:
+                if constants.EMAIL_SENDLIST and constants.EMAIL_SENDLIST != "None":
                     if idir.lower() in idir_send_list or email.lower() in email_send_list:
                         filtered_data[idir] = idir_info
                 else:
@@ -699,11 +727,14 @@ def main(argv):
                 ministry_acronym = idir_info["ministry"]
                 h_drive_count = nrm_metrics[ministry_acronym]["h_drive_count"]
                 ministry_gb = nrm_metrics[ministry_acronym]["gb"]
-                ministry_name = long_ministry_names[ministry_acronym]
-                send_idir_email(idir_info, h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
+                if ministry_acronym not in long_ministry_names:
+                    send_admin_email(f"New Ministry for user {idir} named {ministry_acronym}")
+                else:
+                    ministry_name = long_ministry_names[ministry_acronym]
+                    send_idir_email(idir_info, h_drive_count, ministry_gb, ministry_name, biggest_drop, biggest_drops)
 
-                # Track successful send
-                emails_sent_to.append(idir_info["mail"])
+                    # Track successful send
+                    emails_sent_to.append(idir_info["mail"])
 
     except (Exception, psycopg2.DatabaseError) as error:
         LOGGER.info(error)
