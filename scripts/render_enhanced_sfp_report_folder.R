@@ -20,4 +20,4 @@ render_report = function(data, ministry, path, folder, quarter, fiscal, collecte
 }
 
 #render, stating parameters
-render_report("2022-05-01_AF_SFP_Enhanced_Data.csv", "AF", "^\\\\\\\\sfp.idir.bcgov\\\\C100\\\\S104\\\\S04102\\\\AGRI Fisheries", "AGRI Fisheries", "Q1", "FY22-23", "2022-05-05")
+render_report("2022-07-01_FOR_SFP_Enhanced_Data.csv", "FOR", "\\\\\\\\KAMSFILE\\\\S63072\\\\ARCH", "ARCH", "Q2", "FY22-23", "2022-06-28")

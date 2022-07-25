@@ -121,8 +121,8 @@ def find_columns(row):
         print(f"WARNING: Could not find sizemb header. Setting to column: {sizembcol}")
         print("Check input and output file to ensure correct column order and format")
 
-    if containercol != 7:
-        containercol = 7
+    if containercol != 6:
+        containercol = 6
         print(
             f"WARNING: Could not find container header. Setting to column: {containercol}"
         )
@@ -242,9 +242,7 @@ def main(argv):
                 "sizemb",
                 "lastaccessdate",
                 "modificationdate",
-                "creationdate",
                 "share",
-                "owner",
                 "ministry",
                 "date",
             ]

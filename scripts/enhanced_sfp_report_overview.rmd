@@ -68,8 +68,9 @@ htmltools::img(src = knitr::image_uri(file.path(here("scripts"), "GFX_Optimizati
 
 ```{r load data, include = FALSE}
 here::here()
-
-sfp_data <- fread((here("source", glue("{params$data}"))), select = c("filename", "path", "share", "sizemb", "lastaccessdate", "modificationdate", "creationdate")), na.strings=c("","NULL.NULL"))
+#sfp_data <- read_csv(here("source", {params$data}), col_names = TRUE)
+  
+sfp_data <- fread((here("source", glue("{params$data}"))), select = c("filename", "path", "share", "sizemb", "lastaccessdate", "modificationdate"))
 ```
 
 ```{r functions, include = FALSE}
@@ -90,13 +91,13 @@ freezePane(excel, x, firstRow = TRUE)
 }
 ```
 
-```{r reshape data, include = FALSE}
+```{r folder search, include = FALSE}
 formatted_sfp_data <- sfp_data %>%
-  mutate(filename = replace_na(filename, "NULL.NULL")) %>% 
+  #select(filename, path, share, sizemb, lastaccessdate, modificationdate) %>%
   mutate(share = gsub("\\", "", share, fixed=TRUE)) %>%
   mutate(root = word(path, 1, 7, sep = "\\\\")) %>%
   mutate(folderdepth = str_count(path, "\\\\")) %>%
-  mutate(folderdepth = folderdepth-5) %>% 
+  mutate(folderdepth = folderdepth-4) %>% 
   mutate(sizegb = sizemb / 1000) %>% 
   mutate(sizegb = round(sizegb, 3)) %>% 
   mutate(filetype = str_extract(filename, "[^.]+$")) %>%
@@ -105,8 +106,7 @@ formatted_sfp_data <- sfp_data %>%
   mutate(monthly_cost = round((monthly_cost), 2)) %>% 
   mutate(lastaccessdate = convert.date(lastaccessdate)) %>% 
   mutate(modificationdate = convert.date(modificationdate)) %>% 
-  mutate(creationdate = convert.date(creationdate)) %>% 
-  select(filename, filetype, root, path, folderdepth, sizegb, lastaccessdate, modificationdate, creationdate, monthly_cost)
+  select(filename, filetype, root, path, folderdepth, sizegb, lastaccessdate, modificationdate, monthly_cost)
 ```
 
 ```{r, include = FALSE}
@@ -184,7 +184,7 @@ duplicate_files <- formatted_sfp_data %>%
   filter( n() > 1 )
 
 duplicate_files_formatted <- duplicate_files %>% 
-  select (filename,	path,	sizegb,	lastaccessdate,	modificationdate, creationdate, monthly_cost) %>% 
+  select (filename,	path,	sizegb,	lastaccessdate,	modificationdate, monthly_cost) %>% 
   arrange(filename) %>% 
   arrange(desc(monthly_cost))
 ```
@@ -206,7 +206,7 @@ dt_less5 <- ymd(date) - years(5)
 # files last accessed more than 5 years ago
 files_accessed_5plus <- formatted_sfp_data %>% 
   filter(lastaccessdate < dt_less5) %>% 
-  select(filename, path, sizegb, lastaccessdate, modificationdate, creationdate) 
+  select(filename, path, sizegb, lastaccessdate, modificationdate) 
 
 files_accessed_5plus <- files_accessed_5plus[(order(as.Date(files_accessed_5plus$lastaccessdate))),]
 
@@ -214,7 +214,7 @@ files_accessed_5plus <- files_accessed_5plus[(order(as.Date(files_accessed_5plus
 # files last modified more than 5 years ago
 files_modified_5plus <- formatted_sfp_data %>% 
   filter(modificationdate < dt_less5) %>% 
-  select(filename, path, sizegb, lastaccessdate, modificationdate, creationdate)
+  select(filename, path, sizegb, lastaccessdate, modificationdate)
 
 files_modified_5plus <- files_modified_5plus[(order(as.Date(files_modified_5plus$modificationdate))),]
 ```
@@ -301,7 +301,7 @@ setColWidths(excel, sheet = 4, cols = c(1:6), widths = c(50, 75, 20, 20, 20, 20)
 # set currency format on column
 sty1 = createStyle(numFmt="$0,0.00")
 addStyle(excel, sheet = 1, sty1, rows=2:(nrow(table_sfp)+1), cols=4)
-addStyle(excel, sheet = 2, sty1, rows=2:(nrow(table_sfp)+1), cols=7)
+addStyle(excel, sheet = 2, sty1, rows=2:(nrow(table_sfp)+1), cols=6)
 
 # save the workbook to file
 saveWorkbook(excel, file = here("output", output_excel), overwrite = TRUE)
