@@ -1,0 +1,225 @@
+---
+kind: Template
+apiVersion: v1
+labels:
+  app: "metabase"
+  app.kubernetes.io/component: "metabase"
+  app.kubernetes.io/instance: "metabase"
+  app.kubernetes.io/managed-by: template
+  app.kubernetes.io/name: java
+  app.kubernetes.io/part-of: "metabase"
+  template: "metabase-dc-template"
+metadata:
+  name: "metabase"
+objects:
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      name: "metabase"
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 10
+      selector:
+        app: "metabase"
+        deploymentconfig: "metabase"
+      strategy:
+        type: Recreate
+      recreateParams:
+        timeoutSeconds: 600
+        resources: {}
+      template:
+        metadata:
+          name: "metabase"
+          labels:
+            app: "metabase"
+            deploymentconfig: "metabase"
+        spec:
+          containers:
+            - name: metabase
+              image: "${IMAGE_REGISTRY}/${NAMESPACE}/metabase:${VERSION}"
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                tcpSocket:
+                  port: 3000
+                initialDelaySeconds: 10
+                timeoutSeconds: 1
+                periodSeconds: 10
+                successThreshold: 1
+                failureThreshold: 3
+              ports:
+                - containerPort: 3000
+                  protocol: TCP
+              readinessProbe:
+                httpGet:
+                  path: "/"
+                  port: 3000
+                  scheme: HTTP
+                initialDelaySeconds: 10
+                timeoutSeconds: 1
+                periodSeconds: 10
+                successThreshold: 1
+                failureThreshold: 3
+              terminationMessagePath: /dev/termination-log
+              resources:
+                requests:
+                  cpu: "${CPU_REQUEST}"
+                  memory: "${MEMORY_REQUEST}"
+                limits:
+                  cpu: "${CPU_LIMIT}"
+                  memory: "${MEMORY_LIMIT}"
+              startupProbe:
+                tcpSocket:
+                  port: 3000
+                timeoutSeconds: 1
+                periodSeconds: 10
+                successThreshold: 1
+                failureThreshold: 12
+              env:
+                - name: MB_DB_DBNAME
+                  value: metabase
+                - name: MB_DB_PORT
+                  value: '5432'
+                - name: MB_DB_TYPE
+                  value: postgres
+                - name: MB_DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: metabase-secret
+                      key: admin-username
+                - name: MB_DB_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: metabase-secret
+                      key: database-password
+                - name: MB_DB_HOST
+                  value: metabase-postgresql
+                - name: MB_JETTY_HOST
+                  value: 0.0.0.0
+                - name: MB_PASSWORD_COMPLEXITY
+                  value: strong
+              ports:
+                - containerPort: 3000
+                  protocol: TCP
+              volumeMounts:
+                - name: data
+                  mountPath: /app/data
+                - name: plugins
+                  mountPath: /app/plugins
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: "metabase"        
+            - name: plugins
+              emptyDir: {}
+      test: false
+      triggers:
+        - type: ConfigChange
+        - type: ImageChange
+          imageChangeParams:
+            automatic: true
+            containerNames:
+              - metabase
+            from:
+              kind: ImageStreamTag
+              name: "metabase:${VERSION}"
+              namespace: "${NAMESPACE}"
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: "metabase"
+    spec:
+      accessModes:
+        - ReadWriteMany
+      storageClassName: "${DATA_PERSISTENT_VOLUME_CLASS}"
+      resources:
+        requests:
+          storage: "${DATA_VOLUME_CAPACITY}"
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: "metabase"
+    spec:
+      ports:
+        - name: 3000-tcp
+          port: 3000
+          protocol: TCP
+          targetPort: 3000
+      selector:
+        app: "metabase"
+        deploymentconfig: "metabase"
+      type: ClusterIP
+      sessionAffinity: None
+  - apiVersion: v1
+    kind: Route
+    metadata:
+      name: "metabase"
+    spec:
+      host: "${PREFIX}metabase.${DOMAIN}"
+      path: "/"
+      port:
+        targetPort: 3000-tcp
+      tls:
+        insecureEdgeTerminationPolicy: Redirect
+        termination: edge
+      to:
+        kind: Service
+        name: "metabase"
+        weight: 100
+      wildcardPolicy: None
+parameters:
+  - name: NAME
+    description: The name assigned to all of the objects defined in this template.
+    displayName: Name
+    required: true
+    value: metabase
+  - name: PREFIX
+    description: Optional prefix to describe instance of this deployment in the subdomain.
+    displayName: Prefix
+    required: false
+    value: ""
+  - name: DOMAIN
+    description: The base domain name of the cluster.
+    displayName: Base Domain
+    required: true
+    value: apps.silver.devops.gov.bc.ca
+  - name: NAMESPACE
+    description: Target namespace reference (i.e. '9f0fbe-dev')
+    displayName: Namespace
+    required: true
+  - name: IMAGE_REGISTRY
+    description: The base docker registry
+    displayName: Docker Image Registry
+    required: true
+    value: image-registry.openshift-image-registry.svc:5000
+  - name: VERSION
+    description: A version used for the image tags
+    displayName: Version
+    required: true
+    value: latest
+  - name: CPU_REQUEST
+    description: Minimal CPU needed to run
+    displayName: CPU Request
+    value: 50m
+  - name: CPU_LIMIT
+    description: Maximum CPU allowed to use
+    displayName: CPU Limit
+    value: 500m
+  - name: MEMORY_REQUEST
+    description: Minimal amount of memory needed to run
+    displayName: Memory Request
+    value: 768Mi
+  - name: MEMORY_LIMIT
+    description: Maximum amount of memory allowed to use
+    displayName: Memory Limit
+    value: 1.5Gi
+  - name: DATA_VOLUME_CAPACITY
+    description: Volume space available for Data
+    displayName: Data Volume Capacity
+    required: true
+    value: 1Gi
+  - name: DATA_PERSISTENT_VOLUME_CLASS
+    description: The storage class of the volume
+    displayName: Persistent Volume Class name
+    value: netapp-file-standard
