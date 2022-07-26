@@ -7,9 +7,6 @@ $ORIGIN_NAMESPACE="15be76-test"
 $TARGET_NAMESPACE="15be76-prod"
 $PREFIX="nridsco"
 $METABASE_VERSION="v0.41.5"
-$POSTGRES_USER=" "
-$POSTGRES_PASS=" "
-$POSTGRES_DB_NAME=" "
 
 $ORIGIN_METABASE_DB_POD=oc get pods -n $ORIGIN_NAMESPACE --selector name=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
 $ORIGIN_POSTGRES_DB_POD=oc get pods -n $ORIGIN_NAMESPACE --selector name=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
