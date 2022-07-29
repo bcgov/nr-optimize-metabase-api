@@ -2,8 +2,8 @@
 # NOTE: Script assumes it is in the "deploy-metabase" folder beside the dc and nsp yamls
 
 # Set configuration Values
-$ORIGIN_NAMESPACE="15be76-dev"
-$TARGET_NAMESPACE="15be76-prod"
+$ORIGIN_NAMESPACE="15be76-test"
+$TARGET_NAMESPACE="15be76-dev"
 
 # Start progress
 Write-Output("Migrating Metabase data from {0} to {1}" -f $ORIGIN_NAMESPACE, $TARGET_NAMESPACE)
@@ -149,8 +149,8 @@ Write-Output("Waiting for new pods to come online... DONE")
 Write-Output("")
 
 Write-Output("Waiting for new pod ready status (10 minute timeout)...")
-oc wait --for=condition=Ready pod/$TARGET_METABASE_DB_POD --timeout=600s
-oc wait --for=condition=Ready pod/$TARGET_POSTGRES_DB_POD --timeout=600s
+oc wait -n $TARGET_NAMESPACE --for=condition=Ready pod/$TARGET_METABASE_DB_POD --timeout=600s
+oc wait -n $TARGET_NAMESPACE --for=condition=Ready pod/$TARGET_POSTGRES_DB_POD --timeout=600s
 Write-Output("Waiting for new pod ready status... DONE")
 Write-Output("")
 
@@ -191,7 +191,7 @@ Write-Output("Waiting for new app pod to come online... DONE")
 Write-Output("")
 
 Write-Output("Waiting for new app pod ready status (10 minute timeout)...")
-oc wait --for=condition=Ready pod/$TARGET_METABASE_APP_POD --timeout=600s
+oc wait -n $TARGET_NAMESPACE --for=condition=Ready pod/$TARGET_METABASE_APP_POD --timeout=600s
 Write-Output("Waiting for new app pod ready status... DONE")
 Write-Output("")
 
