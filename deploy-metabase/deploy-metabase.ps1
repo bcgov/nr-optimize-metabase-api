@@ -6,8 +6,9 @@ $BASE_URL="https://raw.githubusercontent.com/bcgov/nr-showcase-devops-tools/mast
 $ADMIN_EMAIL="iitd.optimize@gov.bc.ca"
 $TOOLS_NAMESPACE="15be76-tools"
 $ORIGIN_NAMESPACE="15be76-test"
-$TARGET_NAMESPACE="15be76-prod"
-$PREFIX="nridsco"
+$TARGET_NAMESPACE="15be76-dev"
+$PREFIX="iitco-"
+$SUFFIX="-dev"
 $METABASE_VERSION="v0.41.5"
 
 Write-Output("Deploying Metabase to {0} with data from {1}" -f $TARGET_NAMESPACE, $ORIGIN_NAMESPACE)
@@ -68,12 +69,33 @@ oc exec $ORIGIN_POSTGRES_DB_POD -n $ORIGIN_NAMESPACE -- rm /tmp/all_postgresql_d
 Write-Output("Cleaning copies off of origin pods... DONE")
 Write-Output("")
 
-# Copy origin secrets
-Write-Output("Copying origin secrets...")
+
+# Delete clear metabase items in new namespace
+Write-Output("Deleting old metabase items...")
+oc delete deployment metabase-postgresql -n $TARGET_NAMESPACE
+oc delete deployment postgresql -n $TARGET_NAMESPACE
+oc delete deploymentconfig metabase -n $TARGET_NAMESPACE
+oc delete deploymentconfig metabase-postgresql -n $TARGET_NAMESPACE
+oc delete deploymentconfig postgresql -n $TARGET_NAMESPACE
+oc delete pvc metabase -n $TARGET_NAMESPACE
+oc delete pvc metabase-postgresql -n $TARGET_NAMESPACE
+oc delete pvc postgresql -n $TARGET_NAMESPACE
+oc delete service metabase -n $TARGET_NAMESPACE
+oc delete service metabase-postgresql -n $TARGET_NAMESPACE
+oc delete service postgresql -n $TARGET_NAMESPACE
+oc delete route metabase -n $TARGET_NAMESPACE
+oc delete secret metabase-secret -n $TARGET_NAMESPACE
+oc delete secret metabase-postgresql -n $TARGET_NAMESPACE
+oc delete secret postgresql -n $TARGET_NAMESPACE
+Write-Output("Deleting old metabase items... DONE")
+Write-Output("")
+
+# Copy origin secrets to new namespace
+Write-Output("Copying origin secrets to new namespace...")
 oc get secret metabase-secret -n $ORIGIN_NAMESPACE -o yaml | sed "s/namespace:.*/namespace: $TARGET_NAMESPACE/" | oc apply -n $TARGET_NAMESPACE -f -
 oc get secret metabase-postgresql -n $ORIGIN_NAMESPACE -o yaml | sed "s/namespace:.*/namespace: $TARGET_NAMESPACE/" | oc apply -n $TARGET_NAMESPACE -f -
 oc get secret postgresql -n $ORIGIN_NAMESPACE -o yaml | sed "s/namespace:.*/namespace: $TARGET_NAMESPACE/" | oc apply -n $TARGET_NAMESPACE -f -
-Write-Output("Copying origin secrets... DONE")
+Write-Output("Copying origin secrets to new namespace... DONE")
 Write-Output("")
 
 # Copy origin database creation secrets to variables
@@ -98,35 +120,73 @@ $POSTGRES_DB_NAME = [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String(
 Write-Output("Copying origin database creation secrets to variables... DONE")
 Write-Output("")
 
-# Wait for any old pods to spin down...
-Write-Output("Waiting for any old pods to spin down...")
-$TARGET_METABASE_DB_POD="not null yet"
-$TARGET_POSTGRES_DB_POD="not null yet"
-WHILE ((-not $null -eq $TARGET_METABASE_DB_POD) -or (-not $null -eq $TARGET_POSTGRES_DB_POD)) {
-    $TARGET_METABASE_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deployment=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
-    $TARGET_POSTGRES_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deployment=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
-    Write-Output("Waiting for old pods to spin down...")
-    Start-Sleep -Seconds 1.5
+# Wait for old pods to spin down...
+Write-Output("Checking for old pods and waiting for them to spin down...")
+function Wait-For-OldPodsToGoDown {
+    param (
+        $DeploymentConfig, $Namespace
+    )
+    $POD_NAME=oc get pods -n $Namespace --selector deploymentconfig=$DeploymentConfig --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+    WHILE (-not $null -eq $POD_NAME) {
+        Write-Output("Waiting for old pod {0} for {1} to spin down..." -f $POD_NAME, $DeploymentConfig)
+        Start-Sleep -Seconds 5
+        $POD_NAME=oc get pods -n $Namespace --selector deploymentconfig=$DeploymentConfig --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+        if ($null -eq $POD_NAME) {
+            Write-Output("Waiting for old pod for {0} to spin down... DONE" -f $DeploymentConfig)
+        }
+    }
 }
-Write-Output("Waiting for any old pods to spin down... DONE")
+Wait-For-OldPodsToGoDown -DeploymentConfig 'metabase-postgresql' -Namespace $TARGET_NAMESPACE 
+Wait-For-OldPodsToGoDown -DeploymentConfig 'postgresql' -Namespace $TARGET_NAMESPACE 
+Write-Output("Checking for old pods and waiting for them to spin down... DONE")
 Write-Output("")
 
 # Create new database deployments and services
 Write-Output("Creating new database deployments and services...")
-oc new-app -n $TARGET_NAMESPACE -e POSTGRESQL_USER=$METABASE_DB_USER -e POSTGRESQL_PASSWORD=$METABASE_DB_PASS -e POSTGRESQL_DATABASE=$METABASE_DB_NAME postgresql:10-el8 --name=metabase-postgresql
-oc new-app -n $TARGET_NAMESPACE -e POSTGRESQL_USER=$POSTGRES_USER -e POSTGRESQL_PASSWORD=$POSTGRES_PASS -e POSTGRESQL_DATABASE=$POSTGRES_DB_NAME postgresql:10-el8 --name=postgresql
+oc new-app -n $TARGET_NAMESPACE -p POSTGRESQL_USER=$METABASE_DB_USER -p POSTGRESQL_PASSWORD=$METABASE_DB_PASS -p POSTGRESQL_DATABASE=$METABASE_DB_NAME -p DATABASE_SERVICE_NAME=metabase-postgresql postgresql:10-el8 --name=metabase-postgresql --template=postgresql-persistent
+oc new-app -n $TARGET_NAMESPACE -p POSTGRESQL_USER=$POSTGRES_USER -p POSTGRESQL_PASSWORD=$POSTGRES_PASS -p POSTGRESQL_DATABASE=$POSTGRES_DB_NAME -p DATABASE_SERVICE_NAME=postgresql postgresql:10-el8 --name=postgresql --template=postgresql-persistent
 Write-Output("Creating new database deployments and services... DONE")
 Write-Output("")
 
+# Note: persistent postgres template comes with extra deployment
+Write-Output("Deleting surplus deployment...")
+oc delete deployment metabase-postgresql -n $TARGET_NAMESPACE
+oc delete deployment postgresql -n $TARGET_NAMESPACE
+Write-Output("Deleting surplus deployment... DONE")
+
+Write-Output("Overwriting default services...")
+Get-Content .\metabase-postgresql.service.yaml | oc replace -f -
+Get-Content .\postgresql.service.yaml | oc replace -f -
+Write-Output("Overwriting default services... DONE")
+Write-Output("")
+
 # Get the new pod names, will need to wait for the postgres pod to finish being created
-Write-Output("Getting the new pod names...")
-WHILE (($null -eq $TARGET_METABASE_DB_POD) -or ($null -eq $TARGET_POSTGRES_DB_POD)) {
+WHILE (($null -eq $TARGET_METABASE_DB_POD) -or ($null -eq $TARGET_POSTGRES_DB_POD)) {    
+    Write-Output("Waiting for new pods to be created...")
+    Start-Sleep -Seconds 5
     $TARGET_METABASE_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deployment=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
-    $TARGET_POSTGRES_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deployment=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
-    Write-Output("Waiting for pods to come online...")
-    Start-Sleep -Seconds 1.5
+    $TARGET_POSTGRES_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+
 }
-Write-Output("Getting the new pod names... DONE")
+# There's a split-second where there's a deployment pod instead of the database pod. Try again in a while.
+Start-Sleep -Seconds 5
+$TARGET_METABASE_DB_POD = $null
+$TARGET_POSTGRES_DB_POD = $null
+WHILE (($null -eq $TARGET_METABASE_DB_POD) -or ($null -eq $TARGET_POSTGRES_DB_POD)) {    
+    Write-Output("Waiting for new pods to be created...")
+    Start-Sleep -Seconds 5
+    $TARGET_METABASE_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+    $TARGET_POSTGRES_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+}
+Write-Output("Pod online: {0}" -f $TARGET_METABASE_DB_POD)
+Write-Output("Pod online: {0}" -f $TARGET_POSTGRES_DB_POD)
+Write-Output("Waiting for new pods to come online... DONE")
+Write-Output("")
+
+Write-Output("Waiting for new pod ready status (10 minute timeout)...")
+oc wait -n $TARGET_NAMESPACE --for=condition=Ready pod/$TARGET_METABASE_DB_POD --timeout=600s
+oc wait -n $TARGET_NAMESPACE --for=condition=Ready pod/$TARGET_POSTGRES_DB_POD --timeout=600s
+Write-Output("Waiting for new pod ready status... DONE")
 Write-Output("")
 
 # Copy the origin databases to the new deployments
@@ -145,8 +205,8 @@ Write-Output("")
 
 # Deploy DeployConfig, persistent volume claim, metabase-secret secret, metabase service and route to target namespace
 Write-Output("Deply dc, pvc, secret, service and route...")
-oc process -n $TOOLS_NAMESPACE -f ./metabase.dc.yaml -p NAMESPACE=$TOOLS_NAMESPACE -p PREFIX=$PREFIX -p VERSION=$METABASE_VERSION -o yaml | oc apply -n $TARGET_NAMESPACE -f -
-Write-Output("Deply dc, pvc, secret, service and route... DONE")
+oc process -n $TOOLS_NAMESPACE -f ./metabase.dc.yaml -p NAMESPACE=$TOOLS_NAMESPACE -p PREFIX=$PREFIX -p SUFFIX=$SUFFIX -p VERSION=$METABASE_VERSION -o yaml | oc apply -n $TARGET_NAMESPACE -f -
+Write-Output("Deploy dc, pvc, secret, service and route... DONE")
 Write-Output("")
 
 # Clean up the now migrated database files from local temp folders
@@ -155,3 +215,19 @@ Remove-Item -LiteralPath "temp-metabase" -Force -Recurse
 Remove-Item -LiteralPath "temp-postgresql" -Force -Recurse
 Write-Output("Cleaning up the now migrated database files from local temp folders... DONE")
 Write-Output("")
+
+$TARGET_METABASE_APP_POD = $null
+WHILE (($null -eq $TARGET_METABASE_APP_POD)) {    
+    Write-Output("Waiting for new app pod to come online...")
+    Start-Sleep -Seconds 5
+    $TARGET_METABASE_APP_POD=oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=metabase --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+}
+Write-Output("Waiting for new app pod to come online... DONE")
+Write-Output("")
+
+Write-Output("Waiting for new app pod ready status (10 minute timeout)...")
+oc wait -n $TARGET_NAMESPACE --for=condition=Ready pod/$TARGET_METABASE_APP_POD --timeout=600s
+Write-Output("Waiting for new app pod ready status... DONE")
+Write-Output("")
+
+Write-Output("SCRIPT COMPLETE")

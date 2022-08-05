@@ -5,15 +5,14 @@
 $ORIGIN_NAMESPACE="15be76-test"
 $TARGET_NAMESPACE="15be76-dev"
 
-# Start progress
 Write-Output("Migrating Metabase data from {0} to {1}" -f $ORIGIN_NAMESPACE, $TARGET_NAMESPACE)
 Write-Output("")
 
 # Get the database pod names from the origin namespace 
-Write-Output("Getting origin pod names...")
+Write-Output("Getting the database pod names from the origin namespace...")
 $ORIGIN_METABASE_DB_POD=oc get pods -n $ORIGIN_NAMESPACE --selector name=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
 $ORIGIN_POSTGRES_DB_POD=oc get pods -n $ORIGIN_NAMESPACE --selector name=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
-Write-Output("Origin Pod names are {0} and {1}" -f $ORIGIN_METABASE_DB_POD, $ORIGIN_POSTGRES_DB_POD)
+Write-Output("Getting the database pod names from the origin namespace... DONE")
 Write-Output("")
 
 # Create copies of origin databases
@@ -24,24 +23,24 @@ Write-Output("Creating copies of origin databases... DONE")
 Write-Output("")
 
 # Create folders to store the sql in if they do not already exist:
-Write-Output("Creating temp folders...")
+Write-Output("Creating folders to store the sql in if they do not already exist...")
 New-Item -ItemType Directory -Force -Path temp-metabase
 New-Item -ItemType Directory -Force -Path temp-postgresql
-Write-Output("Creating temp folders... DONE")
+Write-Output("Creating folders to store the sql in if they do not already exist... DONE")
 Write-Output("")
 
 # Copy origin database backups to local temp folders
-Write-Output("Downloading Origin Databases...")
+Write-Output("Copying origin database backups to local temp folders...")
 oc rsync --progress -n $ORIGIN_NAMESPACE $ORIGIN_METABASE_DB_POD`:/tmp/all_metabase_postgresql_dbs.sql ./temp-metabase/
 oc rsync --progress -n $ORIGIN_NAMESPACE $ORIGIN_POSTGRES_DB_POD`:/tmp/all_postgresql_dbs.sql ./temp-postgresql/
-Write-Output("Downloading Origin Databases...... DONE")
+Write-Output("Copying origin database backups to local temp folders... DONE")
 Write-Output("")
 
 # Clean copies off of origin pods
 Write-Output("Cleaning copies off of origin pods...")
 oc exec $ORIGIN_METABASE_DB_POD -n $ORIGIN_NAMESPACE -- rm /tmp/all_metabase_postgresql_dbs.sql
 oc exec $ORIGIN_POSTGRES_DB_POD -n $ORIGIN_NAMESPACE -- rm /tmp/all_postgresql_dbs.sql
-Write-Output("Cleaning copies off of origin pods...... DONE")
+Write-Output("Cleaning copies off of origin pods... DONE")
 Write-Output("")
 
 # Scale down destination application pod
@@ -50,12 +49,22 @@ oc scale dc metabase -n $TARGET_NAMESPACE --replicas=0
 Write-Output("Scaling down metabase pod in target namespace... DONE")
 Write-Output("")
 
-# Delete old target namespace secrets
-Write-Output("Deleting old target namespace secrets...")
-oc delete secret metabase-secret -n $TARGET_NAMESPACE
+
+
+# Delete clear metabase-postgres and postgres items in new namespace
+# Note: persistent postgres template comes with extra deployment
+Write-Output("Deleting old database items...")
+oc delete deployment metabase-postgresql -n $TARGET_NAMESPACE
+oc delete deployment postgresql -n $TARGET_NAMESPACE
+oc delete deploymentconfig metabase-postgresql -n $TARGET_NAMESPACE
+oc delete deploymentconfig postgresql -n $TARGET_NAMESPACE
+oc delete pvc metabase-postgresql -n $TARGET_NAMESPACE
+oc delete pvc postgresql -n $TARGET_NAMESPACE
+oc delete service metabase-postgresql -n $TARGET_NAMESPACE
+oc delete service postgresql -n $TARGET_NAMESPACE
 oc delete secret metabase-postgresql -n $TARGET_NAMESPACE
 oc delete secret postgresql -n $TARGET_NAMESPACE
-Write-Output("Deleting old target namespace secrets... DONE")
+Write-Output("Deleting old database items... DONE")
 Write-Output("")
 
 # Copy origin secrets to new namespace
@@ -88,41 +97,44 @@ $POSTGRES_DB_NAME = [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String(
 Write-Output("Copying origin database creation secrets to variables... DONE")
 Write-Output("")
 
-# Delete old database deployments and services
-Write-Output("Deleting old database deployments and services...")
-oc delete deployment metabase-postgresql -n $TARGET_NAMESPACE
-oc delete deployment postgresql -n $TARGET_NAMESPACE
-oc delete service metabase-postgresql -n $TARGET_NAMESPACE
-oc delete service postgresql -n $TARGET_NAMESPACE
-Write-Output("Deleting old database deployments and services... DONE")
-Write-Output("")
-
 # Wait for old pods to spin down...
 Write-Output("Checking for old pods and waiting for them to spin down...")
 function Wait-For-OldPodsToGoDown {
     param (
-        $Deployment, $Namespace
+        $DeploymentConfig, $Namespace
     )
-    $POD_NAME=oc get pods -n $Namespace --selector deployment=$Deployment --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+    $POD_NAME=oc get pods -n $Namespace --selector deploymentconfig=$DeploymentConfig --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
     WHILE (-not $null -eq $POD_NAME) {
-        Write-Output("Waiting for old pod {0} for {1} to spin down..." -f $POD_NAME, $Deployment)
+        Write-Output("Waiting for old pod {0} for {1} to spin down..." -f $POD_NAME, $DeploymentConfig)
         Start-Sleep -Seconds 5
-        $POD_NAME=oc get pods -n $Namespace --selector deployment=$Deployment --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+        $POD_NAME=oc get pods -n $Namespace --selector deploymentconfig=$DeploymentConfig --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
         if ($null -eq $POD_NAME) {
-            Write-Output("Waiting for old pod for {0} to spin down... DONE" -f $Deployment)
+            Write-Output("Waiting for old pod for {0} to spin down... DONE" -f $DeploymentConfig)
         }
     }
 }
-Wait-For-OldPodsToGoDown -Deployment 'metabase-postgresql' -Namespace $TARGET_NAMESPACE 
-Wait-For-OldPodsToGoDown -Deployment 'postgresql' -Namespace $TARGET_NAMESPACE 
+Wait-For-OldPodsToGoDown -DeploymentConfig 'metabase-postgresql' -Namespace $TARGET_NAMESPACE 
+Wait-For-OldPodsToGoDown -DeploymentConfig 'postgresql' -Namespace $TARGET_NAMESPACE 
 Write-Output("Checking for old pods and waiting for them to spin down... DONE")
 Write-Output("")
 
 # Create new database deployments and services
 Write-Output("Creating new database deployments and services...")
-oc new-app -n $TARGET_NAMESPACE -e POSTGRESQL_USER=$METABASE_DB_USER -e POSTGRESQL_PASSWORD=$METABASE_DB_PASS -e POSTGRESQL_DATABASE=$METABASE_DB_NAME postgresql:10-el8 --name=metabase-postgresql
-oc new-app -n $TARGET_NAMESPACE -e POSTGRESQL_USER=$POSTGRES_USER -e POSTGRESQL_PASSWORD=$POSTGRES_PASS -e POSTGRESQL_DATABASE=$POSTGRES_DB_NAME postgresql:10-el8 --name=postgresql
+oc new-app -n $TARGET_NAMESPACE -p POSTGRESQL_USER=$METABASE_DB_USER -p POSTGRESQL_PASSWORD=$METABASE_DB_PASS -p POSTGRESQL_DATABASE=$METABASE_DB_NAME -p DATABASE_SERVICE_NAME=metabase-postgresql postgresql:10-el8 --name=metabase-postgresql --template=postgresql-persistent
+oc new-app -n $TARGET_NAMESPACE -p POSTGRESQL_USER=$POSTGRES_USER -p POSTGRESQL_PASSWORD=$POSTGRES_PASS -p POSTGRESQL_DATABASE=$POSTGRES_DB_NAME -p DATABASE_SERVICE_NAME=postgresql postgresql:10-el8 --name=postgresql --template=postgresql-persistent
 Write-Output("Creating new database deployments and services... DONE")
+Write-Output("")
+
+# Note: persistent postgres template comes with extra deployment
+Write-Output("Deleting surplus deployment...")
+oc delete deployment metabase-postgresql -n $TARGET_NAMESPACE
+oc delete deployment postgresql -n $TARGET_NAMESPACE
+Write-Output("Deleting surplus deployment... DONE")
+
+Write-Output("Overwriting default services...")
+Get-Content .\metabase-postgresql.service.yaml | oc replace -f -
+Get-Content .\postgresql.service.yaml | oc replace -f -
+Write-Output("Overwriting default services... DONE")
 Write-Output("")
 
 # Get the new pod names, will need to wait for the postgres pod to finish being created
@@ -130,7 +142,7 @@ WHILE (($null -eq $TARGET_METABASE_DB_POD) -or ($null -eq $TARGET_POSTGRES_DB_PO
     Write-Output("Waiting for new pods to be created...")
     Start-Sleep -Seconds 5
     $TARGET_METABASE_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deployment=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
-    $TARGET_POSTGRES_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deployment=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+    $TARGET_POSTGRES_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
 
 }
 # There's a split-second where there's a deployment pod instead of the database pod. Try again in a while.
@@ -140,8 +152,8 @@ $TARGET_POSTGRES_DB_POD = $null
 WHILE (($null -eq $TARGET_METABASE_DB_POD) -or ($null -eq $TARGET_POSTGRES_DB_POD)) {    
     Write-Output("Waiting for new pods to be created...")
     Start-Sleep -Seconds 5
-    $TARGET_METABASE_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deployment=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
-    $TARGET_POSTGRES_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deployment=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+    $TARGET_METABASE_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+    $TARGET_POSTGRES_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
 }
 Write-Output("Pod online: {0}" -f $TARGET_METABASE_DB_POD)
 Write-Output("Pod online: {0}" -f $TARGET_POSTGRES_DB_POD)
@@ -169,7 +181,7 @@ Write-Output("Restoring the databases on the target namespace... DONE")
 Write-Output("")
 
 # Clean up the now migrated database files from local temp folders
-Write-Output("Cleaning up the now migrated database files from local temp folders")
+Write-Output("Cleaning up the now migrated database files from local temp folders...")
 Remove-Item -LiteralPath "temp-metabase" -Force -Recurse
 Remove-Item -LiteralPath "temp-postgresql" -Force -Recurse
 Write-Output("Cleaning up the now migrated database files from local temp folders... DONE")
