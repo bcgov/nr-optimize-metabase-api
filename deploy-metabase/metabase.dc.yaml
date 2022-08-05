@@ -156,7 +156,7 @@ objects:
     metadata:
       name: "metabase"
     spec:
-      host: "${PREFIX}metabase.${DOMAIN}"
+      host: "${PREFIX}metabase${SUFFIX}.${DOMAIN}"
       path: "/"
       port:
         targetPort: 3000-tcp
@@ -177,6 +177,11 @@ parameters:
   - name: PREFIX
     description: Optional prefix to describe instance of this deployment in the subdomain.
     displayName: Prefix
+    required: false
+    value: ""
+  - name: SUFFIX
+    description: Optional suffix to describe instance of this deployment in the subdomain.
+    displayName: Suffix
     required: false
     value: ""
   - name: DOMAIN
