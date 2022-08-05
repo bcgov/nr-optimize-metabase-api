@@ -27,26 +27,32 @@ env_url = "https://iitco-metabase.apps.silver.devops.gov.bc.ca"
 
 # VARS for quarterly report dates (update as needed for each report)
 # -------------------------
-fy_start = "2021-04-01"
-q_start = "2022-01-01"
-q_end = "2022-03-31"
+fy_start = "2022-04-01"
+q_start = "2022-04-01"
+q_end = "2022-06-30"
 
-# Dictionaries of date replacements KV pairs for each case:
-email_replace = {"2021-12-31": "2022-03-31", "2021-04-01": fy_start}
-h_since_opt_replace = {"2021-12-31": "2022-03-31", "2021-12-01": "2022-03-01"}
+# Dictionaries of date replacements KV pairs for each case (find key, replace with value):
+
+# email_replace: update first key to find last quarter end date, next key only needs to be updated when the FY rolls over
+email_replace = {"2022-03-31": q_end, "2021-04-01": fy_start}
+
+# h_since_opt_replace: query compares last month in quarter with month before Opt. team inception. update last month start/end dates.
+h_since_opt_replace = {"2022-03-31": q_end, "2022-03-01": "2022-06-01"}
+
+# Sequence matters in this array for the quarterly comparison graph - need to drop the redundant values (the oldest quarter) keys and add newest
 q_compare_replace = {
+    "2022-01-01": "2022-04-01",
+    "2022-03-31": "2022-06-30",
     "2021-12-31": "2022-03-31",
     "2021-10-01": "2022-01-01",
     "2021-09-30": "2021-12-31",
     "2021-07-01": "2021-10-01",
     "2021-04-01": "2021-07-01",
     "2021-06-30": "2021-09-30",
-    "2021-01-01": "2021-04-01",
-    "2021-03-31": "2021-06-30",
-    "2021/2022 Q3 Spend": "2022/2022 Q4 Spend",
+    "2021/2022 Q4 Spend": "2022/2023 Q1 Spend",
+    "2021/2022 Q3 Spend": "2021/2022 Q4 Spend",
     "2021/2022 Q2 Spend": "2021/2022 Q3 Spend",
     "2021/2022 Q1 Spend": "2021/2022 Q2 Spend",
-    "2020/2021 Q4 Spend": "2021/2022 Q1 Spend",
 }
 # ------------------------
 
