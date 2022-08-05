@@ -28,14 +28,16 @@ import push_postgres_constants as constants
 
 
 ministry_renames = {
-    "AGRI": "AFF",
+    "AGRI": "AF",
+    "AFF": "AF",
     "EMPR": "EMLI",
     "EAO": "ENV",
+    "FLNR": "FOR",
     "CSNR": "ENV",
-    "IIT": "ENV"
+    "IIT": "ENV",
 }
 
-nrm_ministries = ["AFF", "EMLI", "ENV", "FLNR", "IRR"]
+nrm_ministries = ["AF", "EMLI", "ENV", "IRR", "FOR", "LWRS"]
 
 delete_before_insert = False
 
@@ -52,7 +54,7 @@ def get_records_from_xlsx():
     for file_path in excel_names:
         gb_for_file = 0
         file_name = os.path.split(file_path)[1]
-        file_date = datetime.strptime(file_name.lower(), 'onedrive-%Y-%m.xlsx')
+        file_date = datetime.strptime(file_name.lower(), "onedrive-%Y-%m.xlsx")
         excelsheet = pd.ExcelFile(file_path)
         frame = excelsheet.parse(excelsheet.sheet_names[0], header=0, index_col=None)
         for row in frame.values:
@@ -71,7 +73,9 @@ def get_records_from_xlsx():
             if ministry not in ministry_data:
                 ministry_data[ministry] = {}
             if file_date in ministry_data[ministry]:
-                ministry_data[ministry][file_date] = ministry_data[ministry][file_date]+gb_used
+                ministry_data[ministry][file_date] = (
+                    ministry_data[ministry][file_date] + gb_used
+                )
             else:
                 ministry_data[ministry][file_date] = gb_used
             gb_for_file = gb_for_file + gb_used
@@ -95,21 +99,24 @@ def insert_records_to_metabase(record_tuples):
             host="localhost",
             database=constants.POSTGRES_DB_NAME,
             user=constants.POSTGRES_USER,
-            password=constants.POSTGRES_PASS
+            password=constants.POSTGRES_PASS,
         )
         cur = conn.cursor()
 
         if delete_before_insert:
-            print('Deleting old data')
-            cur.execute('DELETE FROM onedriveusage')
-            print('Delete complete')
+            print("Deleting old data")
+            cur.execute("DELETE FROM onedriveusage")
+            print("Delete complete")
 
-        print('Inserting new data')
-        cur.executemany('''
+        print("Inserting new data")
+        cur.executemany(
+            """
             INSERT INTO onedriveusage (ministry, reporteddate, datausagegb)
             VALUES (%s, %s, %s);
-        ''', record_tuples)
-        print('Insert Complete')
+        """,
+            record_tuples,
+        )
+        print("Insert Complete")
 
         # close the communication with the PostgreSQL
         conn.commit()
@@ -119,7 +126,7 @@ def insert_records_to_metabase(record_tuples):
     finally:
         if conn is not None:
             conn.close()
-            print('Database connection closed.')
+            print("Database connection closed.")
 
 
 if __name__ == "__main__":

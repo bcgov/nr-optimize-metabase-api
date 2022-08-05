@@ -38,7 +38,7 @@ ministry_renames = {
     "FORESTS, LANDS, NATURAL RESOURCE OPERATIONS AND RURAL DEVELOPMENT": "FOR",
     "INDIGENOUS RELATIONS AND RECONCILIATION": "IRR",
     "NATURAL RESOURCE MINISTRIES": "NRM",
-    "LAND, WATER AND RESOURCE STEWARDSHIP": "LWRS"
+    "LAND, WATER AND RESOURCE STEWARDSHIP": "LWRS",
 }
 
 delete_FY_before_insert = False
@@ -67,18 +67,22 @@ def get_records_from_xlsx():
     # grab all the .xlsx file names in the python file's directory
     current_file_path = os.path.dirname(os.path.realpath(__file__))
     excel_names = glob.glob(os.path.join(current_file_path, "*.xlsx"))
-    categoriesobj = open(os.path.join(current_file_path, "OptimizeLookupCategories.csv"), "r")
+    categoriesobj = open(
+        os.path.join(current_file_path, "OptimizeLookupCategories.csv"), "r"
+    )
 
     # populate the nrm_ministries dictionary from the xlxs files
     for file_path in excel_names:
         excelsheet = pd.ExcelFile(file_path)
-        frame = excelsheet.parse(excelsheet.sheet_names[1], header=0, index_col=None)
+        frame = excelsheet.parse(excelsheet.sheet_names[0], header=0, index_col=None)
 
         # Check all required columns exist, get indexes for later reference
         column_name = ""
         try:
             for column_name in required_columns_list:
-                column_map[column_name.lower().strip()] = frame.columns.get_loc(column_name)
+                column_map[column_name.lower().strip()] = frame.columns.get_loc(
+                    column_name
+                )
         except Exception:
             print(f"Error in file: {file_path}")
             print("The following columns are required:")
@@ -156,10 +160,10 @@ def fix_recovery_period(rowtimestamp):
     # Regardless, we need to rework this date into a calendar year for Metabase.
 
     # For fiscal_year we use the day of the month
-    fiscal_year = rowtimestamp.day+2000
+    fiscal_year = rowtimestamp.day + 2000
     # Months after April need to be -1 year to account for the fiscal year.
     if rowtimestamp.month >= 4:
-        calendar_year = fiscal_year-1
+        calendar_year = fiscal_year - 1
     else:
         calendar_year = fiscal_year
 
@@ -169,7 +173,7 @@ def fix_recovery_period(rowtimestamp):
 def get_FY_date_range_clause(record_tuples):
     fiscal_years = []
     for tup in record_tuples:
-        recovery_period = tup[column_map['recovery period']]
+        recovery_period = tup[column_map["recovery period"]]
         if recovery_period.month >= 0 and recovery_period.month <= 3:
             year = recovery_period.year
         elif recovery_period.month > 3 and recovery_period.month <= 11:
@@ -179,7 +183,7 @@ def get_FY_date_range_clause(record_tuples):
 
     clauses = []
     for year in fiscal_years:
-        year_before = year-1
+        year_before = year - 1
         clause = f"recoveryperiod BETWEEN '{year_before}-04-01' AND '{year}-03-31'"
         clauses.append(clause)
 
@@ -212,9 +216,11 @@ def insert_records_to_metabase(record_tuples):
 
         if delete_FY_before_insert:
             FY_date_range_clause = get_FY_date_range_clause(record_tuples)
-            print("Deleting data from the fiscal year of the excel files using this where clause:")
+            print(
+                "Deleting data from the fiscal year of the excel files using this where clause:"
+            )
             print(FY_date_range_clause)
-            cur.execute("DELETE FROM hostingexpenses where "+FY_date_range_clause)
+            cur.execute("DELETE FROM hostingexpenses where " + FY_date_range_clause)
             print("Delete complete")
 
         print("Inserting new data")
