@@ -2,16 +2,16 @@
 # NOTE: Script assumes it is in the "deploy-metabase" folder beside the dc and nsp yamls
 
 # Set configuration Values
-$ORIGIN_NAMESPACE="15be76-test"
-$TARGET_NAMESPACE="15be76-dev"
+$ORIGIN_NAMESPACE = "15be76-test"
+$TARGET_NAMESPACE = "15be76-dev"
 
 Write-Output("Migrating Metabase data from {0} to {1}" -f $ORIGIN_NAMESPACE, $TARGET_NAMESPACE)
 Write-Output("")
 
 # Get the database pod names from the origin namespace 
 Write-Output("Getting the database pod names from the origin namespace...")
-$ORIGIN_METABASE_DB_POD=oc get pods -n $ORIGIN_NAMESPACE --selector name=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
-$ORIGIN_POSTGRES_DB_POD=oc get pods -n $ORIGIN_NAMESPACE --selector name=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+$ORIGIN_METABASE_DB_POD = oc get pods -n $ORIGIN_NAMESPACE --selector name=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+$ORIGIN_POSTGRES_DB_POD = oc get pods -n $ORIGIN_NAMESPACE --selector name=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
 Write-Output("Getting the database pod names from the origin namespace... DONE")
 Write-Output("")
 
@@ -62,6 +62,7 @@ oc delete pvc metabase-postgresql -n $TARGET_NAMESPACE
 oc delete pvc postgresql -n $TARGET_NAMESPACE
 oc delete service metabase-postgresql -n $TARGET_NAMESPACE
 oc delete service postgresql -n $TARGET_NAMESPACE
+oc delete secret metabase -n $TARGET_NAMESPACE
 oc delete secret metabase-postgresql -n $TARGET_NAMESPACE
 oc delete secret postgresql -n $TARGET_NAMESPACE
 Write-Output("Deleting old database items... DONE")
@@ -103,11 +104,11 @@ function Wait-For-OldPodsToGoDown {
     param (
         $DeploymentConfig, $Namespace
     )
-    $POD_NAME=oc get pods -n $Namespace --selector deploymentconfig=$DeploymentConfig --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+    $POD_NAME = oc get pods -n $Namespace --selector deploymentconfig=$DeploymentConfig --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
     WHILE (-not $null -eq $POD_NAME) {
         Write-Output("Waiting for old pod {0} for {1} to spin down..." -f $POD_NAME, $DeploymentConfig)
         Start-Sleep -Seconds 5
-        $POD_NAME=oc get pods -n $Namespace --selector deploymentconfig=$DeploymentConfig --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+        $POD_NAME = oc get pods -n $Namespace --selector deploymentconfig=$DeploymentConfig --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
         if ($null -eq $POD_NAME) {
             Write-Output("Waiting for old pod for {0} to spin down... DONE" -f $DeploymentConfig)
         }
@@ -132,8 +133,8 @@ oc delete deployment postgresql -n $TARGET_NAMESPACE
 Write-Output("Deleting surplus deployment... DONE")
 
 Write-Output("Overwriting default services...")
-Get-Content .\metabase-postgresql.service.yaml | oc replace -f -
-Get-Content .\postgresql.service.yaml | oc replace -f -
+Get-Content .\metabase-postgresql.service.yaml | oc replace -n $TARGET_NAMESPACE -f -
+Get-Content .\postgresql.service.yaml | oc replace -n $TARGET_NAMESPACE -f -
 Write-Output("Overwriting default services... DONE")
 Write-Output("")
 
@@ -141,8 +142,8 @@ Write-Output("")
 WHILE (($null -eq $TARGET_METABASE_DB_POD) -or ($null -eq $TARGET_POSTGRES_DB_POD)) {    
     Write-Output("Waiting for new pods to be created...")
     Start-Sleep -Seconds 5
-    $TARGET_METABASE_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deployment=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
-    $TARGET_POSTGRES_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+    $TARGET_METABASE_DB_POD = oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+    $TARGET_POSTGRES_DB_POD = oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
 
 }
 # There's a split-second where there's a deployment pod instead of the database pod. Try again in a while.
@@ -152,8 +153,8 @@ $TARGET_POSTGRES_DB_POD = $null
 WHILE (($null -eq $TARGET_METABASE_DB_POD) -or ($null -eq $TARGET_POSTGRES_DB_POD)) {    
     Write-Output("Waiting for new pods to be created...")
     Start-Sleep -Seconds 5
-    $TARGET_METABASE_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
-    $TARGET_POSTGRES_DB_POD=oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+    $TARGET_METABASE_DB_POD = oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=metabase-postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+    $TARGET_POSTGRES_DB_POD = oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
 }
 Write-Output("Pod online: {0}" -f $TARGET_METABASE_DB_POD)
 Write-Output("Pod online: {0}" -f $TARGET_POSTGRES_DB_POD)
@@ -197,7 +198,7 @@ $TARGET_METABASE_APP_POD = $null
 WHILE (($null -eq $TARGET_METABASE_APP_POD)) {    
     Write-Output("Waiting for new app pod to come online...")
     Start-Sleep -Seconds 5
-    $TARGET_METABASE_APP_POD=oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=metabase --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+    $TARGET_METABASE_APP_POD = oc get pods -n $TARGET_NAMESPACE --selector deploymentconfig=metabase --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
 }
 Write-Output("Waiting for new app pod to come online... DONE")
 Write-Output("")
