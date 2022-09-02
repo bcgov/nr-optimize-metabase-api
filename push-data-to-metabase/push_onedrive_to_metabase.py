@@ -37,7 +37,7 @@ ministry_renames = {
     "FLNR": "FOR",
 }
 
-nrm_ministries = ["AFF", "EMLI", "ENV", "FLNR", "IRR"]
+nrm_ministries = ["AF", "EMLI", "ENV", "FOR", "IRR", "LWRS"]
 
 delete_before_insert = False
 
