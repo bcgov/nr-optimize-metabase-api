@@ -72,7 +72,7 @@ def get_records_from_xlsx():
     # populate the nrm_ministries dictionary from the xlxs files
     for file_path in excel_names:
         excelsheet = pd.ExcelFile(file_path)
-        frame = excelsheet.parse(excelsheet.sheet_names[1], header=0, index_col=None)
+        frame = excelsheet.parse(excelsheet.sheet_names[len(excelsheet.sheet_names-1)], header=0, index_col=None)
 
         # Check all required columns exist, get indexes for later reference
         column_name = ""
