@@ -134,9 +134,9 @@ def get_records_from_csv():
                 for i in range(len(row)):
                     if i in [2, 3, 4, 5, 6, 7, 8, 9] and row[i] == "":
                         row[i] = 0
-                    if i in [2, 4, 9]:
+                    if i in [2, 9]:
                         row[i] = int(row[i])
-                    elif i in [3, 5, 6, 7, 8]:
+                    elif i in [3, 4, 5, 6, 7, 8]:
                         row[i] = float(row[i])
 
                 ministry, branch, project, environment = (
