@@ -1,0 +1,1 @@
+PowerShell -NoProfile -ExecutionPolicy Unrestricted -Command "& '<path where you saved the file>\collect_path_data.ps1'"
