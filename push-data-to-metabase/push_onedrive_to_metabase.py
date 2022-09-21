@@ -28,14 +28,16 @@ import push_postgres_constants as constants
 
 
 ministry_renames = {
-    "AGRI": "AFF",
+    "AGRI": "AF",
+    "AFF": "AF",
     "EMPR": "EMLI",
     "EAO": "ENV",
     "CSNR": "ENV",
-    "IIT": "ENV"
+    "IIT": "LWRS",
+    "FLNR":"FOR"
 }
 
-nrm_ministries = ["AFF", "EMLI", "ENV", "FLNR", "IRR"]
+nrm_ministries = ["AF", "EMLI", "ENV", "FOR", "IRR", "LWRS"]
 
 delete_before_insert = False
 
