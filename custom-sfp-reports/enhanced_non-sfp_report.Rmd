@@ -309,7 +309,7 @@ glue('If the duplicates in {params$folder} were found & removed, at least half t
 
 ```{r, include = FALSE}
 # create output file names based on parameters
-output_excel = paste0("Non-SFP_Custom_Report_", params$folder, "_", params$businessarea, "_", params$collection, ".xlsx")
+output_excel = paste0("Non-SFP_Custom_Report_", params$folder, "_", params$businessarea, "_", params$collected, ".xlsx")
 ```
 
 ```{r write output to Excel file, include = FALSE}
