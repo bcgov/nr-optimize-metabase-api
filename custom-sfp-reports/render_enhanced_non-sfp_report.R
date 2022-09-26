@@ -3,7 +3,7 @@ library(here)
 library(rmarkdown)
 
 # function to render parameters and save html output to file
-render_report = function(data, businessarea, path, folder, collected) {
+render_report = function(data, businessarea, path, folder, san_tier, collected) {
   rmarkdown::render(
     here("scripts", "enhanced_non-sfp_report.Rmd"), params = list(
       data = data,
@@ -19,4 +19,4 @@ render_report = function(data, businessarea, path, folder, collected) {
 }
 
 #render, stating parameters
-render_report("2022-09-02_BCWS_Incident_Enhanced_Report.csv", "BCWS", "F:////PROV////Incident////", "Incident", "2", "2022-09-02")
+render_report("2022-09-22_BCWS_Training_Enhanced_Report.csv", "BCWS", "E:////PROV////Documents////Training", "Training", 2, "2022-09-22")
