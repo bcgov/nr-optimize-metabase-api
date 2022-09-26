@@ -181,8 +181,10 @@ head(table_pathsize_tallyfiles)
 # Count the number of '\'s in each element of string
 table_pathsize_tallyfiles$FolderDepth <- str_count(table_pathsize_tallyfiles$path, "\\\\") 
 
-# Subtract 2 because the folder depth count starts after the drive letter and 1 folder
-table_pathsize_tallyfiles$FolderDepth <- table_pathsize_tallyfiles$FolderDepth - 2
+start_depth <- str_count({params$path}, "////")
+
+# Subtract the starting folder depth to get a custom count based on parameters given
+table_pathsize_tallyfiles$FolderDepth <- table_pathsize_tallyfiles$FolderDepth - start_depth
 
 # count the folder depth, find max and mean depth
 depth_count <- unique(table_pathsize_tallyfiles$FolderDepth)
