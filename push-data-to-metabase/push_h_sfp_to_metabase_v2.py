@@ -4,22 +4,27 @@
 #              1.) Read in xlsx data
 #              2.) Transform the data
 #              3.) Insert to Metabase
+#              4.) Output formatted Excel file(s)
 #
-# Author:      PPLATTEN, HHAY, CWARING
+# Author:      PPLATTEN, HHAY
 #
 # Created:     2022
 # Copyright:   (c) Optimization Team 2022
 # Licence:     mine
 #
 #
-# usage: push_h_to_metabase.py
+# usage: push_h_to_metabase_v2.py
 # requirements:
 #              1.) Must have open port to metabase database (can use push_to_onedrive.bat to bind port with oc)
-#              2.) Must have h drive xlsx in same folder
+#              2.) Must have h drive xlsx file(s) in same folder as script
 # -------------------------------------------------------------------------------
 
 import glob
 import ldap_helper as ldap
+from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.styles import Font, PatternFill, DEFAULT_FONT
+from openpyxl.formatting.rule import FormulaRule
 import pandas as pd
 import os
 import sys
@@ -282,34 +287,91 @@ def create_ministry_reports(record_tuples):
         df_array = []
         for tup in tups:
             # Yes if consumption is over 1.5gb, otherwise user is not over the limit
-            over_limit = 'Y' if tup[8] > 1.5 else 'N'
+            over_limit = "Y" if tup[8] > 1.5 else "N"
             # Convert to array for use in data frame, column names below
-            df_array.append([tup[0], tup[1], over_limit, tup[5], tup[6]])
+            df_array.append(
+                [tup[7], tup[3], tup[4], over_limit, tup[5], tup[6], tup[0]]
+            )
 
-        # Sort by Division, Branch, over_limit, idir
-        df_array.sort(key=lambda row: (
-            row[3] if isinstance(row[3], str) else "",
-            row[4] if isinstance(row[4], str) is None else "",
-            row[2],
-            row[0]
+        # Sort by Division, Branch, over_limit, email
+        df_array.sort(
+            key=lambda row: (
+                row[0] if isinstance(row[0], str) else "",
+                row[1] if isinstance(row[1], str) else "",
+                row[2] if isinstance(row[2], str) else "",
+                row[3],
+                row[4] if isinstance(row[4], str) else "",
+                row[5] if isinstance(row[5], str) is None else "",
+                row[6] if isinstance(row[6], str) else "",
             )
         )
         # Convert to dataframe and add column names
-        df1 = pd.DataFrame(df_array, columns=['IDIR', 'Display Name', 'Over Limit (1.5gb)', 'Division', 'Branch'])
+        df1 = pd.DataFrame(
+            df_array,
+            columns=[
+                "Email",
+                "First Name",
+                "Last Name",
+                "Exceeds Limit",
+                "Division",
+                "Branch",
+                "IDIR",
+            ],
+        )
+
+        df1["Email"] = df1["Email"].fillna(df1["IDIR"])
+        df1.drop("IDIR", axis=1, inplace=True)
+        df1.sort_values(
+            ["Division", "Branch", "Exceeds Limit", "Last Name"], inplace=True
+        )
 
         # Set file name
         ministry_upper = ministry.upper()
         yyyy_mm_dd = tups[0][10]
         file_name = f"{ministry_upper}_DSR_{yyyy_mm_dd}.xlsx"
-
-        # Create output excel document
-        df1.to_excel(file_name, index=False)
         tups = tups
 
-        # create new excel file
-        # add headers
-        # sort row data
-        # add rows
+        # Convert dataframe to formatted Excel file
+        wb = Workbook()
+        ws = wb.active
+        ws.title = ministry_upper
+        DEFAULT_FONT.name = "Arial"
+        _font = Font(name="Arial", sz=12)
+        {k: setattr(DEFAULT_FONT, k, v) for k, v in _font.__dict__.items()}
+
+        for r in dataframe_to_rows(df1, index=False, header=True):
+            ws.append(r)
+
+        # Expand the columns
+        dims = {}
+        for row in ws.rows:
+            for cell in row:
+                if cell.value:
+                    dims[cell.column_letter] = max(
+                        (dims.get(cell.column_letter, 0), len(str(cell.value)))
+                    )
+        for col, value in dims.items():
+            ws.column_dimensions[col].width = value
+
+        # Bold the header row
+        for cell in ws["1:1"]:
+            cell.font = Font(bold=True)
+
+        # Highlight any cells where the data usage is over the specified limit
+        for cell in ws["A"] + ws[1]:
+            redFill = PatternFill(
+                start_color="FFEE1111", end_color="FFEE1111", fill_type="solid"
+            )
+            ws.conditional_formatting.add(
+                "D2:D6000",
+                FormulaRule(
+                    formula=['NOT(ISERROR(SEARCH("Y",D2)))'],
+                    stopIfTrue=True,
+                    fill=redFill,
+                ),
+            )
+
+        wb.save(file_name)
 
 
 if __name__ == "__main__":
