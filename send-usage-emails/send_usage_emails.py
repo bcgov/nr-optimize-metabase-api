@@ -726,6 +726,10 @@ def main(argv):
 
         # Send email for each user
         omit_list = constants.EMAIL_OMITLIST.split(",")
+
+        for i in range(len(omit_list)):
+            omit_list[i] = omit_list[i].lower()
+
         for idir in data:
             idir_info = data[idir]
             email = idir_info["mail"]
