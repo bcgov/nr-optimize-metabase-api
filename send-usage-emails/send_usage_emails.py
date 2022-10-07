@@ -142,6 +142,7 @@ def get_hdrive_data():
     data = {}
     attribute_error_idirs = []
     other_error_idirs = []
+    inactive_idirs = []
     conn = ldap_util.getLdapConnection()
     # For each H: Drive row, Add new user to "data" dictionary if not there, and add a data sample.
     for result in all_results:
@@ -152,14 +153,16 @@ def get_hdrive_data():
         gb = result[1]
         sample_datetime = result[2]
         ministry = result[3]
-        if ministry == "FPRO" or ministry == "BCWS":
-            ministry = "FLNR"
-        if idir not in attribute_error_idirs and idir not in other_error_idirs:
+        if ministry == "FPRO" or ministry == "BCWS" or ministry == "FLNR":
+            ministry = "FOR"
+        if ministry == "AFF":
+            ministry = "AF"
+        if idir not in attribute_error_idirs and idir not in other_error_idirs and idir not in inactive_idirs:
             if idir not in data:
                 # User is not in the "data" dictionary yet, create user entry while adding first sample.
                 try:
                     # Connect to AD to get user info
-                    ad_info = ldap_util.getADInfo(idir, conn)
+                    ad_info = ldap_util.getADInfo(idir, conn, ["givenName", "mail", "userAccountControl"])
                 except (Exception, AttributeError) as error:
                     if AttributeError:
                         print(f"Unable to find {idir} due to error {error}")
@@ -169,8 +172,10 @@ def get_hdrive_data():
                         other_error_idirs.append(idir)
                     continue
 
-                if ad_info is None or ad_info["mail"] is None or ad_info["givenName"] is None:
+                if ad_info is None or "mail" not in ad_info or "givenName" not in ad_info or "userAccountControl" not in ad_info:
                     other_error_idirs.append(idir)
+                elif ad_info["userAccountControl"] in [1, 256, 514, 546, 66050, 66082]:
+                    inactive_idirs.append(idir)
                 else:
                     # Create user entry, add first sample
                     data[idir] = {
@@ -206,6 +211,7 @@ def get_hdrive_data():
     if len(attribute_error_idirs) > 0 or len(other_error_idirs) > 0:
         message_detail = "The send_usage_emails script failed to find all IDIRs. " \
             + "<br /><br />IDIRs not found due to attribute error: " + ",".join(attribute_error_idirs) \
+            + "<br /><br />IDIRs excluded due to inactive status: " + ",".join(inactive_idirs) \
             + "<br /><br />IDIRs not found due to other issue: " + ",".join(other_error_idirs)
         LOGGER.info(message_detail)
         send_admin_email(message_detail)
@@ -720,6 +726,10 @@ def main(argv):
 
         # Send email for each user
         omit_list = constants.EMAIL_OMITLIST.split(",")
+
+        for i in range(len(omit_list)):
+            omit_list[i] = omit_list[i].lower()
+
         for idir in data:
             idir_info = data[idir]
             email = idir_info["mail"]
