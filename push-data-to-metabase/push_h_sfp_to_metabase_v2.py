@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------------
-# Name:        push_h_to_metabase.py
+# Name:        push_h_sfp_to_metabase_v2.py
 # Purpose:     the purpose of the script is to ETL onedrive data into metabase:
 #              1.) Read in xlsx data
 #              2.) Transform the data
@@ -13,7 +13,7 @@
 # Licence:     mine
 #
 #
-# usage: push_h_to_metabase_v2.py
+# usage: push_h_sfp_to_metabase_v2.py
 # requirements:
 #              1.) Must have open port to metabase database (can use push_to_onedrive.bat to bind port with oc)
 #              2.) Must have h drive / group share xlsx file(s) in same folder as script
