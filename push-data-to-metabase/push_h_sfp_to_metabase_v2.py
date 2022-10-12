@@ -1,3 +1,24 @@
+# -------------------------------------------------------------------------------
+# Name:        push_h_to_metabase.py
+# Purpose:     the purpose of the script is to ETL onedrive data into metabase:
+#              1.) Read in xlsx data
+#              2.) Transform the data
+#              3.) Insert to Metabase
+#              4.) Output formatted Excel file(s)
+#
+# Author:      PPLATTEN, HHAY
+#
+# Created:     2022
+# Copyright:   (c) Optimization Team 2022
+# Licence:     mine
+#
+#
+# usage: push_h_to_metabase_v2.py
+# requirements:
+#              1.) Must have open port to metabase database (can use push_to_onedrive.bat to bind port with oc)
+#              2.) Must have h drive / group share xlsx file(s) in same folder as script
+# -------------------------------------------------------------------------------
+
 import glob
 import ldap_helper as ldap
 from openpyxl import Workbook
@@ -148,6 +169,16 @@ def get_records_from_xlsx(sheet_name):
     # Merge the datasets together
     combined = pd.concat(frames)
 
+    # ldap_util = ldap.LDAPUtil()
+    # conn = ldap_util.getLdapConnection()
+    # for idir in errors["department"] and errors["physicalDeliveryOfficeName"]:
+    #     # If the user has no department or branch, maybe they have a name?
+    #     givenName = get_ad_attribute(idir, ldap_util, conn, "givenName")
+    #     if givenName is None:
+    #         errors["not_found"].append(idir)
+    #         errors["department"].remove(idir)
+    #         errors["physicalDeliveryOfficeName"].remove(idir)
+
     # Log the users not found in LDAP
     with open("not_found.txt", "w") as f:
         for idir in errors["not_found"]:
@@ -190,6 +221,81 @@ def get_conn():
         user=constants.POSTGRES_USER,
         password=constants.POSTGRES_PASS,
     )
+
+
+# inserts h drive tuples into metabase
+def insert_h_drive_records_to_metabase(record_tuples):
+
+    insert_tuples = []
+    for tup in record_tuples:
+        # idir, displayname, datausage, division, branch, ministry, date
+        new_tup = (tup[0], tup[1], tup[8], tup[5], tup[6], tup[9], tup[10])
+        insert_tuples.append(new_tup)
+
+    conn = None
+    try:
+        # Open a connection
+        conn = get_conn()
+        cur = conn.cursor()
+
+        if delete_before_insert:
+            print("Deleting old h drive data")
+            cur.execute("DELETE FROM hdriveusage")
+            print("Delete from hdriveusage complete")
+
+        print("Inserting new h drive data")
+        cur.executemany(
+            """
+            INSERT INTO hdriveusage (idir, displayname, datausage, division, branch, ministry, date)
+            VALUES (%s, %s, %s, %s, %s, %s, %s);
+        """,
+            insert_tuples,
+        )
+        print("Insert to hdriveusage Complete")
+
+        # close the communication with the PostgreSQL
+        conn.commit()
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if conn is not None:
+            conn.close()
+            print("Database connection closed.")
+
+
+# inserts group share tuples into metabase
+def insert_group_share_records_to_metabase(record_tuples):
+    conn = None
+    try:
+        # Open a connection
+        conn = get_conn()
+        cur = conn.cursor()
+
+        if delete_before_insert:
+            print("Deleting old group share data")
+            cur.execute("DELETE FROM sfpmonthly")
+            print("Delete from sfpmonthly complete")
+
+        print("Inserting new group share data")
+        cur.executemany(
+            """
+            INSERT INTO sfpmonthly (sharename, server, datausage, ministry, date)
+            VALUES (%s, %s, %s, %s, %s);
+        """,
+            record_tuples,
+        )
+        print("Insert to sfpmonthly Complete")
+
+        # close the communication with the PostgreSQL
+        conn.commit()
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if conn is not None:
+            conn.close()
+            print("Database connection closed.")
 
 
 def create_ministry_reports(record_tuples):
@@ -308,3 +414,7 @@ if __name__ == "__main__":
         delete_before_insert = True
     record_tuples = get_records_from_xlsx("home drives")
     create_ministry_reports(record_tuples)
+    insert_h_drive_records_to_metabase(record_tuples)
+
+    record_tuples = get_records_from_xlsx("group shares")
+    insert_group_share_records_to_metabase(record_tuples)
