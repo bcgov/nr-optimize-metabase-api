@@ -352,7 +352,7 @@ def create_ministry_reports(record_tuples):
         df1["Email"] = df1["Email"].fillna(df1["IDIR"])
         df1.drop("IDIR", axis=1, inplace=True)
         # Column creation: populates new column cell with dict value based on specific column value & dict key matching
-        df1["Div_Acronym"] = ""
+        df1.insert(5, "Div_Acronym", "")
         df1.loc[df1["Ministry"] == "AF", "Div_Acronym"] = (
             df1["Division"]
             .str.extract(fr"({'|'.join(af_division_renames.keys())})", expand=False)
