@@ -352,10 +352,40 @@ def create_ministry_reports(record_tuples):
         df1["Email"] = df1["Email"].fillna(df1["IDIR"])
         df1.drop("IDIR", axis=1, inplace=True)
         # Column creation: populates new column cell with dict value based on specific column value & dict key matching
-        df1["Div_Acronym"] = (
+        df1["Div_Acronym"] = ""
+        df1.loc[df1["Ministry"] == "AF", "Div_Acronym"] = (
+            df1["Division"]
+            .str.extract(fr"({'|'.join(af_division_renames.keys())})", expand=False)
+            .map(af_division_renames)
+        )
+        df1.loc[df1["Ministry"] == "EMLI", "Div_Acronym"] = (
             df1["Division"]
             .str.extract(fr"({'|'.join(emli_division_renames.keys())})", expand=False)
             .map(emli_division_renames)
+        )
+        df1.loc[df1["Ministry"] == "ENV", "Div_Acronym"] = (
+            df1["Division"]
+            .str.extract(fr"({'|'.join(env_division_renames.keys())})", expand=False)
+            .map(env_division_renames)
+        )
+        df1.loc[df1["Ministry"] == "FOR", "Div_Acronym"] = (
+            df1["Division"]
+            .str.extract(fr"({'|'.join(for_division_renames.keys())})", expand=False)
+            .map(for_division_renames)
+        )
+        df1.loc[df1["Ministry"] == "IRR", "Div_Acronym"] = (
+            df1["Division"]
+            .str.extract(fr"({'|'.join(irr_division_renames.keys())})", expand=False)
+            .map(irr_division_renames)
+        )
+        df1.loc[df1["Ministry"] == "LWRS", "Div_Acronym"] = (
+            df1["Division"]
+            .str.extract(fr"({'|'.join(lwrs_division_renames.keys())})", expand=False)
+            .map(lwrs_division_renames)
+        )
+        df1.drop("Ministry", axis=1, inplace=True)
+        df1.sort_values(
+            ["Div_Acronym", "Branch", "Exceeds Limit", "Last Name"], inplace=True
         )
         df1.sort_values(
             ["Div_Acronym", "Branch", "Exceeds Limit", "Last Name"], inplace=True
