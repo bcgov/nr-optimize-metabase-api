@@ -321,7 +321,7 @@ def create_ministry_reports(record_tuples):
             over_limit = "Y" if tup[8] > 1.5 else "N"
             # Convert to array for use in data frame, column names below
             df_array.append(
-                [tup[7], tup[3], tup[4], over_limit, tup[5], tup[6], tup[0]]
+                [tup[7], tup[3], tup[4], over_limit, tup[5], tup[6], tup[0], tup[9]]
             )
 
         # Sort by Division, Branch, over_limit, email
@@ -334,6 +334,7 @@ def create_ministry_reports(record_tuples):
                 row[4] if isinstance(row[4], str) else "",
                 row[5] if isinstance(row[5], str) is None else "",
                 row[6] if isinstance(row[6], str) else "",
+                row[7],
             )
         )
         # Convert to dataframe and add column names
@@ -347,12 +348,14 @@ def create_ministry_reports(record_tuples):
                 "Division",
                 "Branch",
                 "IDIR",
+                "Ministry",
             ],
         )
 
         df1["Email"] = df1["Email"].fillna(df1["IDIR"])
         df1.drop("IDIR", axis=1, inplace=True)
         # Column creation: populates new column cell with dict value based on specific column value & dict key matching
+        # df1["Div_Acronym"] = ""
         df1.insert(5, "Div_Acronym", "")
         assign_div_acronyms(df1, "AF", af_division_renames)
         assign_div_acronyms(df1, "EMLI", emli_division_renames)
@@ -364,7 +367,6 @@ def create_ministry_reports(record_tuples):
         df1.sort_values(
             ["Div_Acronym", "Branch", "Exceeds Limit", "Last Name"], inplace=True
         )
-
         # group dataframes by Division
         for div, group in df1.groupby(by=["Div_Acronym"]):
 
@@ -409,7 +411,7 @@ def create_ministry_reports(record_tuples):
                         fill=redFill,
                     ),
                 )
-            # wb.save(file_name)
+            # save the workbook - I suggest specifying a location
             wb.save(file_name)
 
 
