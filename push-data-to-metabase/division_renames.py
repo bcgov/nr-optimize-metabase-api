@@ -50,9 +50,12 @@ lwrs_division_renames = {
     "Land Use Policy, Planning & Ecosystems Division": "LUPPED",
     "Land Use Policy, Planning and Ecosystem Division": "LUPPED",
     "Land Use Policy, Planning and Ecosystems Division": "LUPPED",
+    "Land Use Planning, Policy and Ecosystems - Omineca": "LUPPED",
     "NRS Secretariat": "NRSS",
+    "Natural Resource and Digital Services Division": "NRIDS",
     "Natural Resource Information and Digital Service Division": "NRIDS",
     "Natural Resource Information and Digital Services Division": "NRIDS",
+    "Natural Resource information and Digital Services Division": "NRIDS",
     "Natural Resource Sector Secretariat": "NRSS",
     "Natural Resource Sector Sectretariat": "NRSS",
     "Reconciliation and NRS Policy": "RNRSP",
@@ -62,6 +65,7 @@ lwrs_division_renames = {
     "Regional Operations Division - South Area": "ROD-S",
     "Strategic Policy Division": "SPD",
     "Water, Fisheries and Coastal Policy & Planning Division": "WFCPP",
+    "Water, Fisheries and Coastal Policy and Planning Division": "WFCPP",
     "": "Non-Standard",
 }
 
