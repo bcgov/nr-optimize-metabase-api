@@ -120,6 +120,7 @@ emli_division_renames = {
     "Mines Health, Safety & Enforcement Division": "MHSE",
     "Mines, Competitiveness & Authorization Division": "MCA",
     "Mines, Competitiveness & Authorizations Division": "MCA",
+    "Mines, Competitiveness and Authorizations Division": "MCA",
     "Mines, Health, Safety & Enforcement Division": "MHSE",
     "NRS Secretariat": "NRSS",
     "Oil Infrastructure Group": "OIG",
