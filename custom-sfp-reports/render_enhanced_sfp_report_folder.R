@@ -19,5 +19,5 @@ render_report = function(data, ministry, path, folder, quarter, fiscal, collecte
   )
 }
 
-#render, stating parameters
+#render, stating parameters and remembering to escape any special characters in the pathname
 render_report("2022-10-01_ENV_SFP_Enhanced_Data.csv", "ENV", "/ifs/sharedfile/top_level/C40/S40086/WANSHARE/ROB", "ROB", "Q3", "FY22-23", "2022-09-29")
