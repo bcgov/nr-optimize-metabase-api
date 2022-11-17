@@ -412,7 +412,7 @@ def create_ministry_reports(record_tuples):
                     ),
                 )
             # save the workbook - I suggest specifying a location
-            wb.save(file_name)
+            wb.save("C:/Git_Repo/output/" + file_name)
 
 
 if __name__ == "__main__":
