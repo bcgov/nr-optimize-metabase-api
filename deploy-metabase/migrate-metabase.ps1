@@ -62,7 +62,7 @@ oc delete pvc metabase-postgresql -n $TARGET_NAMESPACE
 oc delete pvc postgresql -n $TARGET_NAMESPACE
 oc delete service metabase-postgresql -n $TARGET_NAMESPACE
 oc delete service postgresql -n $TARGET_NAMESPACE
-oc delete secret metabase -n $TARGET_NAMESPACE
+oc delete secret metabase-secret -n $TARGET_NAMESPACE
 oc delete secret metabase-postgresql -n $TARGET_NAMESPACE
 oc delete secret postgresql -n $TARGET_NAMESPACE
 Write-Output("Deleting old database items... DONE")
