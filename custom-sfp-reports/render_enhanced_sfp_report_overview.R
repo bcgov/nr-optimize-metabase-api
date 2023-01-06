@@ -5,7 +5,7 @@ library(rmarkdown)
 # function to render parameters and save html output to file
 render_report = function(data, ministry, quarter, fiscal, collected) {
   rmarkdown::render(
-    here("scripts", "enhanced_sfp_report_overview.Rmd"), params = list(
+    here("scripts", "enhanced_sfp_report_overview_v2.Rmd"), params = list(
       data = data,
       ministry = ministry,
       quarter = quarter,
@@ -18,4 +18,4 @@ render_report = function(data, ministry, quarter, fiscal, collected) {
 }
 
 #render, stating parameters
-render_report("2022-05-01_AF_SFP_Enhanced_Data.csv", "AF", "Q1", "FY22-23", "2022-05-05")
+render_report("2022-10-01_EMLI_SFP_Enhanced_Data.csv", "EMLI", "Q3", "FY22-23", "2022-09-29")
