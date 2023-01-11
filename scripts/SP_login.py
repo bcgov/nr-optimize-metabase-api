@@ -1,12 +1,16 @@
-import constant
+import sp_constants as constants
 import pandas as pd
+import re
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
+from chromedriver_py import binary_path
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 # SharePoint credentials
-username = constant.username
-password = constant.password
+username = constants.USER_NAME
+password = constants.PASSWORD
 
 # SharePoint Collections
 auth = "https://sts.gov.bc.ca/adfs/ls?wa=wsignin1.0&wtrealm=urn%3asp.gov.bc.ca&wctx=https%3a%2f%2fnrm.sp.gov.bc.ca%2fsites%2f"
@@ -61,11 +65,17 @@ bcts = (
 
 sp_collections = [for1, for2, nrm, aff, irr, env, eao, crts, emli, bcws, irrcs, bcts]
 
+# for holding the resultant list
+element_list = []
+
 # initialize the Chrome driver
 options = webdriver.ChromeOptions()
+options.add_experimental_option("excludeSwitches", ["enable-logging"])
 options.add_argument("--ignore-certificate-errors")
 options.add_argument("--headless")
-driver = webdriver.Chrome(r"chromedriver", options=options)
+# driver = webdriver.Chrome(r"chromedriver", options=options)
+service_object = Service(binary_path)
+driver = webdriver.Chrome(options=options, service=service_object)
 
 ################## for testing one site
 # go to SharePoint login page
@@ -122,12 +132,18 @@ for row in all_rows[1:]:
 
 # TO DO: hit Next Page button as req'd to scrape data from subsequent table pages, append values to columns (loop / function)
 
+# find the collection based on the URL
+for link in links:
+    collection = link[31:-36]
+print(collection)
+
 # build pandas dataframe
 df = pd.DataFrame.from_dict(columns, orient="index")
 df = df.transpose()
 df = df.drop(df.columns[[0, 3, 4, 5]], axis=1)
 df["Last Modified"] = pd.Series(lm)
 df["URL"] = pd.Series(links)
+df["Collection"] = collection
 
 # show the dataframe
 print(df)
@@ -141,23 +157,23 @@ WebDriverWait(driver=driver, timeout=10).until(
 )
 
 # DRAFT for looping through each site
-def sp_login():
-    for i in sp_collections:
-        # go to SharePoint login page
-        driver.get(i)
-        # find username/email field and send the username itself to the input field
-        driver.find_element(By.ID, "userNameInput").send_keys(username),
-        # find password input field and insert password as well
-        driver.find_element(By.ID, "passwordInput").send_keys(password),
-        # click login button
-        driver.find_element(By.ID, "submitButton").click(),
-        # wait for the ready state to be complete
-        WebDriverWait(driver=driver, timeout=10).until(
-            lambda x: x.execute_script("return document.readyState === 'complete'")
-        )
-
-
-sp_login()
+# def sp_login():
+#    for i in sp_collections:
+#        # go to SharePoint login page
+#        driver.get(i)
+#        # find username/email field and send the username itself to the input field
+#        driver.find_element(By.ID, "userNameInput").send_keys(username),
+#        # find password input field and insert password as well
+#        driver.find_element(By.ID, "passwordInput").send_keys(password),
+#        # click login button
+#        driver.find_element(By.ID, "submitButton").click(),
+#        # wait for the ready state to be complete
+#        WebDriverWait(driver=driver, timeout=10).until(
+#            lambda x: x.execute_script("return document.readyState === 'complete'")
+#        )
+#
+#
+# sp_login()
 
 # Opens a new tab and switches to new tab
 # driver.switch_to.new_window('tab')
