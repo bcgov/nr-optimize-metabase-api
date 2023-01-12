@@ -1,8 +1,6 @@
 import sp_constants as constants
 import pandas as pd
-import re
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from chromedriver_py import binary_path
 from selenium.webdriver.common.by import By
@@ -65,9 +63,6 @@ bcts = (
 
 sp_collections = [for1, for2, nrm, aff, irr, env, eao, crts, emli, bcws, irrcs, bcts]
 
-# for holding the resultant list
-element_list = []
-
 # initialize the Chrome driver
 options = webdriver.ChromeOptions()
 options.add_experimental_option("excludeSwitches", ["enable-logging"])
@@ -86,6 +81,22 @@ driver.find_element(By.ID, "userNameInput").send_keys(username)
 driver.find_element(By.ID, "passwordInput").send_keys(password)
 # click login button
 driver.find_element(By.ID, "submitButton").click()
+
+# get URL of page after login
+public void waitForPageLoad() {
+    Wait<WebDriver> wait = new WebDriverWait(driver, 30);
+    wait.until(new Function<WebDriver, Boolean>() {
+        public Boolean apply(WebDriver driver){                    
+            return String
+                .valueOf(((JavascriptExecutor) driver).executeScript("return document.readyState"))
+                .equals("complete");
+        }
+    });
+} 
+
+System.out.println("url:" + driver.getTitle())
+Thread.sleep(2000)
+System.out.println("url:" + driver.getCurrentUrl())
 
 # empty lists & dictionaries
 headers = []
@@ -131,11 +142,16 @@ for row in all_rows[1:]:
         columns[name].append(value)
 
 # TO DO: hit Next Page button as req'd to scrape data from subsequent table pages, append values to columns (loop / function)
+# while True:
+#    elm = driver.find_element(By.CLASS_NAME, "Next")
+#    if "inactive" in elm.get_attribute("class"):
+#        break
+#    elm.click()
 
 # find the collection based on the URL
 for link in links:
     collection = link[31:-36]
-print(collection)
+# print(collection)
 
 # build pandas dataframe
 df = pd.DataFrame.from_dict(columns, orient="index")
