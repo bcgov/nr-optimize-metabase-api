@@ -64,8 +64,8 @@ def send_admin_email(message_detail):
     msg = MIMEMultipart("related")
     msg["Subject"] = "Script Report"
     if constants.DEBUG_EMAIL == "":
-        msg["From"] = "IITD.Optimize@gov.bc.ca"
-        msg["To"] = "IITD.Optimize@gov.bc.ca"
+        msg["From"] = "NRIDS.Optimize@gov.bc.ca"
+        msg["To"] = "NRIDS.Optimize@gov.bc.ca"
     else:
         msg["To"] = constants.DEBUG_EMAIL
         msg["From"] = constants.DEBUG_EMAIL
@@ -157,6 +157,17 @@ def get_hdrive_data():
             ministry = "FOR"
         if ministry == "AFF":
             ministry = "AF"
+        if ministry == "LWRS":
+            ministry = "WLRS"
+ALSO-----------------
+        # Update ministry names in both sets of data
+        ministry_renames = {
+            "BCWS": "FOR",
+            "FLNR": "FOR",
+            "FPRO": "FOR",
+            "AFF": "AF",
+            "LWRS": "WLRS"
+        }
         if idir not in attribute_error_idirs and idir not in other_error_idirs and idir not in inactive_idirs:
             if idir not in data:
                 # User is not in the "data" dictionary yet, create user entry while adding first sample.
@@ -439,7 +450,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
 
     # Build email content and metadata
     msg["Subject"] = f"Transitory: Your H: Drive Usage Report for {last_month_name} {year}"
-    msg["From"] = "IITD.Optimize@gov.bc.ca"
+    msg["From"] = "NRIDS.Optimize@gov.bc.ca"
     msg["To"] = recipient
 
     # Greet the user and provide introduction
@@ -534,7 +545,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     </p>
     <p style="font-size: 10px">H: Drive usage information is captured mid-month from the Office of the Chief Information Officer (OCIO).
      If you do not wish to receive these monthly emails, please reply with the subject line "unsubscribe".
-     Users can subscribe or re-subscribe by emailing IITD.Optimize@gov.bc.ca with the subject line "PSR subscribe" and including their email address.</p>
+     Users can subscribe or re-subscribe by emailing NRIDS.Optimize@gov.bc.ca with the subject line "PSR subscribe" and including their email address.</p>
     </body>
     </html>
     """
@@ -679,7 +690,7 @@ def main(argv):
             "EMLI": "Energy, Mines and Low Carbon Innovation",
             "ENV": "Environment",
             "FOR": "Forests",
-            "LWRS": "Land, Water and Resource Stewardship",
+            "WLRS": "Water, Land and Resource Stewardship",
             "IRR": "Indigenous Relations & Reconciliation"
         }
 
