@@ -5,6 +5,9 @@ from selenium.webdriver.chrome.service import Service
 from chromedriver_py import binary_path
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# from selenium.common.exceptions import TimeoutException, WebDriverException
 
 # SharePoint credentials
 username = constants.USER_NAME
@@ -81,22 +84,29 @@ driver.find_element(By.ID, "userNameInput").send_keys(username)
 driver.find_element(By.ID, "passwordInput").send_keys(password)
 # click login button
 driver.find_element(By.ID, "submitButton").click()
-
 # get URL of page after login
-public void waitForPageLoad() {
-    Wait<WebDriver> wait = new WebDriverWait(driver, 30);
-    wait.until(new Function<WebDriver, Boolean>() {
-        public Boolean apply(WebDriver driver){                    
-            return String
-                .valueOf(((JavascriptExecutor) driver).executeScript("return document.readyState"))
-                .equals("complete");
-        }
-    });
-} 
+strUrl = driver.current_url
+print("Current Url is:" + strUrl)
 
-System.out.println("url:" + driver.getTitle())
-Thread.sleep(2000)
-System.out.println("url:" + driver.getCurrentUrl())
+# move to next page
+while True:
+    try:
+        WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable(
+                (
+                    By.XPATH,
+                    "/html/body/form/div[12]/div/div[2]/div[2]/div[3]/table[4]/tbody/tr/td/a",
+                )
+            )
+        ),
+        driver.find_element(
+            By.XPATH,
+            "/html/body/form/div[12]/div/div[2]/div[2]/div[3]/table[4]/tbody/tr/td/a[contains(.,'Next')]",
+        ).click()
+        print("Navigating to Next Page")
+    except:
+        print("Last page reached")
+        break
 
 # empty lists & dictionaries
 headers = []
@@ -141,16 +151,8 @@ for row in all_rows[1:]:
         value = item.text
         columns[name].append(value)
 
-# TO DO: hit Next Page button as req'd to scrape data from subsequent table pages, append values to columns (loop / function)
-# while True:
-#    elm = driver.find_element(By.CLASS_NAME, "Next")
-#    if "inactive" in elm.get_attribute("class"):
-#        break
-#    elm.click()
-
 # find the collection based on the URL
-for link in links:
-    collection = link[31:-36]
+collection = strUrl[31:-36]
 # print(collection)
 
 # build pandas dataframe
@@ -159,7 +161,7 @@ df = df.transpose()
 df = df.drop(df.columns[[0, 3, 4, 5]], axis=1)
 df["Last Modified"] = pd.Series(lm)
 df["URL"] = pd.Series(links)
-df["Collection"] = collection
+df["Collection"] = pd.Series(collection)
 
 # show the dataframe
 print(df)
