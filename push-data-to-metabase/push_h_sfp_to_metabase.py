@@ -283,5 +283,5 @@ if __name__ == "__main__":
     record_tuples = get_records_from_xlsx("home drives")
     insert_h_drive_records_to_metabase(record_tuples)
 
-    # record_tuples = get_records_from_xlsx("group shares")
-    # insert_group_share_records_to_metabase(record_tuples)
+    record_tuples = get_records_from_xlsx("group shares")
+    insert_group_share_records_to_metabase(record_tuples)
