@@ -1,10 +1,11 @@
 # -------------------------------------------------------------------------------
 # Name:        push_h_sfp_to_metabase_v2.py
-# Purpose:     the purpose of the script is to ETL onedrive data into metabase:
+# Purpose:     the purpose of the script is to ETL H drive and Group Share data into metabase, as well as produce
+#              Divisional Storage Reports based on the H Drive information for distribution to Ministry Executives.
 #              1.) Read in xlsx data
 #              2.) Transform the data
-#              3.) Insert to Metabase
-#              4.) Output formatted Excel file(s)
+#              3.) Insert H Drive and Group Share data to Metabase
+#              4.) Output formatted Divisional Storage Reports as Excel file(s) to local machine
 #
 # Author:      PPLATTEN, HHAY
 #
@@ -15,8 +16,8 @@
 #
 # usage: push_h_sfp_to_metabase_v2.py
 # requirements:
-#              1.) Must have open port to metabase database (can use push_to_onedrive.bat to bind port with oc)
-#              2.) Must have h drive / group share xlsx file(s) in same folder as script
+#              1.) Must have the H Drive / Group Share xlsx file(s) in same folder as script.
+#              2.) Must have an open port to metabase database.
 # -------------------------------------------------------------------------------
 
 import glob
@@ -33,7 +34,7 @@ import push_postgres_constants as constants
 from division_renames import (
     all_division_renames,
     for_division_acronyms,
-    lwrs_division_acronyms,
+    wlrs_division_acronyms,
     env_division_acronyms,
     emli_division_acronyms,
     af_division_acronyms,
@@ -55,7 +56,7 @@ ministry_renames = {
     "EMPR": "EMLI",
     "MEM": "EMLI",
     "ABR": "IRR",
-    "LWRS": "WLRS"
+    "LWRS": "WLRS",
 }
 
 delete_before_insert = False
@@ -172,16 +173,6 @@ def get_records_from_xlsx(sheet_name):
 
     # Merge the datasets together
     combined = pd.concat(frames)
-
-    # ldap_util = ldap.LDAPUtil()
-    # conn = ldap_util.getLdapConnection()
-    # for idir in errors["department"] and errors["physicalDeliveryOfficeName"]:
-    #     # If the user has no department or branch, maybe they have a name?
-    #     givenName = get_ad_attribute(idir, ldap_util, conn, "givenName")
-    #     if givenName is None:
-    #         errors["not_found"].append(idir)
-    #         errors["department"].remove(idir)
-    #         errors["physicalDeliveryOfficeName"].remove(idir)
 
     # Log the users not found in LDAP
     with open("not_found.txt", "w") as f:
@@ -302,7 +293,6 @@ def insert_group_share_records_to_metabase(record_tuples):
             print("Database connection closed.")
 
 
-# A "simple" report generated specifically for EMLI
 def create_ministry_reports_simple(record_tuples):
     # Arrange tuples by ministry/workbook
     ministry_dict = {}
@@ -324,9 +314,7 @@ def create_ministry_reports_simple(record_tuples):
             # Yes if consumption is over 1.5gb, otherwise user is not over the limit
             over_limit = "Y" if tup[8] > 1.5 else "N"
             # Convert to array for use in data frame, column names below
-            df_array.append(
-                [tup[9], tup[5], tup[6], f"{tup[4]}, {tup[3]}", over_limit]
-            )
+            df_array.append([tup[9], tup[5], tup[6], f"{tup[4]}, {tup[3]}", over_limit])
 
         # apply division renames to correct bad data in AD
         for row in df_array:
@@ -345,13 +333,12 @@ def create_ministry_reports_simple(record_tuples):
             ],
         )
 
-        # Column creation: populates new column cell with dict value based on specific column value & dict key matching
         assign_div_acronyms(df1, "AF", af_division_acronyms)
         assign_div_acronyms(df1, "EMLI", emli_division_acronyms)
         assign_div_acronyms(df1, "ENV", env_division_acronyms)
         assign_div_acronyms(df1, "FOR", for_division_acronyms)
         assign_div_acronyms(df1, "IRR", irr_division_acronyms)
-        assign_div_acronyms(df1, "LWRS", lwrs_division_acronyms)
+        assign_div_acronyms(df1, "WLRS", wlrs_division_acronyms)
         df1.drop("Ministry", axis=1, inplace=True)
         df1.sort_values(
             ["Division", "Branch", "Over Limit (1.5gb)", "Display Name"], inplace=True
@@ -364,112 +351,14 @@ def create_ministry_reports_simple(record_tuples):
             div_acronym = group["Div_Acronym"].values[0]
             # div_acronym = get_div_acronym(div_name, )
             yyyy_mm_dd = tups[0][10]
-            file_name = f"{ministry_upper}_DSR_{div_acronym}_{yyyy_mm_dd}.xlsx"
+            tups = tups
+            file_name = f"{ministry_upper}_{div_acronym}_DSR_{yyyy_mm_dd}.xlsx"
             # Convert dataframe to formatted Excel file
             wb = Workbook()
             ws = wb.active
             ws.title = div_acronym
             DEFAULT_FONT.name = "Calibri"
             _font = Font(name="Calibri", sz=11)
-            {k: setattr(DEFAULT_FONT, k, v) for k, v in _font.__dict__.items()}
-            group.drop("Div_Acronym", axis=1, inplace=True)
-            for r in dataframe_to_rows(group, index=False, header=True):
-                ws.append(r)
-            # Expand the columns
-            dims = {}
-            for row in ws.rows:
-                for cell in row:
-                    if cell.value:
-                        dims[cell.column_letter] = max(
-                            (dims.get(cell.column_letter, 0), len(str(cell.value)))
-                        )
-            for col, value in dims.items():
-                ws.column_dimensions[col].width = value
-            # Bold the header row
-            for cell in ws["1:1"]:
-                cell.font = Font(bold=True)
-            # save the workbook - I suggest specifying a location
-            path = f"C:/git/output/{ministry_upper}/custom"
-            if not os.path.exists(path):
-                os.makedirs(path)
-            wb.save(f"{path}/{file_name}")
-
-
-def create_ministry_reports(record_tuples):
-    # Arrange tuples by ministry/workbook
-    ministry_dict = {}
-    for tup in record_tuples:
-        tup = tup
-        if tup[0].lower() == "soft deleted home drives":
-            continue
-        ministry = tup[9] if isinstance(tup[9], str) else "None"
-        if ministry not in ministry_dict:
-            ministry_dict[ministry] = []
-        ministry_dict[ministry].append(tup)
-
-    # Create an excel workbook for each ministry
-    for ministry in ministry_dict:
-        # Format for excel output
-        tups = ministry_dict[ministry]
-        df_array = []
-        for tup in tups:
-            # Yes if consumption is over 1.5gb, otherwise user is not over the limit
-            over_limit = "Y" if tup[8] > 1.5 else "N"
-            # Convert to array for use in data frame, column names below
-            df_array.append(
-                [ministry, tup[5], tup[6], tup[3], tup[4], over_limit]
-            )
-
-        # Sort by Division, Branch, over_limit, email
-        df_array.sort(
-            key=lambda row: (
-                row[0] if isinstance(row[0], str) else "",
-                row[1] if isinstance(row[1], str) else "",
-                row[2] if isinstance(row[2], str) else "",
-                row[2],
-                row[4] if isinstance(row[4], str) else ""
-            )
-        )
-        # Convert to dataframe and add column names
-        df1 = pd.DataFrame(
-            df_array,
-            columns=[
-                "Ministry",
-                "Division",
-                "Branch",
-                "First Name",
-                "Last Name",
-                "Exceeds Limit"
-            ],
-        )
-
-        # df1.drop("IDIR", axis=1, inplace=True)
-        # Column creation: populates new column cell with dict value based on specific column value & dict key matching
-        # df1["Div_Acronym"] = ""
-        df1.insert(5, "Div_Acronym", "")
-        assign_div_acronyms(df1, "AF", af_division_acronyms)
-        assign_div_acronyms(df1, "EMLI", emli_division_acronyms)
-        assign_div_acronyms(df1, "ENV", env_division_acronyms)
-        assign_div_acronyms(df1, "FOR", for_division_acronyms)
-        assign_div_acronyms(df1, "IRR", irr_division_acronyms)
-        assign_div_acronyms(df1, "LWRS", lwrs_division_acronyms)
-        df1.drop("Ministry", axis=1, inplace=True)
-
-        # group dataframes by Division
-        for div, group in df1.groupby(by=["Div_Acronym"]):
-
-            # Set file name
-            ministry_upper = ministry.upper()
-            div_name = group["Div_Acronym"].values[0]
-            yyyy_mm_dd = tups[0][10]
-            tups = tups
-            file_name = f"{ministry_upper}_{div_name}_DSR_{yyyy_mm_dd}.xlsx"
-            # Convert dataframe to formatted Excel file
-            wb = Workbook()
-            ws = wb.active
-            ws.title = "Divisional Report"
-            DEFAULT_FONT.name = "Arial"
-            _font = Font(name="Arial", sz=12)
             {k: setattr(DEFAULT_FONT, k, v) for k, v in _font.__dict__.items()}
             for r in dataframe_to_rows(group, index=False, header=True):
                 ws.append(r)
@@ -499,7 +388,7 @@ def create_ministry_reports(record_tuples):
                         fill=redFill,
                     ),
                 )
-            # save the workbook - I suggest specifying a location
+            # save the workbook - makes directory if it doesn't already exist
             path = f"C:/git/output/{ministry_upper}"
             if not os.path.exists(path):
                 os.makedirs(path)
@@ -511,7 +400,6 @@ if __name__ == "__main__":
         delete_before_insert = True
     record_tuples = get_records_from_xlsx("home drives")
     create_ministry_reports_simple(record_tuples)
-    create_ministry_reports(record_tuples)
     insert_h_drive_records_to_metabase(record_tuples)
 
     record_tuples = get_records_from_xlsx("group shares")
