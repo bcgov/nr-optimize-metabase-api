@@ -113,7 +113,7 @@ def put_query(card_id, query, type):
 # get session
 session_url = env_url + "/api/session"
 response = requests.post(
-    session_url, json={"username": constants.USER_NAME, "password": constants.PASSWORD}
+    session_url, json={"username": constants.LDAP_EMAIL, "password": constants.LDAP_PASSWORD}
 )
 session_id = response.json()["id"]
 headers = {"X-Metabase-Session": session_id}
