@@ -8,8 +8,8 @@ import Pages.Admin.AdminHomePage
  */
 trait Login {
   Map env = System.getenv()
-  String username = env['LDAP_EMAIL']
-  String password = env['LDAP_PASSWORD']
+  String username = env['USER_NAME']
+  String password = env['USER_PASS']
 
   /**
    * Log in with the test user
