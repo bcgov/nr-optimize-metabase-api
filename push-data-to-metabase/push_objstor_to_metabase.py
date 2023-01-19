@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------
 # Name:        push_objstor_to_metabase.py
 # Purpose:     the purpose of the script is to ETL objstor metadata into metabase:
-#              1.) Read in xlsx data
+#              1.) Read in csv data
 #              2.) Transform the data
 #              3.) Insert to Metabase
 #
@@ -53,7 +53,7 @@ ministry_renames = {
     "IIT": "LWRS",
     "IIT ENV": "LWRS",
     "LWRS NRIDS": "LWRS",
-    "LWRS NRIDS - Architecture": "LWRS"
+    "LWRS NRIDS - Architecture": "LWRS",
 }
 
 nrm_ministries = ["AF", "EMLI", "ENV", "FOR", "IRR", "LWRS"]

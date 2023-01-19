@@ -30,7 +30,7 @@ errors = {
     "department": [],
     "physicalDeliveryOfficeName": [],
     "other": [],
-    "not_found": []
+    "not_found": [],
 }
 
 ministry_renames = {
@@ -39,7 +39,8 @@ ministry_renames = {
     "FLNR": "FOR",
     "EMPR": "EMLI",
     "MEM": "EMLI",
-    "ABR": "IRR"
+    "ABR": "IRR",
+    "LWRS": "WLRS",
 }
 
 delete_before_insert = False
@@ -75,7 +76,9 @@ def manipulate_frame(frame, ministryname, datestamp):
 
     # update ministry acronyms
     for original_name in ministry_renames:
-        frame["ministry"] = frame["ministry"].apply(lambda x: x.replace(original_name, ministry_renames[original_name]))
+        frame["ministry"] = frame["ministry"].apply(
+            lambda x: x.replace(original_name, ministry_renames[original_name])
+        )
 
     # remove the header row -- assume it's the first
     frame = frame[1:]
@@ -127,6 +130,7 @@ def get_records_from_xlsx(sheet_name):
             "af",
             "for",
             "lwrs",
+            "wlrs",
         ]
         for ministry_acronym in ministries:
             if ministry_acronym in name.lower():
@@ -144,13 +148,15 @@ def get_records_from_xlsx(sheet_name):
         for current_sheet_name in excelsheet.sheet_names:
             if sheet_name.lower() in current_sheet_name.lower():
                 print(f"Working on file {name} sheet {current_sheet_name}")
-                frame = excelsheet.parse(current_sheet_name, header=None, index_col=None)
+                frame = excelsheet.parse(
+                    current_sheet_name, header=None, index_col=None
+                )
                 if sheet_name.lower() == "home drives":
                     frame = add_column(frame, "department", "division")
                     frame = add_column(frame, "physicalDeliveryOfficeName", "branch")
                 frame = manipulate_frame(frame, ministryname, datestamp)
+                frame = frame.drop(frame.iloc[:, 1:7], axis=1)
                 frames.append(frame)
-
     # Merge the datasets together
     combined = pd.concat(frames)
 
@@ -165,14 +171,21 @@ def get_records_from_xlsx(sheet_name):
             errors["physicalDeliveryOfficeName"].remove(idir)
 
     # Log the users not found in LDAP
-    with open('not_found.txt', 'w') as f:
+    with open("not_found.txt", "w") as f:
         for idir in errors["not_found"]:
             f.write(f"{idir}\n")
 
     # add headers back in
     if sheet_name.lower() == "home drives":
-        combined.columns = ["idir", "displayname", "datausage", "ministry", "division", "branch", "date"]
-
+        combined.columns = [
+            "idir",
+            "displayname",
+            "datausage",
+            "ministry",
+            "division",
+            "branch",
+            "date",
+        ]
         # also fill blank displaynames with idir
         combined.displayname.fillna(combined.idir, inplace=True)
     elif sheet_name.lower() == "group shares":
@@ -192,7 +205,7 @@ def get_conn():
         host="localhost",
         database=constants.POSTGRES_DB_NAME,
         user=constants.POSTGRES_USER,
-        password=constants.POSTGRES_PASS
+        password=constants.POSTGRES_PASS,
     )
 
 
@@ -205,16 +218,19 @@ def insert_h_drive_records_to_metabase(record_tuples):
         cur = conn.cursor()
 
         if delete_before_insert:
-            print('Deleting old h drive data')
-            cur.execute('DELETE FROM hdriveusage')
-            print('Delete from hdriveusage complete')
+            print("Deleting old h drive data")
+            cur.execute("DELETE FROM hdriveusage")
+            print("Delete from hdriveusage complete")
 
-        print('Inserting new h drive data')
-        cur.executemany('''
+        print("Inserting new h drive data")
+        cur.executemany(
+            """
             INSERT INTO hdriveusage (idir, displayname, datausage, division, branch, ministry, date)
             VALUES (%s, %s, %s, %s, %s, %s, %s);
-        ''', record_tuples)
-        print('Insert to hdriveusage Complete')
+        """,
+            record_tuples,
+        )
+        print("Insert to hdriveusage Complete")
 
         # close the communication with the PostgreSQL
         conn.commit()
@@ -224,7 +240,7 @@ def insert_h_drive_records_to_metabase(record_tuples):
     finally:
         if conn is not None:
             conn.close()
-            print('Database connection closed.')
+            print("Database connection closed.")
 
 
 # inserts group share tuples into metabase
@@ -236,16 +252,19 @@ def insert_group_share_records_to_metabase(record_tuples):
         cur = conn.cursor()
 
         if delete_before_insert:
-            print('Deleting old group share data')
-            cur.execute('DELETE FROM sfpmonthly')
-            print('Delete from sfpmonthly complete')
+            print("Deleting old group share data")
+            cur.execute("DELETE FROM sfpmonthly")
+            print("Delete from sfpmonthly complete")
 
-        print('Inserting new group share data')
-        cur.executemany('''
+        print("Inserting new group share data")
+        cur.executemany(
+            """
             INSERT INTO sfpmonthly (sharename, server, datausage, ministry, date)
             VALUES (%s, %s, %s, %s, %s);
-        ''', record_tuples)
-        print('Insert to sfpmonthly Complete')
+        """,
+            record_tuples,
+        )
+        print("Insert to sfpmonthly Complete")
 
         # close the communication with the PostgreSQL
         conn.commit()
@@ -255,7 +274,7 @@ def insert_group_share_records_to_metabase(record_tuples):
     finally:
         if conn is not None:
             conn.close()
-            print('Database connection closed.')
+            print("Database connection closed.")
 
 
 if __name__ == "__main__":
