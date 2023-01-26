@@ -291,8 +291,10 @@ df4 = df4[
 frames = [df2, df4]
 df = pd.concat(frames)
 
-with pd.ExcelWriter(".\SharePoint_Scrape_" + (collection) + ".xlsx") as writer:
-    df.to_excel(writer, sheet_name=collection, index=False)
+# with pd.ExcelWriter(".\SharePoint_Scrape_" + (collection) + ".xlsx") as writer:
+#    df.to_excel(writer, sheet_name=collection, index=False)
+
+df.to_csv("./SharePoint_Scrape_" + (collection) + ".csv", index=False)
 
 # wait for the ready state to be complete
 WebDriverWait(driver=driver, timeout=10).until(
