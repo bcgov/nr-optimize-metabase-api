@@ -78,7 +78,7 @@ driver = webdriver.Chrome(options=options, service=service_object)
 
 ################## for testing one site
 # go to SharePoint login page
-driver.get(for1)
+driver.get(bcts)
 # find username/email field and send the username itself to the input field
 driver.find_element(By.ID, "userNameInput").send_keys(username)
 # find password input field and insert password as well
@@ -162,7 +162,6 @@ df1["sitename"] = df1["sitename"].replace("", np.nan)
 df1["date"] = pd.to_datetime("today").normalize()
 # Dropping rows where NaN is present
 df2 = df1.dropna(subset=["url", "sitename"])
-df2 = df2.drop(columns=["Type"])
 df2["datausage"] = df2["datausage"].astype(float)
 # convert all data sizes to GB
 df2.loc[df2["unit"] == "MB", "datausage"] = df2["datausage"] / 1000
@@ -270,7 +269,6 @@ df3["sitename"] = df3["sitename"].replace("", np.nan)
 df3["date"] = pd.to_datetime("today").normalize()
 # Dropping rows where NaN is present
 df4 = df3.dropna(subset=["url", "sitename"])
-df4 = df4.drop(columns=["Type"])
 df4["datausage"] = df4["datausage"].astype(float)
 # convert all data sizes to GB
 df4.loc[df4["unit"] == "MB", "datausage"] = df4["datausage"] / 1000
