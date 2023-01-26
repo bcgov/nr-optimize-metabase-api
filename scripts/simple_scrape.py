@@ -155,10 +155,10 @@ df1["Collection"] = ""
 df1["Collection"] = df1["Collection"].str.replace("", collection)
 # Replacing empty string with np.NaN
 df1["URL"] = df1["URL"].replace("", np.nan)
+df1["Name"] = df1["Name"].replace("", np.nan)
 # Dropping rows where NaN is present
-df2 = df1.dropna(subset=["URL"])
+df2 = df1.dropna(subset=["URL", "Name"])
 df2 = df2.drop(columns=["Type"])
-
 
 # move to next page
 while True:
@@ -242,15 +242,16 @@ df3["Collection"] = ""
 df3["Collection"] = df3["Collection"].str.replace("", collection)
 # Replacing empty string with np.NaN
 df3["URL"] = df3["URL"].replace("", np.nan)
+df3["Name"] = df3["Name"].replace("", np.nan)
 # Dropping rows where NaN is present
-df4 = df3.dropna(subset=["URL"])
+df4 = df3.dropna(subset=["URL", "Name"])
 df4 = df4.drop(columns=["Type"])
 
 # concatenate dataframes
 frames = [df2, df4]
 df = pd.concat(frames)
 
-with pd.ExcelWriter(".\SharePoint_Scrape.xlsx") as writer:
+with pd.ExcelWriter(".\SharePoint_Scrape_" + (collection) + ".xlsx") as writer:
     df.to_excel(writer, sheet_name=collection, index=False)
 
 # wait for the ready state to be complete
@@ -258,8 +259,5 @@ WebDriverWait(driver=driver, timeout=10).until(
     lambda x: x.execute_script("return document.readyState === 'complete'")
 )
 
-# Opens a new tab and switches to new tab
-# driver.switch_to.new_window('tab')
-
 # close the driver
-# driver.close()
+driver.close()
