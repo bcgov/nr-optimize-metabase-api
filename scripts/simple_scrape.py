@@ -146,32 +146,38 @@ for row in all_rows[1:]:
 df1 = pd.DataFrame.from_dict(columns, orient="index")
 df1 = df1.transpose()
 df1 = df1.drop(df1.columns[[0, 3, 4, 5]], axis=1)
+df1.rename(columns={"Name": "sitename", "Total Size": "datausage"}, inplace=True)
 df1["Type"] = pd.Series(type)
 # Selecting only the rows that are SharePoint sites
 df1 = df1.loc[df1["Type"] == "Type Web"]
-df1["Last Modified"] = pd.Series(lm)
-df1["URL"] = pd.Series(links)
-df1["Collection"] = ""
-df1["Collection"] = df1["Collection"].str.replace("", collection)
+df1["unit"] = df1.datausage.str[-2:]
+df1["datausage"] = df1["datausage"].str[:-3]
+df1["lastmodified"] = pd.Series(lm)
+df1["url"] = pd.Series(links)
+df1["collection"] = ""
+df1["collection"] = df1["collection"].str.replace("", collection)
 # Replacing empty string with np.NaN
-df1["URL"] = df1["URL"].replace("", np.nan)
-df1["Name"] = df1["Name"].replace("", np.nan)
-# Calculate data cost
-df1["Data Cost"] = ""
-df1["Date"] = pd.to_datetime("today").normalize()
+df1["url"] = df1["url"].replace("", np.nan)
+df1["sitename"] = df1["sitename"].replace("", np.nan)
+df1["date"] = pd.to_datetime("today").normalize()
 # Dropping rows where NaN is present
-df2 = df1.dropna(subset=["URL", "Name"])
+df2 = df1.dropna(subset=["url", "sitename"])
 df2 = df2.drop(columns=["Type"])
-df2.rename(columns={"Name": "Sitename", "Total Size": "Data Usage"}, inplace=True)
+df2["datausage"] = df2["datausage"].astype(float)
+# convert all data sizes to GB
+df2.loc[df2["unit"] == "MB", "datausage"] = df2["datausage"] / 1000
+df2.loc[df2["unit"] == "KB", "datausage"] = df2["datausage"] / 1000000
+# calculate data cost
+df2["datacost"] = df2.datausage.mul(60).round(2)
 df2 = df2[
     [
-        "Collection",
-        "Sitename",
-        "URL",
-        "Data Usage",
-        "Data Cost",
-        "Last Modified",
-        "Date",
+        "collection",
+        "sitename",
+        "url",
+        "datausage",
+        "datacost",
+        "lastmodified",
+        "date",
     ]
 ]
 
@@ -248,32 +254,38 @@ for row in all_rows[1:]:
 df3 = pd.DataFrame.from_dict(columns, orient="index")
 df3 = df3.transpose()
 df3 = df3.drop(df3.columns[[0, 3, 4, 5]], axis=1)
+df3.rename(columns={"Name": "sitename", "Total Size": "datausage"}, inplace=True)
 df3["Type"] = pd.Series(type)
 # Selecting only the rows that are SharePoint sites
 df3 = df3.loc[df3["Type"] == "Type Web"]
-df3["Last Modified"] = pd.Series(lm)
-df3["URL"] = pd.Series(links)
-df3["Collection"] = ""
-df3["Collection"] = df3["Collection"].str.replace("", collection)
+df3["unit"] = df3.datausage.str[-2:]
+df3["datausage"] = df3["datausage"].str[:-3]
+df3["lastmodified"] = pd.Series(lm)
+df3["url"] = pd.Series(links)
+df3["collection"] = ""
+df3["collection"] = df3["collection"].str.replace("", collection)
 # Replacing empty string with np.NaN
-df3["URL"] = df3["URL"].replace("", np.nan)
-df3["Name"] = df3["Name"].replace("", np.nan)
-# Calculate data cost
-df3["Data Cost"] = ""
-df3["Date"] = pd.to_datetime("today").normalize()
+df3["url"] = df3["url"].replace("", np.nan)
+df3["sitename"] = df3["sitename"].replace("", np.nan)
+df3["date"] = pd.to_datetime("today").normalize()
 # Dropping rows where NaN is present
-df4 = df3.dropna(subset=["URL", "Name"])
+df4 = df3.dropna(subset=["url", "sitename"])
 df4 = df4.drop(columns=["Type"])
-df4.rename(columns={"Name": "Sitename", "Total Size": "Data Usage"}, inplace=True)
+df4["datausage"] = df4["datausage"].astype(float)
+# convert all data sizes to GB
+df4.loc[df4["unit"] == "MB", "datausage"] = df4["datausage"] / 1000
+df4.loc[df4["unit"] == "KB", "datausage"] = df4["datausage"] / 1000000
+# Calculate data cost
+df4["datacost"] = df4.datausage.mul(60).round(2)
 df4 = df4[
     [
-        "Collection",
-        "Sitename",
-        "URL",
-        "Data Usage",
-        "Data Cost",
-        "Last Modified",
-        "Date",
+        "collection",
+        "sitename",
+        "url",
+        "datausage",
+        "datacost",
+        "lastmodified",
+        "date",
     ]
 ]
 
