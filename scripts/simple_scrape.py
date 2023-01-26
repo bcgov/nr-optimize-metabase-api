@@ -156,9 +156,24 @@ df1["Collection"] = df1["Collection"].str.replace("", collection)
 # Replacing empty string with np.NaN
 df1["URL"] = df1["URL"].replace("", np.nan)
 df1["Name"] = df1["Name"].replace("", np.nan)
+# Calculate data cost
+df1["Data Cost"] = ""
+df1["Date"] = pd.to_datetime("today").normalize()
 # Dropping rows where NaN is present
 df2 = df1.dropna(subset=["URL", "Name"])
 df2 = df2.drop(columns=["Type"])
+df2.rename(columns={"Name": "Sitename", "Total Size": "Data Usage"}, inplace=True)
+df2 = df2[
+    [
+        "Collection",
+        "Sitename",
+        "URL",
+        "Data Usage",
+        "Data Cost",
+        "Last Modified",
+        "Date",
+    ]
+]
 
 # move to next page
 while True:
@@ -243,9 +258,24 @@ df3["Collection"] = df3["Collection"].str.replace("", collection)
 # Replacing empty string with np.NaN
 df3["URL"] = df3["URL"].replace("", np.nan)
 df3["Name"] = df3["Name"].replace("", np.nan)
+# Calculate data cost
+df3["Data Cost"] = ""
+df3["Date"] = pd.to_datetime("today").normalize()
 # Dropping rows where NaN is present
 df4 = df3.dropna(subset=["URL", "Name"])
 df4 = df4.drop(columns=["Type"])
+df4.rename(columns={"Name": "Sitename", "Total Size": "Data Usage"}, inplace=True)
+df4 = df4[
+    [
+        "Collection",
+        "Sitename",
+        "URL",
+        "Data Usage",
+        "Data Cost",
+        "Last Modified",
+        "Date",
+    ]
+]
 
 # concatenate dataframes
 frames = [df2, df4]
