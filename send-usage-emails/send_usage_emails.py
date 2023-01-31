@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------
 # Name:        send_usage_emails.py
-# Purpose:     the purpose of the script is to email a list of users a bar chart of their H:drive usage over the past 2 reporting periods:
+# Purpose:     the purpose of the script is to email a list of users a bar chart of their H drive usage over the past 2 reporting periods:
 #                    1.) Connect to the metabase postgres database, querying for all H drives
 #                    2.) Get emails and names from active directory
 #                    3.) Create a bar chart and send each user their html format report by email
@@ -64,8 +64,8 @@ def send_admin_email(message_detail):
     msg = MIMEMultipart("related")
     msg["Subject"] = "Script Report"
     if constants.DEBUG_EMAIL == "":
-        msg["From"] = "IITD.Optimize@gov.bc.ca"
-        msg["To"] = "IITD.Optimize@gov.bc.ca"
+        msg["From"] = "NRIDS.Optimize@gov.bc.ca"
+        msg["To"] = "NRIDS.Optimize@gov.bc.ca"
     else:
         msg["To"] = constants.DEBUG_EMAIL
         msg["From"] = constants.DEBUG_EMAIL
@@ -144,7 +144,7 @@ def get_hdrive_data():
     other_error_idirs = []
     inactive_idirs = []
     conn = ldap_util.getLdapConnection()
-    # For each H: Drive row, Add new user to "data" dictionary if not there, and add a data sample.
+    # For each H Drive row, Add new user to "data" dictionary if not there, and add a data sample.
     for result in all_results:
         idir = result[0]
         # Filter out all IDIRs that don't start with C and P for quicker Dev iterations.
@@ -232,7 +232,7 @@ def get_h_drive_summary():
         # create a cursor
         cur = conn.cursor()
 
-        LOGGER.debug('Get summarized H: Drive counts by ministry from the last month:')
+        LOGGER.debug('Get summarized H Drive counts by ministry from the last month:')
         sql_expression = """
         SELECT count(*) AS "COUNT", sum(datausage) AS "DATAUSAGE", ministry AS "MINISTRY" FROM hdriveusage WHERE (date_trunc('month',
          CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now()
@@ -368,10 +368,10 @@ def get_graph_bytes(idir_info):
     g.set_yticklabels([label_format.format(x) for x in ticks_loc])
 
     # Add various text components
-    plt.title(f"{idir}'s H: Drive Cost by Month", fontsize=14)
-    plt.ylabel("H: Drive Cost", fontsize=13)
+    plt.title(f"{idir}'s H Drive Cost by Month", fontsize=14)
+    plt.ylabel("H Drive Cost", fontsize=13)
     plt.xlabel("", fontsize=10)
-    caption = "1.5 GB of Shared\nFile and H: drive\nstorage is allocated\nfor each BCPS\nemployee."
+    caption = "1.5 GB of Shared\nFile and H drive\nstorage is allocated\nfor each BCPS\nemployee."
     caption = caption + "\n\nKeeping your digital\nstorage use under\n1.5 GB helps prevent\nadditional costs\nfor your ministry."
     fig.text(0.8, 0.34, caption, ha="left")
     plt.tight_layout()
@@ -400,7 +400,7 @@ def get_gold_star():
 def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_drop, biggest_drops):
     # Variable Definitions:
     # idir_info         Dictionary of info for a user
-    # h_drive_count     H: drives for the users ministry
+    # h_drive_count     H drives for the users ministry
     # total_gb          Total gb for the users ministry
     # biggest_drop      Biggest single user reduction last month
     # biggest_drops     Sum of five biggest reductions last month
@@ -427,7 +427,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
 
     total_gb = float(total_gb)
     h_drive_count = float(h_drive_count)
-    # Get the cost of ministry H: Drives and biggest drops
+    # Get the cost of ministry H Drives and biggest drops
     total_h_drive_cost = (total_gb - (h_drive_count*1.5)) * 2.7
     biggest_drop_cost = biggest_drop * 2.7
     biggest_drops_cost = biggest_drops * 2.7
@@ -438,8 +438,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     h_drive_count = int(math.floor(h_drive_count/10)*10)
 
     # Build email content and metadata
-    msg["Subject"] = f"Transitory: Your H: Drive Usage Report for {last_month_name} {year}"
-    msg["From"] = "IITD.Optimize@gov.bc.ca"
+    msg["Subject"] = f"Transitory: Your Personal Storage Report for {last_month_name} {year}"
+    msg["From"] = "NRIDS.Optimize@gov.bc.ca"
     msg["To"] = recipient
 
     # Greet the user and provide introduction
@@ -448,22 +448,22 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         Hi {name},<br><br>
 
         This report from the <a href="https://intranet.gov.bc.ca/nrids">Natural Resource Information and Digital Services</a>
-         shows the month to month storage costs of your personal home (H:) drive.
+         shows the month to month storage costs of your personal home (H) drive.
          Please note, ministry coding is being updated. The ministry shown in this report may not be accurate until the coding change finishes."""
 
     # Reward the user with a gold star if data looks well managed
     if last_month_gb < 1 and month_before_last_sample is not None:
         if month_before_last_gb < 1:
             html_intro += """<br><br><img src="cid:image2" alt="Gold Star">&nbspCongratulations!
-                 You've kept your H: Drive under 1GB for at least two months straight, and appear to be managing your storage well.
+                 You've kept your H Drive under 1GB for at least two months straight, and appear to be managing your storage well.
                  Keep up the great work! <img src="cid:image2" alt="Gold Star">"""
 
     # Remind user why storage costs are important as a ministry
     html_why_data_important = f"""<br><br><b>Why is knowing my data usage important?</b>
         <ul>
-        <li>Storing data on your H: Drive is expensive, costing $2.70 per GB per month.</li>
-        <li>There are over {h_drive_count:,} H: Drives in the Ministry of {ministry_name}.</li>
-        <li>Your Ministry has over {total_gb:,}GB of data in H: Drives, costing more than ${total_h_drive_cost:,} per month.</li>
+        <li>Storing data on your H Drive is expensive, costing $2.70 per GB per month.</li>
+        <li>There are over {h_drive_count:,} H Drives in the Ministry of {ministry_name}.</li>
+        <li>Your Ministry has over {total_gb:,}GB of data in H Drives, costing more than ${total_h_drive_cost:,} per month.</li>
         </ul>
         """
 
@@ -472,17 +472,17 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
 
     if month_before_last_sample is None:
         # Only one month of data
-        html_personal_metrics += f"<li>In {last_month_name} your H: Drive data usage billed to your ministry was {last_month_gb:,}GB, costing ${last_month_cost:,.2f}.</li>"
+        html_personal_metrics += f"<li>In {last_month_name} your H Drive data usage billed to your ministry was {last_month_gb:,}GB, costing ${last_month_cost:,.2f}.</li>"
     else:
         difference = round(last_month_gb-month_before_last_gb, 2)
         difference_cost = round((last_month_cost-month_before_last_cost), 2)
         if difference == 0:
-            html_personal_metrics += f"""<li>In {month_before_last_name} and {last_month_name} your H: Drive data usage billed to your ministry was {last_month_gb:,}GB,
+            html_personal_metrics += f"""<li>In {month_before_last_name} and {last_month_name} your H Drive data usage billed to your ministry was {last_month_gb:,}GB,
              costing ${last_month_cost:,.2f}.</li>"""
         else:
-            html_personal_metrics += f"""<li>In {month_before_last_name} your H: Drive data usage billed to your ministry was {month_before_last_gb:,}GB,
+            html_personal_metrics += f"""<li>In {month_before_last_name} your H Drive data usage billed to your ministry was {month_before_last_gb:,}GB,
              costing ${month_before_last_cost:,.2f}.</li>"""
-            html_personal_metrics += f"""<li>In {last_month_name} your H: Drive data usage billed to your ministry was {last_month_gb:,}GB,
+            html_personal_metrics += f"""<li>In {last_month_name} your H Drive data usage billed to your ministry was {last_month_gb:,}GB,
              costing ${last_month_cost:,.2f}.</li>"""
             abs_difference = abs(difference)
             abs_difference_cost = abs(difference_cost)
@@ -501,28 +501,28 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     month_plural = ""
     if month_before_last_sample is not None:
         month_plural = "s"
-    html_img = f"</ul>Below, you will find a graph highlighting your H: Drive cost for the past {month_count}month{month_plural}:<br>"
+    html_img = f"</ul>Below, you will find a graph highlighting your H Drive cost for the past {month_count}month{month_plural}:<br>"
     html_img = html_img + """<br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">"""
 
-    # Provide solutions to the user to help with H: Drive faqs/issues
+    # Provide solutions to the user to help with H Drive faqs/issues
     html_why_important = """
-    <br><br><b>Did the cost of your H: Drive go up this month?</b><br>
+    <br><br><b>Did the cost of your H Drive go up this month?</b><br>
     This happens from time to time. Here are three simple actions to help you reduce your storage expense "footprint":
     <ol>
         <li>Move <a href="https://intranet.gov.bc.ca/nrids/onedrive/what-not-to-move-onto-onedrive">appropriate</a>
          files to <a href="https://intranet.gov.bc.ca/nrids/onedrive">OneDrive</a> (time suggested: 20 mins)</li>
         <li>Delete <a href="https://intranet.gov.bc.ca/assets/intranet/nrids/pdfs-and-docs/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
-        <li><a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/storage-tips-and-info#Emptyyourrecycling">Empty</a>
+        <li><a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage#Emptyyourrecycling">Empty</a>
         your Recycle Bin (time suggested: 1 min)</li>
     </ol>
-    More suggestions on how to reduce can be found on our
-    <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/storage-tips-and-info">Storage Tips and Information page</a>."""
+    More suggestions can be found on our 
+    <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage">Managing and Reducing H Drive Data Storage page</a>."""
 
     # Share the successes of peers
     html_kudos = f"""
     <br><br><b>Storage Saving Kudos:</b>
     <ul>
-        <li>Last month the largest H: Drive savings from a single NRM user was <b>{biggest_drop:,.3g}GB</b> saving <b>${biggest_drop_cost:,.2f}</b> per month!</li>
+        <li>Last month the largest H Drive savings from a single NRM user was <b>{biggest_drop:,.3g}GB</b> saving <b>${biggest_drop_cost:,.2f}</b> per month!</li>
         <li>Last month five NRM users saved a combined total of <b>${biggest_drops_cost:,.2f}</b> per month!</li>
     </ul>
     """
@@ -532,9 +532,9 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     This email is transitory and can be deleted when no longer needed. Thank you for taking the time to manage your digital storage!<br>
     <br>
     </p>
-    <p style="font-size: 10px">H: Drive usage information is captured mid-month from the Office of the Chief Information Officer (OCIO).
+    <p style="font-size: 10px">H Drive usage information is captured mid-month from the Office of the Chief Information Officer (OCIO).
      If you do not wish to receive these monthly emails, please reply with the subject line "unsubscribe".
-     Users can subscribe or re-subscribe by emailing IITD.Optimize@gov.bc.ca with the subject line "PSR subscribe" and including their email address.</p>
+     Users can subscribe or re-subscribe by emailing NRIDS.Optimize@gov.bc.ca with the subject line "PSR subscribe" and including their email address.</p>
     </body>
     </html>
     """
@@ -659,7 +659,8 @@ def main(argv):
             "BCWS": "FOR",
             "FLNR": "FOR",
             "FPRO": "FOR",
-            "AFF": "AF"
+            "AFF": "AF",
+            "LWRS": "WLRS"
         }
         for idir in data:
             idir_info = data[idir]
@@ -679,7 +680,7 @@ def main(argv):
             "EMLI": "Energy, Mines and Low Carbon Innovation",
             "ENV": "Environment",
             "FOR": "Forests",
-            "LWRS": "Land, Water and Resource Stewardship",
+            "WLRS": "Water, Land and Resource Stewardship",
             "IRR": "Indigenous Relations & Reconciliation"
         }
 
