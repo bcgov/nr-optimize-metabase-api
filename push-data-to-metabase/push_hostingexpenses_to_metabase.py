@@ -21,7 +21,8 @@
 import glob
 import os
 import pandas as pd
-import datetime
+from datetime import datetime
+from datetime import date
 import sys
 import psycopg2
 import push_postgres_constants as constants
@@ -44,8 +45,8 @@ ministry_renames = {
 delete_FY_before_insert = False
 
 # variables for column lookups and required columns:
-required_columns_str = "Owner Party, SDA Party, Service Name, Funding Model Colour, Reporting Customer, Service Level 1, Inventory Item Number, "
-required_columns_str += "Service Level 2, OM Asset Tag, Quantity, Price, Expense Amount, Recovery Frequency, Recovery Type, Recovery Period, GL Period"
+required_columns_str = "Owner Party, Funding Model Colour, SDA Party, Service Name, Reporting Customer, Service Name L1, Inventory Item Number, "
+required_columns_str += "Service Name L2, OM Asset Tag, Quantity, Price, Expense Amount, Recovery Frequency, Recovery Type, Recovery Period, GL Period"
 required_columns_list = required_columns_str.split(", ")
 column_map = {}
 
@@ -116,6 +117,8 @@ def get_records_from_xlsx():
 
             # Switch the format of recovery period
             rawdate = row[column_map["recovery period"]]
+            # rawdate = datetime.strptime(rawdate, "%b-%y").strftime("%m-%y")
+            # rawdate = pd.to_numeric(rawdate, errors="ignore")
             formatteddate = fix_recovery_period(rawdate)
             row[column_map["recovery period"]] = formatteddate
 
@@ -164,20 +167,30 @@ def fix_recovery_period(rowtimestamp):
     # Regardless, we need to rework this date into a calendar year for Metabase.
 
     # For fiscal_year we use the day of the month
-    fiscal_year = rowtimestamp.day + 2000
+    rowtimestamp = datetime.strptime(rowtimestamp, "%b-%y").strftime("%m-%y")
+    # rowtimestamp = pd.to_numeric(rowtimestamp, errors="ignore")
+    rowtimestamp = pd.to_datetime(rowtimestamp, format="%m-%y")
+    fiscal_year = rowtimestamp.year
+
     # Months after April need to be -1 year to account for the fiscal year.
-    if rowtimestamp.month >= 4:
+    month = rowtimestamp.month
+    if month >= 4:
         calendar_year = fiscal_year - 1
     else:
         calendar_year = fiscal_year
 
-    return datetime.date(calendar_year, rowtimestamp.month, 1)
+    rowtimestamp = date(calendar_year, month, 1)
+
+    return pd.to_datetime(rowtimestamp)
 
 
 def get_FY_date_range_clause(record_tuples):
     fiscal_years = []
     for tup in record_tuples:
+        # Switch the format of recovery period
         recovery_period = tup[column_map["recovery period"]]
+        recovery_period = datetime.strptime(recovery_period, "%b-%y").strftime("%m-%y")
+        recovery_period = pd.to_datetime(recovery_period, format="%m-%y")
         if recovery_period.month >= 0 and recovery_period.month <= 3:
             year = recovery_period.year
         elif recovery_period.month > 3 and recovery_period.month <= 11:
@@ -211,7 +224,7 @@ def insert_records_to_metabase(record_tuples):
         datetime_sets = []
         i = 0
         for tup in record_tuples:
-            datetimes.append(tup[15])
+            datetimes.append(tup[14])
             i += 1
             if i == 300:
                 i = 0
@@ -231,7 +244,7 @@ def insert_records_to_metabase(record_tuples):
 
         cur.executemany(
             """
-            INSERT INTO hostingexpenses (ownerparty, ministry, servicename, fundingmodelstatus, reportingcustomer, servicelevel1, inventoryitem,
+            INSERT INTO hostingexpenses (ownerparty, fundingmodelstatus, ministry, servicename, reportingcustomer, servicelevel1, inventoryitem,
               servicelevel2, omassettag, quantity, price, expenseamount, recoveryfrequency, recoverytype, recoveryperiod, glperiod, category)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
         """,
