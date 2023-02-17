@@ -98,9 +98,12 @@ for_division_acronyms = {
 
 wlrs_division_acronyms = {
     "Associate Deputy Minister's Office": "ADMO",
+    "ADM's Office": "ADMO",
     "Climate Action Secretariat": "CAS",
     "Corporate Services for the Natural Resource Sector": "CSNR",
+    "Corporate Services for the Natural Resources Ministries": "CSNR",
     "Cross Sector Solutions Division": "CSS",
+    "Cross Sector Solutions Divison": "CSS",
     "Deputy Minister's Office": "DMO",
     "Natural Resource Information and Digital Services": "NRIDS",
     "LWRS - Land Use Policy, Planning and Ecosystems Division": "LUPPED",
@@ -126,6 +129,7 @@ env_division_acronyms = {
     "BC Parks, Recreation Sites and Trails Division": "BCPRST",
     "Climate Action Secretariat": "CAS",
     "Compliance and Enforcement Division": "C&E",
+    "Compliance and Enforcement  Division": "C&E",
     "Deputy Minister's Office": "DMO",
     "ENV - Environmental Stewardship": "ESD",
     "Environment and Climate Change Strategy": "ECCS",
@@ -138,8 +142,8 @@ env_division_acronyms = {
     "Natural Resource Information and Digital Services Division": "NRIDS",
     "Integrated Resource Operations Division": "IROD",
     "Land Use Policy, Planning and Ecosystems Division": "LUPPE",
-    "Regional Operations Division - South Area": "ROD-S",
     "Services & Technology Division": "S&T",
+    "Service BC": "CAS",
     "Strategic Policy Division": "SPD",
     "Strategic Services Division": "SSD",
     "": "Non-Standard",
@@ -179,6 +183,7 @@ af_division_acronyms = {
     "Science, Policy and Inspection Division": "SPI",
     "Regenerative Agriculture and Climate Initiatives Division": "RACID",
     "Regenerative Agriculture and Climate Initiatives": "RACID",
+    "Trade & Industry Development Division": "TIDD",
     "": "Non-Standard",
 }
 
