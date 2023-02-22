@@ -357,13 +357,7 @@ def get_graph_bytes(idir_info):
     # Add legend
     plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.0)
 
-    # Format y axis labels as dollar values
-    # ylabels = []
-    # for ytick in g.get_yticks():
-    #     ylabels.append(f"${ytick:,.2f}")
-    # g.set_yticklabels(ylabels)
-
-    label_format = "{:,.2f}"
+    label_format = '${:,.2f}'
     ticks_loc = g.get_yticks().tolist()
     g.yaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
     g.set_yticklabels([label_format.format(x) for x in ticks_loc])
@@ -451,9 +445,8 @@ def send_idir_email(
     <html><head></head><body><p>
         Hi {name},<br><br>
 
-        This report from the <a href="https://intranet.gov.bc.ca/nrids">Natural Resource Information and Digital Services</a>
-         shows the month to month storage costs of your personal home (H) drive.
-         Please note, ministry coding is being updated. The ministry shown in this report may not be accurate until the coding change finishes."""
+        This report from <a href="https://intranet.gov.bc.ca/nrids">Natural Resource Information and Digital Services</a> (NRIDS)
+         shows the month-by-month storage costs of your "home" or (H) drive."""
 
     # Reward the user with a gold star if data looks well managed
     if last_month_gb < 1 and month_before_last_sample is not None:
@@ -462,8 +455,23 @@ def send_idir_email(
                  You've kept your H Drive under 1GB for at least two months straight, and appear to be managing your storage well.
                  Keep up the great work! <img src="cid:image2" alt="Gold Star">"""
 
+    top_tips = """<br><br><b>Top Tips</b><br>
+    The NRIDS Optimization Team helps staff with H Drive storage reduction.
+    For your guidance, we're sharing our most frequently given information during one-to-one clean ups here:<br>
+        <ol>
+        <li>The Recycling Bin and Desktop are included in your H Drive. The Recycling Bin does not empty itself by default.
+        Here's how you can
+        <a href='https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage#Automaticrecycling'>
+        set up your recycle bin to empty automatically</a>.</li>
+        <li>The Optimization team cannot see or access your H Drive contents; we only know its' total size based on billing data.</li>
+        <li>The H Drive should not be deleted entirely, as it includes your roaming Windows profile and files from applications that save by default to the H Drive.
+        Here are some rules to help
+        <a href='https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage#filetypes'>
+        identify which file types can and cannot be deleted</a>.</li>
+        </ol>"""
+
     # Remind user why storage costs are important as a ministry
-    html_why_data_important = f"""<br><br><b>Why is knowing my data usage important?</b>
+    html_why_data_important = f"""<br><b>Why is knowing my data usage important?</b>
         <ul>
         <li>Storing data on your H Drive is expensive, costing $2.70 per GB per month.</li>
         <li>There are over {h_drive_count:,} H Drives in the Ministry of {ministry_name}.</li>
@@ -516,11 +524,13 @@ def send_idir_email(
         <li>Move <a href="https://intranet.gov.bc.ca/nrids/onedrive/what-not-to-move-onto-onedrive">appropriate</a>
          files to <a href="https://intranet.gov.bc.ca/nrids/onedrive">OneDrive</a> (time suggested: 20 mins)</li>
         <li>Delete <a href="https://intranet.gov.bc.ca/assets/intranet/nrids/pdfs-and-docs/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
-        <li><a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage#Emptyyourrecycling">Empty</a>
-        your Recycle Bin (time suggested: 1 min)</li>
+        <li>
+        <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage#Emptyyourrecycling">
+        Empty</a> your Recycle Bin (time suggested: 1 min)</li>
     </ol>
-    More suggestions can be found on our 
-    <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage">Managing and Reducing H Drive Data Storage page</a>."""
+    More suggestions can be found on our
+    <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage">
+    Managing and Reducing H Drive Data Storage page</a>."""
 
     # Share the successes of peers
     html_kudos = f"""
@@ -544,15 +554,8 @@ def send_idir_email(
     """
 
     # Merge html parts and attach to email
-    html = (
-        html_intro
-        + html_why_data_important
-        + html_personal_metrics
-        + html_img
-        + html_why_important
-        + html_kudos
-        + html_footer
-    )
+
+    html = (html_intro + top_tips + html_why_data_important + html_personal_metrics + html_img + html_why_important + html_kudos + html_footer)
     msg.attach(MIMEText(html, "html"))
 
     # Get and attach images to email
@@ -592,11 +595,11 @@ def send_idir_email(
 # Create fake idir info item for development/testing purposes
 def get_fake_idir_info():
     idir_info = {
-        "idir": "PPLATTEN",
-        "mail": "Peter.Platten@gov.bc.ca",
-        "name": "NRM Staff Member",
-        "ministry": "ENV",
-        "samples": [
+        'idir': 'PPLATTEN',
+        'mail': 'Peter.Platten@gov.bc.ca',
+        'name': 'NRM Staff Member',
+        'ministry': 'WLRS',
+        'samples': [
             get_sample(0.74, datetime(2021, 6, 1, 0, 0)),
             get_sample(1.11, datetime(2021, 7, 1, 0, 0)),
             get_sample(1.75, datetime(2021, 8, 1, 0, 0)),
