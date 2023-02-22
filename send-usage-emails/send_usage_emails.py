@@ -357,7 +357,7 @@ def get_graph_bytes(idir_info):
     # Add legend
     plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.0)
 
-    label_format = ${:,.2f}'
+    label_format = '${:,.2f}'
     ticks_loc = g.get_yticks().tolist()
     g.yaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
     g.set_yticklabels([label_format.format(x) for x in ticks_loc])
