@@ -16,7 +16,7 @@
             "name": "Python: push_h_sfp_to_metabase",
             "type": "python",
             "request": "launch",
-            "program": "push-data-to-metabase/push_h_sfp_to_metabase.py",
+            "program": "push-data-to-metabase/push_h_sfp_to_metabase_v2.py",
             "args": [],
             "console": "integratedTerminal"
         },
