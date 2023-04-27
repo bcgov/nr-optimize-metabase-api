@@ -390,19 +390,24 @@ def create_ministry_reports_simple(record_tuples):
                 )
 
             # Add the disclaimer and a blank row for spacing
+            def add_disclaimer_line_to_top(text):
+                ws.insert_rows(0)
+                ws.append({1: text})
+                disclaimer_cell_range = "A"+str(ws.max_row)+":A"+str(ws.max_row)
+                ws.move_range(disclaimer_cell_range, rows=-(ws.max_row-1))
+                for cell in ws["1:1"]:
+                    cell.font = Font(bold=True, color='FFFFFF')
+                    cell.fill = PatternFill(start_color="003366", end_color="003366", fill_type="solid")
+
+            disclaimer_line_1 = "The content of this Division Storage Report is confidential and intended for the recipient specified. You should only see data for your work area."  # noqa: E501
+            disclaimer_line_2 = "If you received information about employees outside your work area, please delete that data immediately. Thank you for your cooperation and understanding."  # noqa: E501
+            disclaimer_line_3 = "Our Privacy Impact Assessment requires us to alert users of this report of potential inaccuracies."  # noqa: E501
+            disclaimer_line_4 = "If you identify any discrepancies between the report and an employee’s actual H Drive, please contact the Optimization Team at NRIDS.Optimize@gov.bc.ca."  # noqa: E501
             ws.insert_rows(0)
-            ws.insert_rows(0)
-            ws.insert_rows(0)
-            disclaimer_line_1 = "The content of this Division Storage Report is confidential and intended for the recipient specified. You should only see data for your work area. If you received information about employees outside your work area, please delete that data immediately. Thank you for your cooperation and understanding."  # noqa: E501
-            ws.append({1: disclaimer_line_1})
-            disclaimer_line_2 = "Our Privacy Impact Assessment requires us to alert users of this report of potential inaccuracies. If you identify any discrepancies between the report and an employee’s actual H Drive, please contact the Optimization Team at NRIDS.Optimize@gov.bc.ca."  # noqa: E501
-            ws.append({1: disclaimer_line_2})
-            disclaimer_cell_range = "A"+str(ws.max_row-1)+":A"+str(ws.max_row)
-            ws.move_range(disclaimer_cell_range, rows=-(ws.max_row-2))
-            for cell in ws["1:1"]:
-                cell.font = Font(bold=True)
-            for cell in ws["2:2"]:
-                cell.font = Font(bold=True)
+            add_disclaimer_line_to_top(disclaimer_line_4)
+            add_disclaimer_line_to_top(disclaimer_line_3)
+            add_disclaimer_line_to_top(disclaimer_line_2)
+            add_disclaimer_line_to_top(disclaimer_line_1)
 
             # save the workbook - makes directory if it doesn't already exist
             path = f"C:/git/output/{ministry_upper}"
