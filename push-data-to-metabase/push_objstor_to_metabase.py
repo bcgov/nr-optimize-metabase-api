@@ -40,8 +40,8 @@ ministry_renames = {
     "ENV Climate Action Secretariat": "ENV",
     "ENV EPD": "ENV",
     "ENV ESD": "ENV",
-    "ENV IIT": "LWRS",
-    "ENV IIT - Architecture": "LWRS",
+    "ENV IIT": "WLRS",
+    "ENV IIT - Architecture": "WLRS",
     "CSNR": "ENV",
     "FLNR BC Wildfire Service - BCWS": "FOR",
     "FLNR IROD": "FOR",
@@ -50,13 +50,13 @@ ministry_renames = {
     "FLNR Resource Stewardship Division": "FOR",
     "FLNR Strategic Initiatives": "FOR",
     "FLNR": "FOR",
-    "IIT": "LWRS",
-    "IIT ENV": "LWRS",
-    "LWRS NRIDS": "LWRS",
-    "LWRS NRIDS - Architecture": "LWRS",
+    "IIT": "WLRS",
+    "IIT ENV": "WLRS",
+    "LWRS NRIDS": "WLRS",
+    "LWRS NRIDS - Architecture": "WLRS",
 }
 
-nrm_ministries = ["AF", "EMLI", "ENV", "FOR", "IRR", "LWRS"]
+nrm_ministries = ["AF", "EMLI", "ENV", "FOR", "IRR", "WLRS"]
 
 delete_before_insert = False
 
@@ -94,7 +94,6 @@ def number_of_columns(row):
 
 # gets all .csv files from the python files directory
 def get_records_from_csv():
-
     # grab all the .csv file names in the python file's directory
     current_file_path = os.path.dirname(os.path.realpath(__file__))
     csv_names = glob.glob(os.path.join(current_file_path, "*.csv"))
@@ -107,7 +106,7 @@ def get_records_from_csv():
         file_date = None
         try:
             file_date = datetime.strptime(file_name.lower(), "nrs buckets %B %Y.csv")
-        except (Exception) as error:
+        except Exception as error:
             print(
                 "Exception while getting the date from file name. Format should be: NRS Buckets %B %Y.csv"
             )
