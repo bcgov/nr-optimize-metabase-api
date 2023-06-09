@@ -46,7 +46,23 @@ all_division_renames = {
     "Negotiations and Regional Operations Branch": "Negotiations and Regional Operations Division",
     "Strategic Partnership and Initiatives Division": "Strategic Partnerships and Initiatives Division",
     "IRR - Strategic Partnerships and Initiatives Division": "Strategic Partnerships and Initiatives Division",
-    "": "",
+    "AGRI": "AF",
+    "ALC": "AF",
+    "AFF": "AF",
+    "EAO": "ENV",
+    "ECC": "ENV",
+    "FLNR": "FOR",
+    "EMPR": "EMLI",
+    "MEM": "EMLI",
+    "ABR": "IRR",
+    "DAS": "IRR",
+    "LWRS": "WLRS",
+    "CSNR": "WLRS",
+    "CITZ": "NON STANDARD",
+    "RBCM": "NON STANDARD",
+    "TACS": "NON STANDARD",
+    "TRAN": "NON STANDARD",
+    "": "NOT FOUND",
 }
 
 for_division_acronyms = {
@@ -54,11 +70,15 @@ for_division_acronyms = {
     "Associate Deputy Minister's Office, Forest Sector": "ADMO",
     "Assistant Deputy Minister – North Area Office": "ADMO",
     "BC Parks, Recreation Sites and Trails Division": "BCPRST",
-    "BC Timber Sales - Seaward-Tlasta": "BCTS-ST",
+    "BC Timber Sales - Seaward-Tlasta": "BCTS",
+    "BC Timber Sales": "BCTS",
     "BC Wildfire Service": "BCWS",
+    "BCWS": "BCWS",
+    "Corporate Wildfire Services": "BCWS",
     "Climate Action Secretariat": "CAS",
     "Communications": "COMMS",
     "Corporate Services for the Natural Resource Ministries": "CSNR",
+    "Corporate Services Division": "CSNR",
     "Corporate Services for the Natural Resource Sector": "CSNR",
     "Cross Sector Solutions Division": "CSS",
     "Deputy Minister's Office": "DMO",
@@ -102,6 +122,7 @@ wlrs_division_acronyms = {
     "Climate Action Secretariat": "CAS",
     "Corporate Services for the Natural Resource Sector": "CSNR",
     "Corporate Services for the Natural Resources Ministries": "CSNR",
+    "Corporate Services for Natural Resource Ministries Division": "CSNR",
     "Cross Sector Solutions Division": "CSS",
     "Cross Sector Solutions Divison": "CSS",
     "Deputy Minister's Office": "DMO",
@@ -110,6 +131,7 @@ wlrs_division_acronyms = {
     "Land Use Policy, Planning and Ecosystems Division": "LUPPED",
     "Land Use Policy, Planning and Ecosystems Division - Omineca": "LUPPED",
     "Land Use Planning, Policy and Ecosystems - Omineca": "LUPPED",
+    "Land use Policy, Planning and Ecosystems Division": "LUPPED",
     "NRS Secretariat": "NRSS",
     "Natural Resource Information and Digital Services Division": "NRIDS",
     "Natural Resource Sector Secretariat": "NRSS",
@@ -151,6 +173,7 @@ env_division_acronyms = {
 
 emli_division_acronyms = {
     "Deputy Minister's Office": "DMO",
+    "Deputy Ministers Office": "DMO",
     "Electricity and Alternative Energy Division": "EAED",
     "LNG Canada Implementation Secretariat": "LNGCIS",
     "Mines, Competitiveness & Authorizations Division": "MCAD",
@@ -165,6 +188,7 @@ emli_division_acronyms = {
     "Real Property Division": "Non-Standard",
     "Rural Opportunities, Tenures and Engineering Division": "Non-Standard",
     "Trade & Industry Development": "Non-Standard",
+    "Timber, Range and Economics Division": "Non-Standard",
     "": "Non-Standard",
 }
 
@@ -185,6 +209,7 @@ af_division_acronyms = {
     "Regenerative Agriculture and Climate Initiatives": "RACID",
     "Trade & Industry Development Division": "TIDD",
     "": "Non-Standard",
+    "Plant and Animal Health Branch": "SPI",
 }
 
 irr_division_acronyms = {
@@ -197,6 +222,7 @@ irr_division_acronyms = {
     "Office of the Chief Forester": "OCF",
     "Reconciliation Transformation and Strategies Division": "RTS",
     "Regional Operations Division - North Area": "ROD-N",
+    "Regional Operations Division - South Area": "ROD-S",
     "SPP/Indigenous Partnerships": "SPPIP",
     "Strategic Partnerships and Initiatives Division": "SPI",
     "": "Non-Standard",

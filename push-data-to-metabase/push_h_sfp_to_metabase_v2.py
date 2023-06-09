@@ -49,16 +49,6 @@ errors = {
     "not_found": [],
 }
 
-ministry_renames = {
-    "AGRI": "AF",
-    "AFF": "AF",
-    "FLNR": "FOR",
-    "EMPR": "EMLI",
-    "MEM": "EMLI",
-    "ABR": "IRR",
-    "LWRS": "WLRS",
-}
-
 delete_before_insert = False
 
 
@@ -82,19 +72,13 @@ def get_ad_attribute(idir, ldap_util, conn, attribute="givenName"):
         return ad_info[attribute]
 
 
-def manipulate_frame(frame, ministryname, datestamp):
+def manipulate_frame(frame, datestamp):
     # remove rows where User ID is blank
     frame = frame.dropna(thresh=1)
 
     # add ministry and date columns
-    frame = frame.assign(ministry=ministryname)
+    frame = frame.assign(ministry="")
     frame = frame.assign(date=datestamp)
-
-    # update ministry acronyms
-    for original_name in ministry_renames:
-        frame["ministry"] = frame["ministry"].apply(
-            lambda x: x.replace(original_name, ministry_renames[original_name])
-        )
 
     # remove the header row -- assume it's the first
     frame = frame[1:]
@@ -120,7 +104,6 @@ def add_column(frame, column_ad_name, column_postgress_name):
 
 # gets all .xlsx files from the python files directory
 def get_records_from_xlsx(sheet_name):
-
     # grab all the .xlsx file names in the python file's directory
     current_file_path = os.path.dirname(os.path.realpath(__file__))
     excel_names = glob.glob(os.path.join(current_file_path, "*.xlsx"))
@@ -129,30 +112,6 @@ def get_records_from_xlsx(sheet_name):
 
     # pull the data out of each xlsx, and aggregate it
     for name in excel_names:
-
-        # find the ministry based on the filename
-        ministries = [
-            "agri",
-            "empr",
-            "env",
-            "irr",
-            "flnr",
-            "emli",
-            "aff",
-            "mem",
-            "abr",
-            "fpro",
-            "bcws",
-            "af",
-            "for",
-            "lwrs",
-            "wlrs",
-        ]
-        for ministry_acronym in ministries:
-            if ministry_acronym in name.lower():
-                ministryname = ministry_acronym.upper()
-                break
-
         # find the date based on the filename
         pos = name.rfind("\\") + 1
         datestamp = name[pos : pos + 7].strip() + "-01"
@@ -167,7 +126,7 @@ def get_records_from_xlsx(sheet_name):
                 frame = excelsheet.parse(
                     current_sheet_name, header=None, index_col=None
                 )
-                frame = manipulate_frame(frame, ministryname, datestamp)
+                frame = manipulate_frame(frame, datestamp)
 
                 frames.append(frame)
 
@@ -195,8 +154,36 @@ def get_records_from_xlsx(sheet_name):
             "date",
         ]
 
-        # also fill blank displaynames with idir
+        ministry_renames = {
+            "AGRI": "AF",
+            "ALC": "AF",
+            "AFF": "AF",
+            "EAO": "ENV",
+            "ECC": "ENV",
+            "FLNR": "FOR",
+            "EMPR": "EMLI",
+            "MEM": "EMLI",
+            "ABR": "IRR",
+            "DAS": "IRR",
+            "LWRS": "WLRS",
+            "CSNR": "WLRS",
+            "Not Found": "NOT FOUND",
+            "": "NOT FOUND",
+            "CITZ": "NON STANDARD",
+            "RBCM": "NON STANDARD",
+            "TACS": "NON STANDARD",
+            "TRAN": "NON STANDARD",
+        }
+
+        # replace ministry with mailboxcode value
+        combined.ministry = combined.mailboxcode
+        # update ministry acronymns
+        combined.replace({"ministry": ministry_renames}, inplace=True)
+        # fill blank displaynames with idir
         combined.displayname.fillna(combined.idir, inplace=True)
+        # fill blank divisions with NA
+        combined.division.fillna(combined.mailboxcode, inplace=True)
+
     elif sheet_name.lower() == "group shares":
         combined.columns = ["sharename", "server", "datausage", "ministry", "date"]
 
@@ -220,7 +207,6 @@ def get_conn():
 
 # inserts h drive tuples into metabase
 def insert_h_drive_records_to_metabase(record_tuples):
-
     insert_tuples = []
     for tup in record_tuples:
         # idir, displayname, datausage, division, branch, ministry, date
@@ -339,13 +325,13 @@ def create_ministry_reports_simple(record_tuples):
         assign_div_acronyms(df1, "FOR", for_division_acronyms)
         assign_div_acronyms(df1, "IRR", irr_division_acronyms)
         assign_div_acronyms(df1, "WLRS", wlrs_division_acronyms)
+        assign_div_acronyms(df1, "NON STANDARD", all_division_renames)
         df1.drop("Ministry", axis=1, inplace=True)
         df1.sort_values(
             ["Division", "Branch", "Over Limit (1.5gb)", "Display Name"], inplace=True
         )
         # group dataframes by Division
         for div, group in df1.groupby(by=["Div_Acronym"]):
-
             # Set file name
             ministry_upper = ministry.upper()
             div_acronym = group["Div_Acronym"].values[0]
@@ -389,7 +375,7 @@ def create_ministry_reports_simple(record_tuples):
                     ),
                 )
             # save the workbook - makes directory if it doesn't already exist
-            path = f"C:/git/output/{ministry_upper}"
+            path = f"C:/Git_Repo/Output/{ministry_upper}"
             if not os.path.exists(path):
                 os.makedirs(path)
             wb.save(f"{path}/{file_name}")
@@ -400,7 +386,7 @@ if __name__ == "__main__":
         delete_before_insert = True
     record_tuples = get_records_from_xlsx("home drives")
     create_ministry_reports_simple(record_tuples)
-    insert_h_drive_records_to_metabase(record_tuples)
+    # insert_h_drive_records_to_metabase(record_tuples)
 
-    record_tuples = get_records_from_xlsx("group shares")
-    insert_group_share_records_to_metabase(record_tuples)
+    # record_tuples = get_records_from_xlsx("group shares")
+    # insert_group_share_records_to_metabase(record_tuples)
