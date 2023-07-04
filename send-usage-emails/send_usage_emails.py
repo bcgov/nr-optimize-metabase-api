@@ -683,12 +683,16 @@ def main(argv):
             ministry_acronym = idir_info["ministry"]
             if ministry_acronym in ministry_renames:
                 idir_info["ministry"] = ministry_renames[ministry_acronym]
+        ministry_acronyms_to_remove = []
         for ministry_acronym in nrm_metrics:
             metrics = nrm_metrics[ministry_acronym]
             if ministry_acronym in ministry_renames:
                 new_acronym = ministry_renames[ministry_acronym]
-                nrm_metrics[new_acronym] = metrics
-                del nrm_metrics[ministry_acronym]
+                nrm_metrics[new_acronym]['gb'] = nrm_metrics[new_acronym]['gb'] + metrics['gb']
+                nrm_metrics[new_acronym]['h_drive_count'] = nrm_metrics[new_acronym]['h_drive_count'] + metrics['h_drive_count']
+                ministry_acronyms_to_remove.append(ministry_acronym)
+        for ministry_acronym in ministry_acronyms_to_remove:
+            del nrm_metrics[ministry_acronym]
 
         # Assign Ministry Names, in use they are prefixed with "Ministry of "
         long_ministry_names = {
