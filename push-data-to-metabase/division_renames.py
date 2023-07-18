@@ -62,7 +62,12 @@ all_division_renames = {
     "RBCM": "NON STANDARD",
     "TACS": "NON STANDARD",
     "TRAN": "NON STANDARD",
-    "": "NOT FOUND",
+    "FIN": "NON STANDARD",
+    "MOTI": "NON STANDARD",
+    "PREM": "NON STANDARD",
+    "NaN": "NON STANDARD",
+    "": "NON STANDARD",
+    "IIT": "WLRS",
 }
 
 for_division_acronyms = {
