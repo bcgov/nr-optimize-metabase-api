@@ -188,7 +188,10 @@ def get_FY_date_range_clause(record_tuples):
     for tup in record_tuples:
         # Switch the format of recovery period
         recovery_period = tup[column_map["recovery period"]]
-        recovery_period = datetime.strptime(recovery_period, "%b-%y").strftime("%m-%y")
+        if type(recovery_period) == str:
+            recovery_period = datetime.strptime(recovery_period, "%b-%y").strftime("%m-%y")
+        else:
+            recovery_period = recovery_period.strftime("%m-%y")
         recovery_period = pd.to_datetime(recovery_period, format="%m-%y")
         if recovery_period.month >= 0 and recovery_period.month <= 3:
             year = recovery_period.year
