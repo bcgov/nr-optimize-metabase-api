@@ -3,6 +3,7 @@
 # Correct project must be selected
 
 # Clean up any open port binds from previous runs
+# Will display "ERROR: The process "oc.exe" not found." if there was not already an oc in progress, which is an unintuitive success message.
 taskkill /im oc.exe /f
 
 # Get the data pod name from the current namespace
