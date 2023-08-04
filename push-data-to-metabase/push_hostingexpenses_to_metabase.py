@@ -39,7 +39,8 @@ ministry_renames = {
     "FORESTS, LANDS, NATURAL RESOURCE OPERATIONS AND RURAL DEVELOPMENT": "FOR",
     "INDIGENOUS RELATIONS AND RECONCILIATION": "IRR",
     "NATURAL RESOURCE MINISTRIES": "NRM",
-    "LAND, WATER AND RESOURCE STEWARDSHIP": "LWRS",
+    "LAND, WATER AND RESOURCE STEWARDSHIP": "WLRS",
+    "WATER, LAND AND RESOURCE STEWARDSHIP": "WLRS",
 }
 
 delete_FY_before_insert = False
@@ -62,7 +63,6 @@ def number_of_columns(row):
 
 # gets all .xlsx files from the python files directory
 def get_records_from_xlsx():
-
     record_tuples = []
 
     # grab all the .xlsx file names in the python file's directory
@@ -96,7 +96,6 @@ def get_records_from_xlsx():
 
         # Handle row value replacement
         for row in frame.values:
-
             # Replace sda party / ministry name with the acronym
             ministry = row[column_map["sda party"]]
             if ministry.strip() in ministry_renames:
@@ -189,7 +188,10 @@ def get_FY_date_range_clause(record_tuples):
     for tup in record_tuples:
         # Switch the format of recovery period
         recovery_period = tup[column_map["recovery period"]]
-        recovery_period = datetime.strptime(recovery_period, "%b-%y").strftime("%m-%y")
+        if type(recovery_period) == str:
+            recovery_period = datetime.strptime(recovery_period, "%b-%y").strftime("%m-%y")
+        else:
+            recovery_period = recovery_period.strftime("%m-%y")
         recovery_period = pd.to_datetime(recovery_period, format="%m-%y")
         if recovery_period.month >= 0 and recovery_period.month <= 3:
             year = recovery_period.year

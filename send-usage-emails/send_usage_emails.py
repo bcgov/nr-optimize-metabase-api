@@ -455,19 +455,14 @@ def send_idir_email(
                  You've kept your H Drive under 1GB for at least two months straight, and appear to be managing your storage well.
                  Keep up the great work! <img src="cid:image2" alt="Gold Star">"""
 
-    top_tips = """<br><br><b>Top Tips</b><br>
-    The NRIDS Optimization Team helps staff with H Drive storage reduction.
-    For your guidance, we're sharing our most frequently given information during one-to-one clean ups here:<br>
+    # Inform users of how the reports are generated
+    check_h_drive_size_msg = """<br><br><b>Report Accuracy</b>
         <ol>
-        <li>The Recycling Bin and Desktop are included in your H Drive. The Recycling Bin does not empty itself by default.
-        Here's how you can
-        <a href='https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage#Automaticrecycling'>
-        set up your recycle bin to empty automatically</a>.</li>
-        <li>The Optimization team cannot see or access your H Drive contents; we only know its' total size based on billing data.</li>
-        <li>The H Drive should not be deleted entirely, as it includes your roaming Windows profile and files from applications that save by default to the H Drive.
-        Here are some rules to help
-        <a href='https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage#filetypes'>
-        identify which file types can and cannot be deleted</a>.</li>
+        <li>The H Drive sizes shown are sampled by the OCIO for billing purposes on the 15th of each month.</li>
+        <li>The Optimization team cannot see or access your H Drive contents; we only know its' total size based on the billing data.</li>
+        <li>If you believe your H Drive report to be incorrect, confirm by checking the updated steps at the bottom of our
+          <a href='https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage'>
+          Managing and Reducing H Drive Data Storage</a> page in the <i>Check if your H Drive file cleanup worked</i> section.
         </ol>"""
 
     # Remind user why storage costs are important as a ministry
@@ -555,7 +550,7 @@ def send_idir_email(
 
     # Merge html parts and attach to email
 
-    html = (html_intro + top_tips + html_why_data_important + html_personal_metrics + html_img + html_why_important + html_kudos + html_footer)
+    html = (html_intro + check_h_drive_size_msg + html_why_data_important + html_personal_metrics + html_img + html_why_important + html_kudos + html_footer)
     msg.attach(MIMEText(html, "html"))
 
     # Get and attach images to email
@@ -683,12 +678,16 @@ def main(argv):
             ministry_acronym = idir_info["ministry"]
             if ministry_acronym in ministry_renames:
                 idir_info["ministry"] = ministry_renames[ministry_acronym]
+        ministry_acronyms_to_remove = []
         for ministry_acronym in nrm_metrics:
             metrics = nrm_metrics[ministry_acronym]
             if ministry_acronym in ministry_renames:
                 new_acronym = ministry_renames[ministry_acronym]
-                nrm_metrics[new_acronym] = metrics
-                del nrm_metrics[ministry_acronym]
+                nrm_metrics[new_acronym]['gb'] = nrm_metrics[new_acronym]['gb'] + metrics['gb']
+                nrm_metrics[new_acronym]['h_drive_count'] = nrm_metrics[new_acronym]['h_drive_count'] + metrics['h_drive_count']
+                ministry_acronyms_to_remove.append(ministry_acronym)
+        for ministry_acronym in ministry_acronyms_to_remove:
+            del nrm_metrics[ministry_acronym]
 
         # Assign Ministry Names, in use they are prefixed with "Ministry of "
         long_ministry_names = {
