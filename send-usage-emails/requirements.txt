@@ -4,3 +4,4 @@ nslookup==1.4.0
 psycopg2==2.9.1
 python-dotenv==0.17.1
 seaborn==0.11.1
+pycryptodome==3.18.0
