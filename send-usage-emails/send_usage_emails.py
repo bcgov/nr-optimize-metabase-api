@@ -42,7 +42,7 @@ from log_helper import LOGGER
 
 
 # Get a simple formatted "sample" object
-def get_sample(gb, sample_datetime: datetime):
+def get_sample(gb, sample_datetime: datetime, ministry):
     gb = float(gb)
     # METHOD 1: Calculate and Format $ cost by GB, encouraging users to have "up to" 1.5gb
     # cost = round((gb - 1.5) * 2.7, 2)
@@ -55,7 +55,8 @@ def get_sample(gb, sample_datetime: datetime):
         "gb": gb,
         "sample_datetime": sample_datetime,
         "month": calendar.month_name[sample_datetime.month],
-        "cost": cost
+        "cost": cost,
+        "ministry": ministry
     }
 
 
@@ -202,16 +203,15 @@ def get_hdrive_data():
                     # Create user entry, add first sample
                     data[idir] = {
                         "idir": idir,
-                        "samples": [get_sample(gb, sample_datetime)],
+                        "samples": [get_sample(gb, sample_datetime, ministry)],
                         "mail": ad_info["mail"],
-                        "name": ad_info["givenName"],
-                        "ministry": ministry,
+                        "name": ad_info["givenName"]
                     }
             else:
                 # Add sample to existing user data, handling edge case:
                 # Users who transfer ministry get two records in a single month, so flatten those.
                 duplicate_found = False
-                new_sample = get_sample(gb, sample_datetime)
+                new_sample = get_sample(gb, sample_datetime, ministry)
                 for sample in data[idir]["samples"]:
                     if sample["sample_datetime"] == new_sample["sample_datetime"]:
                         sample["gb"] += new_sample["gb"]
@@ -223,6 +223,8 @@ def get_hdrive_data():
     # Sort the samples
     for idir in data:
         data[idir]["samples"].sort(key=lambda s: s["sample_datetime"])
+        samples_length = len(data[idir]["samples"])
+        data[idir]["ministry"] = data[idir]["samples"][samples_length-1]["ministry"]
 
     # If errors existed, email them to the admin.
     # (There will always be errors, due to service accounts or employees who have left during the month)
@@ -585,43 +587,6 @@ def send_idir_email(
 
     # log send complete
     LOGGER.info(f"Email sent to {recipient}.")
-
-
-# Create fake idir info item for development/testing purposes
-def get_fake_idir_info():
-    idir_info = {
-        'idir': 'PPLATTEN',
-        'mail': 'Peter.Platten@gov.bc.ca',
-        'name': 'NRM Staff Member',
-        'ministry': 'WLRS',
-        'samples': [
-            get_sample(0.74, datetime(2021, 6, 1, 0, 0)),
-            get_sample(1.11, datetime(2021, 7, 1, 0, 0)),
-            get_sample(1.75, datetime(2021, 8, 1, 0, 0)),
-            get_sample(1.25, datetime(2021, 9, 1, 0, 0)),
-            get_sample(0.7, datetime(2021, 10, 1, 0, 0)),
-        ],
-    }
-
-    return {"PPLATTEN": idir_info}
-
-
-# A quickly edited email template to test while developing without needing to gather data
-def test_email(recipient, subject):
-    msg = MIMEMultipart("related")
-    msg["Subject"] = subject
-    msg["From"] = "peter.platten@gov.bc.ca"
-    msg["To"] = recipient
-    html = """<img src="cid:image2" alt="Gold Star">&nbspCongratulations! You seem to be managing your storage well.
-         If you feel you do not need this email consider unsubscribing. <img src="cid:image2" alt="Gold Star">"""
-    msg.attach(MIMEText(html, "html"))
-    s = smtplib.SMTP(constants.SMTP_SERVER)
-    msg.add_header("X-Auto-Response-Suppress", "OOF, DR, RN, NRN")
-    msgImage = MIMEImage(get_gold_star())
-    msgImage.add_header("Content-ID", "<image2>")
-    msg.attach(msgImage)
-    s.sendmail(msg["From"], recipient, msg.as_string())
-    s.quit()
 
 
 # Handle address formatting, ensure uniqueness, and filter out addresses using omitlist
