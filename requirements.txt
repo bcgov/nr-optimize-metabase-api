@@ -4,4 +4,4 @@ pyad==0.6.0
 pywin32==301
 xlrd==2.0.1
 openpyxl==3.0.7
-requests==2.27.1
+requests==2.31.0
