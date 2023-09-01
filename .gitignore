@@ -183,6 +183,7 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
-# raw and processed data from R
+# raw and processed data from R and Python
 source/
 output/
+/push-data-to-metabase/not_found.txt
