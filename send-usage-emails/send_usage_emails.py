@@ -518,8 +518,8 @@ def send_idir_email(
     <br><br><b>Did the cost of your H Drive go up this month?</b><br>
     This happens from time to time. Here are three simple actions to help you reduce your storage expense "footprint":
     <ol>
-        <li>Move <a href="https://intranet.gov.bc.ca/nrids/onedrive/what-not-to-move-onto-onedrive">appropriate</a>
-         files to <a href="https://intranet.gov.bc.ca/nrids/onedrive">OneDrive</a> (time suggested: 20 mins)</li>
+        <li>Move <a href="https://intranet.gov.bc.ca/nrids/products-services/data-services/one-drive/what-not-to-move-onto-onedrive">appropriate</a>
+         files to <a href="https://intranet.gov.bc.ca/nrids/products-services/data-services/one-drive">OneDrive</a> (time suggested: 20 mins)</li>
         <li>Delete <a href="https://intranet.gov.bc.ca/assets/intranet/nrids/pdfs-and-docs/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
         <li>
         <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage#Emptyyourrecycling">
