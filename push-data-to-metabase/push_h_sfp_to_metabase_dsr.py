@@ -223,7 +223,6 @@ def get_records_from_xlsx(sheet_name):
         combined.loc[combined["mailboxcode"] == "RBCM", "ministry"] = "NON STANDARD"
         combined.loc[combined["mailboxcode"] == "CITZ", "ministry"] = "NON STANDARD"
         combined.loc[combined["mailboxcode"] == "TACS", "ministry"] = "NON STANDARD"
-        combined.loc[combined["mailboxcode"] == "DAS", "ministry"] = "NON STANDARD"
         combined.loc[combined["mailboxcode"] == "FIN", "ministry"] = "NON STANDARD"
         combined.loc[combined["mailboxcode"] == "ECC", "ministry"] = "NON STANDARD"
 
@@ -234,6 +233,7 @@ def get_records_from_xlsx(sheet_name):
         combined.loc[combined["mailboxcode"] == "FOR", "ministry"] = "FOR"
         combined.loc[combined["mailboxcode"] == "BCWS", "ministry"] = "FOR"
         combined.loc[combined["mailboxcode"] == "IRR", "ministry"] = "IRR"
+        combined.loc[combined["mailboxcode"] == "DAS", "ministry"] = "IRR"
         combined.loc[combined["mailboxcode"] == "WLRS", "ministry"] = "WLRS"
         combined.loc[combined["mailboxcode"] == "", "ministry"] = sheet_min
 
@@ -479,7 +479,7 @@ def create_ministry_reports_simple(record_tuples):
             # merge cells from A1 to E4
             ws.merge_cells("A1:E1")
             ws.merge_cells("A2:E2")
-            ws.merge_cells("A3:E3")
+            ws.merge_cells("A3:E3")                                   
             ws.merge_cells("A4:E4")
 
             # save the workbook - makes directory if it doesn't already exist
@@ -493,7 +493,7 @@ if __name__ == "__main__":
     if "-d" in sys.argv:
         delete_before_insert = True
     record_tuples = get_records_from_xlsx("home drives")
-    create_ministry_reports_simple(record_tuples)
+    #create_ministry_reports_simple(record_tuples)
     insert_h_drive_records_to_metabase(record_tuples)
 
     #record_tuples = get_records_from_xlsx("group shares")
