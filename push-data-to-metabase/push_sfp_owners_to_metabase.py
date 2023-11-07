@@ -45,46 +45,29 @@ def get_records_from_xlsx(sheet_name):
             if sheet_name.lower() in current_sheet_name.lower():
                 print(f"Reading in file {name} sheet {current_sheet_name}")
                 frame = excelsheet.parse(
-                    current_sheet_name, header=None, index_col=None
+                    current_sheet_name, header=0, index_col=None
                 )
                 # Drop first two columns: Date, Org
                 frame = frame.drop(frame.iloc[:, 0:2], axis=1)
                 # Drop GB_Used, # of files, Drive, Type, SubType
                 frame = frame.drop(frame.iloc[:, 1:6], axis=1)
                 # Drop GL, Resp
-                frame = frame.drop(frame.iloc[:, 5:7], axis=1)
+                frame = frame.drop(frame.iloc[:, 3:5], axis=1)
                 frames.append(frame)
-    # Merge the datasets together
-    combined = pd.concat(frames)
 
     # grab the override .xlsx file name in the python file's directory
     current_file_path = os.path.dirname(os.path.realpath(__file__))
     excel_names = glob.glob(os.path.join(current_file_path, "OwnersOverride-*.xlsx"))
 
-    frames = []
-
-    # pull the data out of each xlsx, and aggregate it
-    for name in excel_names:
-        override_file_name = name
-
-    # read in xlsx, turn into dataframes
-    excelsheet = pd.ExcelFile(override_file_name)
-
-    # get and touch up data for all sheets which include the selected sheet name
-    for current_sheet_name in excelsheet.sheet_names:
-        first_sheet_name = current_sheet_name
-
-    print(f"Reading in file {override_file_name} sheet {first_sheet_name}")
-    frame = excelsheet.parse(
-        current_sheet_name, header=None, index_col=None
-    )
-    # Drop first two columns: Date, Org
-    frame = frame.drop(frame.iloc[:, 0:2], axis=1)
-    # Drop GB_Used, # of files, Drive, Type, SubType
-    frame = frame.drop(frame.iloc[:, 1:6], axis=1)
-    # Drop GL, Resp
-    frame = frame.drop(frame.iloc[:, 5:7], axis=1)
+    if len(excel_names) != 1:
+        print("SFP Owners script requires one OwnersOverride-*.xlsx file")
+        exit
+    first_sheet_name = excel_names[0]
+    override_excel_file = pd.ExcelFile(first_sheet_name)
+    override_sheet = override_excel_file.sheet_names[0]
+    frame = override_excel_file.parse(override_sheet, header=0, index_col=None)
     frames.append(frame)
+
     # Merge the datasets together
     combined = pd.concat(frames)
 
