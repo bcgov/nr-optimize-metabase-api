@@ -493,8 +493,8 @@ if __name__ == "__main__":
     if "-d" in sys.argv:
         delete_before_insert = True
     record_tuples = get_records_from_xlsx("home drives")
-    #create_ministry_reports_simple(record_tuples)
+    create_ministry_reports_simple(record_tuples)
     insert_h_drive_records_to_metabase(record_tuples)
 
-    #record_tuples = get_records_from_xlsx("group shares")
-    #insert_group_share_records_to_metabase(record_tuples)
+    record_tuples = get_records_from_xlsx("group shares")
+    insert_group_share_records_to_metabase(record_tuples)

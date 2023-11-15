@@ -6,5 +6,8 @@
         "--extend-ignore=E203"
     ],
     "python.formatting.provider": "black",
-    "python.pythonPath": "${workspaceFolder}/ve/Scripts/python.exe"
+    "python.pythonPath": "${workspaceFolder}/ve/Scripts/python.exe",
+    "githubPullRequests.ignoredPullRequestBranches": [
+        "main"
+    ]
 }
