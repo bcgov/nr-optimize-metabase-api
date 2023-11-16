@@ -138,11 +138,12 @@ def get_records_from_csv():
                     elif i in [3, 4, 5, 6, 7, 8]:
                         row[i] = float(row[i])
 
-                ministry, branch, project, environment = (
+                ministry, branch, project, environment, geodrive = (
                     "No Tag",
                     None,
                     None,
                     "No Tag/Name",
+                    None,
                 )
                 # Get tags used in metabase for columns
                 if row[10] != "":
@@ -161,6 +162,9 @@ def get_records_from_csv():
                         project = tags["Project"]
                     if "Environment" in tags.keys():
                         environment = tags["Environment"]
+                    # Interested in GeoDrive for trend analysis (uptake)
+                    if "GeoDrive" in tags.keys():
+                        geodrive = tags["GeoDrive"]
 
                 # Cut tags off the end of the list
                 row = row[:9]
@@ -172,7 +176,7 @@ def get_records_from_csv():
                         environment = match[0][1:].upper()
 
                 # Add back in the tags we care about
-                row.extend([ministry, branch, project, environment, file_date])
+                row.extend([ministry, branch, project, environment, file_date, geodrive])
                 value_tuples.append(tuple(row))
 
     return value_tuples
@@ -201,8 +205,8 @@ def insert_records_to_metabase(record_tuples):
         cur.executemany(
             """
             INSERT INTO objectstorage (bucket, owner, objectcount, uploadsize, newobjects, downloadsize, deletedobjects,
-              size, quota, ministry, branch, project, environment, reportdate)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+              size, quota, ministry, branch, project, environment, reportdate, geodrive)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
         """,
             record_tuples,
         )
