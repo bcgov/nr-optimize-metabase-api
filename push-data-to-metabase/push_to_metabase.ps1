@@ -1,12 +1,39 @@
 # Script requires that user is already logged in to OC with appropriate credentials
 # Correct project must be selected
+# Arguments can be passed in like so: 
+# powershell .\push_to_metabase.ps1 push_objstor_to_metabase.py
+# powershell ./push_to_metabase.ps1 push_hostingexpenses_to_metabase.py,-dfy
+# powershell .\push_to_metabase.ps1 push_h_sfp_to_metabase_dsr.py,-d
+# powershell .\push_to_metabase.ps1 push_h_sfp_to_metabase_dsr.py,-d,push_sfp_owners_to_metabase.py
+# powershell .\push_to_metabase.ps1 push_h_sfp_to_metabase_dsr.py,push_sfp_owners_to_metabase.py
+
 
 param (
     [string]$scriptname,
-    [string]$delete
+    [string]$arg1,
+    [string]$arg2
 )
 write-output $scriptname
-write-output $delete
+write-output $arg1
+write-output $arg2
+
+$delete = $false
+$secondScript = ""
+
+if ($arg1) {
+    if ($arg1 == '-d' or $arg1 == '-dfy'){
+        $delete = $true
+    } else {
+        $secondScript = $arg1
+    }
+}
+if ($arg2) {
+    if ($arg2 == '-d' or $arg2 == '-dfy'){
+        $delete = $true
+    } else {
+        $secondScript = $arg2
+    }
+}
 
 # Clean up any open pot binds from previous runs
 taskkill /im oc.exe /f
@@ -22,12 +49,18 @@ Start-Process -FilePath "oc.exe" -ArgumentList "port-forward",$POSTGRES_DB_POD,"
 timeout /t 50
 
 # Push to Table using python script
-# i.e. arguments are passed in like so: python.exe push_objstor_to_metabase.py -d
-
 if ($delete){
-    Start-Process -FilePath "python.exe" -ArgumentList $scriptname,$delete -Wait
+    write-output "Run: "+$scriptname+ " with " + $delete
+    # Start-Process -FilePath "python.exe" -ArgumentList $scriptname,$delete -Wait
 } else {
-    Start-Process -FilePath "python.exe" -ArgumentList $scriptname -Wait
+    write-output "Run: "+$scriptname
+    # Start-Process -FilePath "python.exe" -ArgumentList $scriptname -Wait
+}
+
+# Run a second script after the first
+if ($secondScript){
+    write-output "Run: "+$secondScript
+    # Start-Process -FilePath "python.exe" -ArgumentList $secondScript -Wait
 }
 
 # Clean up any open pot binds from previous runs
