@@ -186,3 +186,9 @@ rsconnect/
 # raw and processed data from R
 source/
 output/
+push-data-to-metabase/SharedDriveOwnershipReport-AF-20230617.xlsx
+push-data-to-metabase/SharedDriveOwnershipReport-EMLI-20230617.xlsx
+push-data-to-metabase/SharedDriveOwnershipReport-ENV-20230617.xlsx
+push-data-to-metabase/SharedDriveOwnershipReport-FOR-20230617.xlsx
+push-data-to-metabase/SharedDriveOwnershipReport-IRR-20230617.xlsx
+push-data-to-metabase/SharedDriveOwnershipReport-WLRS-20230617.xlsx
