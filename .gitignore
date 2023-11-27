@@ -187,3 +187,9 @@ rsconnect/
 source/
 output/
 /push-data-to-metabase/not_found.txt
+push-data-to-metabase/SharedDriveOwnershipReport-AF-*.xlsx
+push-data-to-metabase/SharedDriveOwnershipReport-EMLI-*.xlsx
+push-data-to-metabase/SharedDriveOwnershipReport-ENV-*.xlsx
+push-data-to-metabase/SharedDriveOwnershipReport-FOR-*.xlsx
+push-data-to-metabase/SharedDriveOwnershipReport-IRR-*.xlsx
+push-data-to-metabase/SharedDriveOwnershipReport-WLRS-*.xlsx
