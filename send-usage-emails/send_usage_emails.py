@@ -462,7 +462,7 @@ def send_idir_email(
         <ol>
         <li>The H Drive sizes shown are sampled by the OCIO for billing purposes on the 15th of each month.</li>
         <li>The Optimization team cannot see or access your H Drive contents; we only know its' total size based on the billing data.</li>
-        <li>If you believe your H Drive report to be incorrect, confirm by checking the updated steps at the bottom of our
+        <li>If you believe your H Drive report to be incorrect, confirm by checking the steps at the bottom of our
           <a href='https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage'>
           Managing and Reducing H Drive Data Storage</a> page in the <i>Check if your H Drive file cleanup worked</i> section.
         </ol>"""
@@ -520,14 +520,14 @@ def send_idir_email(
     <ol>
         <li>Move <a href="https://intranet.gov.bc.ca/nrids/products-services/data-services/one-drive/what-not-to-move-onto-onedrive">appropriate</a>
          files to <a href="https://intranet.gov.bc.ca/nrids/products-services/data-services/one-drive">OneDrive</a> (time suggested: 20 mins)</li>
-        <li>Delete <a href="https://intranet.gov.bc.ca/assets/intranet/nrids/pdfs-and-docs/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
+        <li>Delete <a href="https://www2.gov.bc.ca/assets/gov/british-columbians-our-governments/services-policies-for-government/information-management-technology/records-management/guides/transitoryrecords.pdf">transitory</a> data (time suggested: 5-10 mins)</li>
         <li>
         <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage#Emptyyourrecycling">
         Empty</a> your Recycle Bin (time suggested: 1 min)</li>
     </ol>
     More suggestions can be found on our
     <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage">
-    Managing and Reducing H Drive Data Storage page</a>."""
+    Managing and Reducing H Drive Data Storage page</a>.""" # noqa
 
     # Share the successes of peers
     html_kudos = f"""
