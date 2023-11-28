@@ -496,5 +496,5 @@ if __name__ == "__main__":
     create_ministry_reports_simple(record_tuples)
     insert_h_drive_records_to_metabase(record_tuples)
 
-    #record_tuples = get_records_from_xlsx("group shares")
-    #insert_group_share_records_to_metabase(record_tuples)
+    record_tuples = get_records_from_xlsx("group shares")
+    insert_group_share_records_to_metabase(record_tuples)

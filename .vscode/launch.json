@@ -21,10 +21,10 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: push_h_sfp_to_metabase",
+            "name": "Python: push_h_sfp_to_metabase_dsr",
             "type": "python",
             "request": "launch",
-            "program": "push-data-to-metabase/push_h_sfp_to_metabase_v2.py",
+            "program": "push-data-to-metabase/push_h_sfp_to_metabase_dsr.py",
             "args": [],
             "console": "integratedTerminal"
         },
