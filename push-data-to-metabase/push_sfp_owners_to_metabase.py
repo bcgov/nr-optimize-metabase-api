@@ -101,7 +101,6 @@ def condense_share_info(record_tuples):
 def get_conn():
     return psycopg2.connect(
         host="localhost",
-        port='5431',
         database=constants.POSTGRES_DB_NAME,
         user=constants.POSTGRES_USER,
         password=constants.POSTGRES_PASS,

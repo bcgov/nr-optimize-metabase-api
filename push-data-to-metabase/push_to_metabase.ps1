@@ -45,7 +45,7 @@ $POSTGRES_DB_POD=oc get pods --selector name=postgresql --field-selector status.
 # Launch a new thread with a port bind
 $PATH=$Env:Path
 # Start-Process "oc-port-forward" cmd /k "SET PATH=$CD;$PATH & oc port-forward $POSTGRES_DB_POD 5432:5432"
-Start-Process -FilePath "oc.exe" -ArgumentList "port-forward",$POSTGRES_DB_POD,"5431:5432" -PassThru
+Start-Process -FilePath "oc.exe" -ArgumentList "port-forward",$POSTGRES_DB_POD,"5432:5432" -PassThru
 
 # Run Bind Port script and wait for it to run
 timeout /t 50
