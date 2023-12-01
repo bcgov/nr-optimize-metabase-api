@@ -214,7 +214,7 @@ def get_records_from_xlsx(sheet_name):
         combined.loc[
             combined["displayname"] == "NO IDIR USER RECORD FOUND", "division"
         ] = "Not Found"
-        
+
         # set Div & Branch to blank for Soft deleted Home Drives
         combined.loc[combined["idir"] == "Soft deleted Home Drives", "division"] = ""
         combined.loc[combined["idir"] == "Soft deleted Home Drives", "branch"] = ""
