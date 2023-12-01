@@ -34,7 +34,7 @@ import time
 import matplotlib.ticker as mticker
 import matplotlib.pyplot as plt
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -252,7 +252,7 @@ def get_h_drive_summary():
             host=constants.POSTGRES_HOST,
             database="metabase",
             user=constants.POSTGRES_USER,
-            password=constants.POSTGRES_PASSWORD,
+            password=constants.POSTGRES_PASSWORD
         )
         # create a cursor
         cur = conn.cursor()
@@ -670,19 +670,22 @@ def main(argv):
         for idir in data:
             samples = data[idir]["samples"]
             if len(samples) >= 2:
-                last_month_gb = samples[len(samples) - 1]["gb"]
-                month_before_last_gb = samples[len(samples) - 2]["gb"]
-                drop = month_before_last_gb - last_month_gb
-                # Get biggest drop
-                if drop > biggest_drop:
-                    biggest_drop = drop
-                # Get biggest 5 drops
-                if len(biggest_drops_list) < 5:
-                    biggest_drops_list.append(drop)
-                    biggest_drops_list.sort()
-                elif biggest_drops_list[0] < drop:
-                    biggest_drops_list[0] = drop
-                    biggest_drops_list.sort()
+                last_month = samples[len(samples) - 1]
+                month_before_last = samples[len(samples) - 2]
+                if (last_month["sample_datetime"]-month_before_last["sample_datetime"] < timedelta(days=35)):
+                    last_month_gb = last_month["gb"]
+                    month_before_last_gb = month_before_last["gb"]
+                    drop = month_before_last_gb - last_month_gb
+                    # Get biggest drop
+                    if drop > biggest_drop:
+                        biggest_drop = drop
+                    # Get biggest 5 drops
+                    if len(biggest_drops_list) < 5:
+                        biggest_drops_list.append(drop)
+                        biggest_drops_list.sort()
+                    elif biggest_drops_list[0] < drop:
+                        biggest_drops_list[0] = drop
+                        biggest_drops_list.sort()               
 
         # Calculate the sum of the 5 biggest drops
         biggest_drops = sum(biggest_drops_list)
