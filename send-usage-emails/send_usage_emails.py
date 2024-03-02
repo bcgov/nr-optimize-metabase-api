@@ -95,7 +95,8 @@ def get_hdrive_data():
             host=constants.POSTGRES_HOST,
             database="metabase",
             user=constants.POSTGRES_USER,
-            password=constants.POSTGRES_PASSWORD
+            password=constants.POSTGRES_PASSWORD,
+            port=5431
         )
         # create a cursor
         cur = conn.cursor()
@@ -461,7 +462,7 @@ def send_idir_email(
     check_h_drive_size_msg = """<br><br><b>Report Accuracy</b>
         <ol>
         <li>The H Drive sizes shown are sampled by the OCIO for billing purposes on the 15th of each month.</li>
-        <li>The Optimization team cannot see or access your H Drive contents; we only know its' total size based on the billing data.</li>
+        <li>The Optimization team cannot see or access your H Drive contents; we only know its total size based on the billing data.</li>
         <li>If you believe your H Drive report to be incorrect, confirm by checking the steps at the bottom of our
           <a href='https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage'>
           Managing and Reducing H Drive Data Storage</a> page in the <i>Check if your H Drive file cleanup worked</i> section.
