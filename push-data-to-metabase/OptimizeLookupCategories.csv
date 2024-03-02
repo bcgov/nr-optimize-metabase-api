@@ -1,47 +1,47 @@
-Category,Service Name
+Category, Service Name
 Backup, Data Backup Services-Daily Backups
 Backup, Data Backup Services-Monthly Backups
-CustomORCitrixOROneTime,Application Enabling Services
-CustomORCitrixOROneTime,Application Hosting - Cancellation Costs
-CustomORCitrixOROneTime,Application Hosting Service for Virtual Windows
-CustomORCitrixOROneTime,Citrix Server Support Services
-CustomORCitrixOROneTime,Cross Connects Monthly
-CustomORCitrixOROneTime,Custom Hosting Request - Monthly
-CustomORCitrixOROneTime,Custom Hosting Request - One Time
-CustomORCitrixOROneTime,Custom Server - Monthly
-CustomORCitrixOROneTime,Explicit Agreement Monthly Charge - CAPS
-CustomORCitrixOROneTime,Explicit Agreement Monthly Charge - Voice
-CustomORCitrixOROneTime,Explicit Agreement Monthly Charge - Workstation
-CustomORCitrixOROneTime,Explicit Agreement One Time Charge - Voice
-CustomORCitrixOROneTime,Forward Proxy Monthly
-CustomORCitrixOROneTime,Forward Proxy Onetime
-CustomORCitrixOROneTime,Hosting IP Subnet (VLAN) Service
-CustomORCitrixOROneTime,Hosting Load Balancing Service
-CustomORCitrixOROneTime,Hosting Professional Service One Time
-CustomORCitrixOROneTime,Hosting Services - Mainframe Consulting
-CustomORCitrixOROneTime,Hosting Upgrade Services - One-Time
-CustomORCitrixOROneTime,IAAS One Time Charge
-CustomORCitrixOROneTime,Mainframe Print Queue
-CustomORCitrixOROneTime,Other Server Software - Monthly
-CustomORCitrixOROneTime,Shared Database Services - Microsoft Production Site
-CustomORCitrixOROneTime,Shared Web Hosting Service
-CustomORCitrixOROneTime,Shared Web Hosting - Windows Static Production Site
-CustomORCitrixOROneTime,Shared Web Hosting - Windows Static Development Site
+CustomORCitrixOROneTime, Application Enabling Services
+CustomORCitrixOROneTime, Application Hosting - Cancellation Costs
+CustomORCitrixOROneTime, Application Hosting Service for Virtual Windows
+CustomORCitrixOROneTime, Citrix Server Support Services
+CustomORCitrixOROneTime, Cross Connects Monthly
+CustomORCitrixOROneTime, Custom Hosting Request - Monthly
+CustomORCitrixOROneTime, Custom Hosting Request - One Time
+CustomORCitrixOROneTime, Custom Server - Monthly
+CustomORCitrixOROneTime, Explicit Agreement Monthly Charge - CAPS
+CustomORCitrixOROneTime, Explicit Agreement Monthly Charge - Voice
+CustomORCitrixOROneTime, Explicit Agreement Monthly Charge - Workstation
+CustomORCitrixOROneTime, Explicit Agreement One Time Charge - Voice
+CustomORCitrixOROneTime, Forward Proxy Monthly
+CustomORCitrixOROneTime, Forward Proxy Onetime
+CustomORCitrixOROneTime, Hosting IP Subnet (VLAN) Service
+CustomORCitrixOROneTime, Hosting Load Balancing Service
+CustomORCitrixOROneTime, Hosting Professional Service One Time
+CustomORCitrixOROneTime, Hosting Services - Mainframe Consulting
+CustomORCitrixOROneTime, Hosting Upgrade Services - One-Time
+CustomORCitrixOROneTime, IAAS One Time Charge
+CustomORCitrixOROneTime, Mainframe Print Queue
+CustomORCitrixOROneTime, Other Server Software - Monthly
+CustomORCitrixOROneTime, Shared Database Services - Microsoft Production Site
+CustomORCitrixOROneTime, Shared Web Hosting Service
+CustomORCitrixOROneTime, Shared Web Hosting - Windows Static Production Site
+CustomORCitrixOROneTime, Shared Web Hosting - Windows Static Development Site
 CustomORCitrixOROneTime, Secure File Transfer Monthly
-CustomORCitrixOROneTime,Explicit Agreement Monthly Charge - Hosting
-CustomORCitrixOROneTime,Explicit Agreement Monthly Charge - Data
-CustomORCitrixOROneTime,Hosting Consulting Services
-CustomORCitrixOROneTime,Other Server Software - One Time
-CustomORCitrixOROneTime,Explicit Agreement One Time Charge - Workstation
-CustomORCitrixOROneTime,Explicit Agreement One Time Charge
-Incremental Storage,Incremental  Storage
-Incremental Storage,Incremental Managed Storage (Shared Web)
-Incremental Storage,Incremental Managed Storage (Shared Database)
+CustomORCitrixOROneTime, Explicit Agreement Monthly Charge - Hosting
+CustomORCitrixOROneTime, Explicit Agreement Monthly Charge - Data
+CustomORCitrixOROneTime, Hosting Consulting Services
+CustomORCitrixOROneTime, Other Server Software - One Time
+CustomORCitrixOROneTime, Explicit Agreement One Time Charge - Workstation
+CustomORCitrixOROneTime, Explicit Agreement One Time Charge
+Incremental Storage, Incremental  Storage
+Incremental Storage, Incremental Managed Storage (Shared Web)
+Incremental Storage, Incremental Managed Storage (Shared Database)
 License, Adobe Acrobat Professional for MAC - Monthly
 License, Adobe Creative Suite Standard for MAC - Monthly
 License, Adobe Premier Professional for MAC - Monthly
 License, Cognos 8 BI Administrator - Named License - Monthly
-License,Dynamics 365 Operations Subscription Per User - Monthly
+License, Dynamics 365 Operations Subscription Per User - Monthly
 License, Microsoft Dynamics 365 Customer Engagement Plan SL Per User 1-99 Users - Monthly
 License, Microsoft Dynamics 365 (On-Premise) Team Members User CAL - Monthly
 License, Microsoft Dynamics 365 (On-Premise) Team Members User CAL - One Time
@@ -53,7 +53,7 @@ License, Microsoft Dynamics 365 Team Members User SL - Monthly
 License, Microsoft Dynamics 365 Team Members User SL - One Time
 License, Dynamics 365 Operations Subscription Per User - Monthly
 License, Microsoft MSDN OS All Languages - VISTA - Monthly
-License,Microsoft Power BI Pro SL (Non-Prod) - Monthly
+License, Microsoft Power BI Pro SL (Non-Prod) - Monthly
 License, Microsoft Project Server License - Monthly
 License, Microsoft SQL CAL License User CAL - Monthly
 License, Microsoft SQL Svr Enterprise Edtn 2 Core License - Monthly
@@ -88,6 +88,7 @@ License, Oracle Standard Ed Deploy - Concurrent License - Monthly
 License, Oracle Tuning Mgmt Pack - Processor License - Monthly
 License, Oracle Unified Business Management Suite - Processor License - Monthly
 License, Oracle WebCenter Content - Processor Licence - Monthly
+License, Oracle Webcenter Content - Named License - Monthly
 License, Oracle WebLogic Server Management Pack EE - Processor  - Monthly
 License, Oracle WebLogic Suite - Processor Licence - Monthly
 License, Quest Foglight Base Cartridge NT - Monthly
@@ -105,32 +106,33 @@ License, SAS Client Named JMP 10.0 - Monthly
 License, SAS Client Named JMP 7.0 - Monthly
 License, SAS Client Psds License - Monthly
 License, SAS Server License - Monthly
-License,Microsoft Windows Remote Desktop Svr CAL License User CAL - One Time
-License,Microsoft SQL Svr Developer Edtn - License
-License,Oracle Solaris Cluster Ent - Processor License - One Time
-License,SAFE FME Licence - One Time
-License,Microsoft Office User License - One Time
-License,Microsoft Excel User License - One Time
-License,Microsoft SQL Svr Standard Edtn 2 Core License - One Time
-License,Microsoft SQL Svr Standard Edtn 2 Core License - Monthly
-License,Oracle Directory Services Plus - Processor Licence- One Time
-License,Oracle Directory Services Plus - Employee User Licence- One Time
-License,Microsoft SQL Svr Enterprise Edtn 2 Core License - One Time
-License,Microsoft Power Apps Per User Plan - Monthly
-License,Microsoft Power Apps Per App Plan - Monthly
-License,Microsoft Power BI Pro SL for Power BI Report Server - Monthly
-License,Power Apps Portal Login T1 Sub Add-on - Monthly
+License, Microsoft Windows Remote Desktop Svr CAL License User CAL - One Time
+License, Microsoft SQL Svr Developer Edtn - License
+License, Oracle Solaris Cluster Ent - Processor License - One Time
+License, SAFE FME Licence - One Time
+License, Microsoft Office User License - One Time
+License, Microsoft Excel User License - One Time
+License, Microsoft SQL Svr Standard Edtn 2 Core License - One Time
+License, Microsoft SQL Svr Standard Edtn 2 Core License - Monthly
+License, Oracle Directory Services Plus - Processor Licence- One Time
+License, Oracle Directory Services Plus - Employee User Licence- One Time
+License, Microsoft SQL Svr Enterprise Edtn 2 Core License - One Time
+License, Microsoft Power Apps Per User Plan - Monthly
+License, Microsoft Power Automate Per User Plan - Monthly
+License, Microsoft Power Apps Per App Plan - Monthly
+License, Microsoft Power BI Pro SL for Power BI Report Server - Monthly
+License, Power Apps Portal Login T1 Sub Add-on - Monthly
 Object Storage, Object Storage - One Time
 Object Storage, Object Storage - OneTime
 Object Storage, Object Storage - Monthly
-SAN Storage,Storage Data Replication Monthly
-SAN Storage,Tier 1 Storage
-SAN Storage,Tier 2 Storage
-SAN Storage,Tier 2 Storage Mirrored
-SAN Storage,Tier 3 Storage
-SAN Storage,Tier 2 - Business Priority
-SAN Storage,Tier 3 - General Business
-SAN Storage,Tier 1 Storage Mirrored
+SAN Storage, Storage Data Replication Monthly
+SAN Storage, Tier 1 Storage
+SAN Storage, Tier 2 Storage
+SAN Storage, Tier 2 Storage Mirrored
+SAN Storage, Tier 3 Storage
+SAN Storage, Tier 2 - Business Priority
+SAN Storage, Tier 3 - General Business
+SAN Storage, Tier 1 Storage Mirrored
 Server, IIS Support Services
 Server, Large Solaris Database Tier 2 Service
 Server, Mainframe Services (MVS)
@@ -156,6 +158,7 @@ Server, Small Linux Application Tier 2 Service
 Server, Small Linux Database Tier 2 Service
 Server, Small Linux Test Tier 2 Service
 Server, Small Solaris Application Tier 2 Service
+Server, Large Linux Database Tier 2 Service
 Server, Small Solaris Test Tier 2 Service
 Server, Small Solaris Development Tier 2 Service
 Server, Small Solaris/AIX Cluster Management Service
@@ -176,16 +179,16 @@ Server, Virtual Solaris Development Service
 Server, Virtual Windows Development Service
 Server, Virtual Windows Production Service
 Server, Virtual Windows Test Service
-Server,Small Windows/Linux Extended Remote Support-7x24 Service
-Server,New UNIX-Linux Hardware - Monthly Costs
-Server,Medium Windows/Linux Extended Remote Support-7x24 Service
-Server,UNIX-Linux Hardware Upgrade-Monthly Costs
-Server,New Windows Hardware - Monthly Costs
-Server,Parallel Server Fee One Time Charge
-Server,Server Application Migration One-Time
-Sharepoint,Incremental Managed Storage (SharePoint)
-Sharepoint,Microsoft Office SharePoint Server License - Monthly
-Sharepoint,Microsoft Office SharePoint Server License - One Time
+Server, Small Windows/Linux Extended Remote Support-7x24 Service
+Server, New UNIX-Linux Hardware - Monthly Costs
+Server, Medium Windows/Linux Extended Remote Support-7x24 Service
+Server, UNIX-Linux Hardware Upgrade-Monthly Costs
+Server, New Windows Hardware - Monthly Costs
+Server, Parallel Server Fee One Time Charge
+Server, Server Application Migration One-Time
+Sharepoint, Incremental Managed Storage (SharePoint)
+Sharepoint, Microsoft Office SharePoint Server License - Monthly
+Sharepoint, Microsoft Office SharePoint Server License - One Time
 License, Microsoft Power Pages - Authenticated User - Monthly
 License, Microsoft Power Pages - Anonymous User - Monthly
 Backup, Data Backup Services - Extended Retention

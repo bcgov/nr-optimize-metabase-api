@@ -259,14 +259,9 @@ def get_records_from_xlsx(sheet_name):
             "branch",
         ] = "Business Delivery Branch"
 
-    elif sheet_name.lower() == "group shares":
-        combined.columns = ["sharename", "server", "datausage", "ministry", "date"]
-        combined.ministry.replace("", sheet_min)
-
         # correct info for ENV EPD
         combined.loc[
-            combined["branch"]
-            == "Environmental Emergencies and Land Remediation",
+            combined["branch"] == "Environmental Emergencies and Land Remediation",
             "branch",
         ] = "Environmental Emergencies and Land Remediation Branch"
         combined.loc[
@@ -275,8 +270,7 @@ def get_records_from_xlsx(sheet_name):
             "branch",
         ] = "Environmental Emergencies and Land Remediation Branch"
         combined.loc[
-            combined["branch"]
-            == "Environmental Standards Branch ",
+            combined["branch"] == "Environmental Standards Branch ",
             "branch",
         ] = "Environmental Standards Branch"
         combined.loc[
@@ -285,28 +279,23 @@ def get_records_from_xlsx(sheet_name):
             "branch",
         ] = "Regional Operations Branch"
         combined.loc[
-            combined["branch"]
-            == "Regional Operations Branch Authorizations South",
+            combined["branch"] == "Regional Operations Branch Authorizations South",
             "branch",
         ] = "Regional Operations Branch"
         combined.loc[
-            combined["branch"]
-            == "Environment Protection Regional Operations Branch",
+            combined["branch"] == "Environment Protection Regional Operations Branch",
             "branch",
         ] = "Regional Operations Branch"
         combined.loc[
-            combined["branch"]
-            == "Environmental Protection Regional Operation Branch",
+            combined["branch"] == "Environmental Protection Regional Operation Branch",
             "branch",
         ] = "Regional Operations Branch"
         combined.loc[
-            combined["branch"]
-            == "Environmental Protection Regional Operations Branch",
+            combined["branch"] == "Environmental Protection Regional Operations Branch",
             "branch",
         ] = "Regional Operations Branch"
         combined.loc[
-            combined["branch"]
-            == "Coast/West Coast/Vancouver Island",
+            combined["branch"] == "Coast/West Coast/Vancouver Island",
             "branch",
         ] = "Regional Operations Branch"
         combined.loc[
@@ -314,6 +303,10 @@ def get_records_from_xlsx(sheet_name):
             == "Regional Operations Branch - Interior - Thompson/Cariboo",
             "branch",
         ] = "Regional Operations Branch"
+
+    elif sheet_name.lower() == "group shares":
+        combined.columns = ["sharename", "server", "datausage", "ministry", "date"]
+        combined.ministry.replace("", sheet_min)
 
     # flatten data into tuples
     record_tuples = []
@@ -531,7 +524,7 @@ def create_ministry_reports_simple(record_tuples):
             # merge cells from A1 to E4
             ws.merge_cells("A1:E1")
             ws.merge_cells("A2:E2")
-            ws.merge_cells("A3:E3")                                   
+            ws.merge_cells("A3:E3")
             ws.merge_cells("A4:E4")
 
             # save the workbook - makes directory if it doesn't already exist
@@ -546,7 +539,7 @@ if __name__ == "__main__":
         delete_before_insert = True
     record_tuples = get_records_from_xlsx("home drives")
     create_ministry_reports_simple(record_tuples)
-    #insert_h_drive_records_to_metabase(record_tuples)
+    insert_h_drive_records_to_metabase(record_tuples)
 
-    #record_tuples = get_records_from_xlsx("group shares")
-    #insert_group_share_records_to_metabase(record_tuples)
+    record_tuples = get_records_from_xlsx("group shares")
+    insert_group_share_records_to_metabase(record_tuples)

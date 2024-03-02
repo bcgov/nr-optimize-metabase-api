@@ -46,7 +46,7 @@ ministry_renames = {
 delete_FY_before_insert = False
 
 # variables for column lookups and required columns:
-required_columns_str = "Owner Party, Funding Model Colour, SDA Party, Service Name, Reporting Customer, Service Name L1, Inventory Item Number, "
+required_columns_str = "Owner Party, Expense Account Coding, Funding Model Colour, SDA Party, Service Name, Reporting Customer, Service Name L1, Inventory Item Number, "
 required_columns_str += "Service Name L2, OM Asset Tag, Quantity, Price, Expense Amount, Recovery Frequency, Recovery Type, Recovery Period, GL Period"
 required_columns_list = required_columns_str.split(", ")
 column_map = {}
@@ -105,6 +105,9 @@ def get_records_from_xlsx():
             gl_period = row[column_map["gl period"]]
             if pd.isnull(gl_period):
                 row[column_map["gl period"]] = None
+
+            # Replace expense account coding with account coding
+            accountcoding = row[column_map["expense account coding"]]
 
             # Replace funding model colour and replace with VOTED or RECOVERY
             # The column is now called "funding model status" in the database instead of using colours
@@ -188,8 +191,10 @@ def get_FY_date_range_clause(record_tuples):
     for tup in record_tuples:
         # Switch the format of recovery period
         recovery_period = tup[column_map["recovery period"]]
-        if type(recovery_period) == str:
-            recovery_period = datetime.strptime(recovery_period, "%b-%y").strftime("%m-%y")
+        if type(recovery_period) is str:
+            recovery_period = datetime.strptime(recovery_period, "%b-%y").strftime(
+                "%m-%y"
+            )
         else:
             recovery_period = recovery_period.strftime("%m-%y")
         recovery_period = pd.to_datetime(recovery_period, format="%m-%y")
@@ -246,9 +251,9 @@ def insert_records_to_metabase(record_tuples):
 
         cur.executemany(
             """
-            INSERT INTO hostingexpenses (ownerparty, fundingmodelstatus, ministry, servicename, reportingcustomer, servicelevel1, inventoryitem,
+            INSERT INTO hostingexpenses(ownerparty, accountcoding, fundingmodelstatus, ministry, servicename, reportingcustomer, servicelevel1, inventoryitem,
               servicelevel2, omassettag, quantity, price, expenseamount, recoveryfrequency, recoverytype, recoveryperiod, glperiod, category)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
         """,
             record_tuples,
         )
