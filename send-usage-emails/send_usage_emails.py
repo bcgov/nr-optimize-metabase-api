@@ -354,7 +354,7 @@ def get_graph_bytes(idir_info):
     g = sns.barplot(x="month", y="cost", data=under_bar, color=color_under)
 
     # Add threshold bar
-    g.axhline(threshold, label="$4.00 (1.5 GB)", color=color_goal, linewidth=6)
+    g.axhline(threshold, label="Limit (1.5 GB)", color=color_goal, linewidth=6)
 
     # Add legend
     plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.0)
