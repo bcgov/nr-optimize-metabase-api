@@ -95,8 +95,7 @@ def get_hdrive_data():
             host=constants.POSTGRES_HOST,
             database="metabase",
             user=constants.POSTGRES_USER,
-            password=constants.POSTGRES_PASSWORD,
-            port=5431
+            password=constants.POSTGRES_PASSWORD
         )
         # create a cursor
         cur = conn.cursor()
