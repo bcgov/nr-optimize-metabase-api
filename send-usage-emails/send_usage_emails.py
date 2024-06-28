@@ -95,8 +95,7 @@ def get_hdrive_data():
             host=constants.POSTGRES_HOST,
             database="metabase",
             user=constants.POSTGRES_USER,
-            password=constants.POSTGRES_PASSWORD,
-            port=5431
+            password=constants.POSTGRES_PASSWORD
         )
         # create a cursor
         cur = conn.cursor()
@@ -355,7 +354,7 @@ def get_graph_bytes(idir_info):
     g = sns.barplot(x="month", y="cost", data=under_bar, color=color_under)
 
     # Add threshold bar
-    g.axhline(threshold, label="Limit (1.5 GB)", color=color_goal, linewidth=6)
+    g.axhline(threshold, label="Limit of 1.5 GB", color=color_goal, linewidth=6)
 
     # Add legend
     plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.0)
