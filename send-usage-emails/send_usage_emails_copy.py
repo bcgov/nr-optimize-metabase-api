@@ -316,57 +316,42 @@ def get_graph_bytes(idir_info):
         axis_dates.append(sample["sample_datetime"].strftime("%Y-%m-%d"))
 
     # Convert samples array into dictionary of arrays
-    # To have the graph change color below and above the 1.5GB bar, add them as different datasets
-    under_bar = {"gb": [], "datetime": [], "month": [], "cost": []}
-
-    over_bar = {"gb": [], "datetime": [], "month": [], "cost": []}
+    gb_bar = {"gb": [], "datetime": [], "month": [], "cost": []}
 
     # Bar/threshold of 1.5 GB
     threshold = 1.5
     # For each month sample, add to data dictionaries
     for sample in samples:
         if sample["gb"] <= threshold:
-            # Users month was <= to the bar, so add data under bar, and empty data behind it
-            under_bar["gb"].append(sample["gb"])
-            under_bar["datetime"].append(sample["sample_datetime"])
-            under_bar["month"].append(sample["month"])
-            under_bar["cost"].append(0.00)
-
-            over_bar["gb"].append(0)
-            over_bar["datetime"].append(sample["sample_datetime"])
-            over_bar["month"].append(sample["month"])
-            over_bar["cost"].append(0.00)
+        # Users month was <= the bar, so the cost was zero    
+            gb_bar["gb"].append(sample["gb"])
+            gb_bar["datetime"].append(sample["sample_datetime"])
+            gb_bar["month"].append(sample["month"])
+            gb_bar["cost"].append(0.00)
         else:
-            # Users month was > the bar, so add maximum data under bar, and actual data behind it that looks "over" the bar
-            under_bar["gb"].append(1.5)
-            under_bar["datetime"].append(sample["sample_datetime"])
-            under_bar["month"].append(sample["month"])
-            under_bar["cost"].append(0)
+            # Users month was > the bar, so use the calculated cost
+            gb_bar["gb"].append(sample["gb"])
+            gb_bar["datetime"].append(sample["sample_datetime"])
+            gb_bar["month"].append(sample["month"])
+            gb_bar["cost"].append(sample["cost"])
 
-            over_bar["gb"].append(sample["gb"])
-            over_bar["datetime"].append(sample["sample_datetime"])
-            over_bar["month"].append(sample["month"])
-            over_bar["cost"].append(sample["cost"])
-
-    # Give bars color and plot them
-    #label_format = '${:,.2f}'
+    # function to convert float to currency
     def to_currency(x):
         return "${:,.2f}".format(x)
 
-    # this works - convert cost list to float, then currency
-    underbar_cost_float = [float(v) for v in under_bar["cost"]]
-    underbar_cost_label = [to_currency(val) for val in underbar_cost_float]
-    overbar_cost_float = [float(z) for z in over_bar["cost"]]
-    overbar_cost_label = [to_currency(zal) for zal in overbar_cost_float]
+    # convert cost list to float, then currency
+    gb_bar_cost_float = [float(v) for v in gb_bar["cost"]]
+    gb_bar_cost_label = [to_currency(val) for val in gb_bar_cost_float]
 
-    # this works - label top of each bar with cost
-    sns.barplot(x="month", y="gb", data=over_bar, color=color_over)
-    g = sns.barplot(x="month", y="gb", data=under_bar, color=color_under)
+    # Give bars color and plot theme
+    g = sns.barplot(x="month", y="gb", data=gb_bar, color=color_under)
+     
+    # label top of each bar with cost 
     for i in g.containers:
         if sample["gb"] <= threshold:
-            g.bar_label(i, labels=underbar_cost_label, color="#003366")
+            g.bar_label(i, labels=gb_bar_cost_label, color="#003366")
         else:
-            g.bar_label(i, labels=overbar_cost_label, label_type='edge', color="#003366")   
+            g.bar_label(i, labels=gb_bar_cost_label, color="#000000") 
             
     # Add threshold bar
     g.axhline(threshold, label="Limit of 1.5 GB", color=color_goal, linewidth=6)
@@ -376,10 +361,9 @@ def get_graph_bytes(idir_info):
 
     ticks_loc = g.get_yticks().tolist()
     g.yaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
-    #g.set_yticklabels([label_format.format(x) for x in ticks_loc])
 
     # Add various text components
-    plt.title(f"{idir}'s H Drive Cost by Month", fontsize=14)
+    plt.title(f"{idir}'s H Drive Cost by Month", fontsize=14, color="#141414")
     plt.ylabel("H Drive Size (GB)", fontsize=13)
     plt.xlabel("", fontsize=10)
     caption = "1.5 GB of Shared\nFile and H drive\nstorage is allocated\nfor each BCPS\nemployee."
@@ -509,7 +493,7 @@ def send_idir_email(
         elif difference > 0 and last_month_gb < 1.5 and month_before_last_gb < 1.5:
             # Cost was neutral
             html_personal_metrics += f"""<li>Between {month_before_last_name} and {last_month_name} your consumption 
-            <span style="color:#2E8540;"><b>increased</b></span> by <b>{abs_difference:,.3g} GB</b>, costing the Ministry of {ministry_name} ${last_month_cost:,.2f}."""
+            <span style="color:#D8292F;"><b>increased</b></span> by <b>{abs_difference:,.3g} GB</b>, costing the Ministry of {ministry_name} ${last_month_cost:,.2f}."""
         else:
             html_personal_metrics += f"""<li>In {last_month_name} your H Drive data usage billed to your ministry was {last_month_gb:,} GB,
              costing ${last_month_cost:,.2f}.</li>"""
@@ -599,7 +583,7 @@ def send_idir_email(
     # Send email to recipient
     s = smtplib.SMTP(constants.SMTP_SERVER)
     #s.sendmail(msg["From"], recipient, msg.as_string())
-    s.sendmail(msg["From"], "heather.hay@gov.bc.ca", msg.as_string())
+    s.sendmail(msg["From"], recipient, msg.as_string())
     s.quit()
 
     # Following smtp server guidelines of max 30 emails/minute
@@ -786,3 +770,4 @@ if __name__ == "__main__":
     # Give developers time to look at OCP pod terminal/details after a failure/success before terminating.
     LOGGER.info("Script Complete, pausing for 5 minutes...")
     time.sleep(300)
+    
