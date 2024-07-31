@@ -199,6 +199,7 @@ emli_division_acronyms = {
     "Mines Competitiveness & Authorizations Division": "RMCD",
     "Mines Health, Safety and Enforcement Division": "MHSE",
     "Mines Health, Safety & Enforcement Division": "MHSE",
+    "Mines Health, Safety & Enfocement Division": "MHSE",
     "Oil and Gas Division": "OGD",
     "Strategic and Indigenous Affairs Division": "SIPD",
     "Strategic and Indigenous Partnerships Division": "SIPD",

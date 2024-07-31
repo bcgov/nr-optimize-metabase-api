@@ -259,6 +259,28 @@ def get_records_from_xlsx(sheet_name):
             "branch",
         ] = "Business Delivery Branch"
 
+        # correct info for EMLI
+        combined.loc[
+            combined["division"]
+            == "Mines Health, Safety and Enfocement Division",
+            "division",
+        ] = "Mines Health, Safety & Enforcement Division"
+        combined.loc[
+            combined["division"]
+            == "Mines Health, Safety and Enforcement",
+            "division",
+        ] = "Mines Health, Safety & Enforcement Division"
+        combined.loc[
+            combined["division"]
+            == "Mines Health, Safety and Enforcement Division",
+            "division",
+        ] = "Mines Health, Safety & Enforcement Division"
+        combined.loc[
+            combined["division"]
+            == "Energy Resource Division",
+            "division",
+        ] = "Energy Resources Division"
+
         # correct info for ENV EPD
         combined.loc[
             combined["branch"] == "Environmental Emergencies and Land Remediation",
@@ -274,15 +296,6 @@ def get_records_from_xlsx(sheet_name):
             "branch",
         ] = "Environmental Standards Branch"
         combined.loc[
-            combined["branch"]
-            == "Regional Operations Branch - Coast/West Coast/Vancouver Island",
-            "branch",
-        ] = "Regional Operations Branch"
-        combined.loc[
-            combined["branch"] == "Regional Operations Branch Authorizations South",
-            "branch",
-        ] = "Regional Operations Branch"
-        combined.loc[
             combined["branch"] == "Environment Protection Regional Operations Branch",
             "branch",
         ] = "Regional Operations Branch"
@@ -295,14 +308,78 @@ def get_records_from_xlsx(sheet_name):
             "branch",
         ] = "Regional Operations Branch"
         combined.loc[
-            combined["branch"] == "Coast/West Coast/Vancouver Island",
-            "branch",
-        ] = "Regional Operations Branch"
+            combined["branch"] == "BC Parks, Recreation Sites and Trails Division",
+            "division",
+        ] = "Conservation and Recreation Division"
+        combined.loc[
+            combined["division"]
+            == "Environmental Sustainability Division",
+            "division",
+        ] = "Environmental Protection Division"
         combined.loc[
             combined["branch"]
-            == "Regional Operations Branch - Interior - Thompson/Cariboo",
+            == "Environmental Protection Division",
+            "division",
+        ] = "Environmental Protection Division"
+        combined.loc[
+            (combined["division"]
+            == "Strategic Policy Division") & (combined["branch"]
+            == "Knowledge Management Branch"),
+            "division",
+        ] = "Strategic Services Division"
+        combined.loc[
+            (combined["division"]
+            == "ENV - Environment and Climate Change Strategy") | (combined["division"]
+            == "BC Parks Reg Ops"),
+            "division",
+        ] = "Conservation and Recreation Division"
+        combined.loc[
+            (combined["division"]
+            == "BC Parks and Conservation Officer Services Division") & (combined["branch"]
+            == "BC Parks Regional Operations") | (combined["branch"]
+            == "BC Parks Regional Operations - Coast/West Coast/Vancouver") | (combined["branch"]
+            == "BC Parks Regional Operations - Coast/West Coast/Vancouver Island") | (combined["branch"]
+            == "BC Parks Regional Operations - Interior - Kootenay/Okanagan") | (combined["branch"]
+            == "BC Parks Regional Operations - Interior - Thompson/Cariboo") | (combined["branch"]
+            == "BC Parks Regional Operations - Kamloops Thompson-Cariboo Region") | (combined["branch"]
+            == "BC Parks Regional Operations - Northern") | (combined["branch"]
+            == "BC Parks Regional Operations - South Coast") | (combined["branch"]
+            == "BC Parks Regional Operations-Northern") | (combined["branch"]
+            == "BC Parks - Bella Coola"),
+            "division",
+        ] = "Conservation and Recreation Division"
+        combined.loc[
+            combined["division"]
+            == "Policy, Programs & Partnerships Division",
+            "division",
+        ] = "Climate Action Secretariat"
+        combined.loc[
+            (combined["division"]
+            == "BC Parks and Conservation Officer Services Division") & (combined["branch"]
+            == "ADM's Office") | (combined["branch"]
+            == "Provincial Services Branch"),
+            "division",
+        ] = "Conservation and Recreation Division"
+        combined.loc[
+            (combined["branch"]
+            == "Conservation Officer Service Branch") | (combined["branch"]
+            == "Conservation Officer Service") | (combined["branch"]
+            == "Conservation Officer Services"),
+            "division",
+        ] = "Conservation and Recreation Division"
+        combined.loc[
+            (combined["division"]
+            == "BC Parks and Conservation Officer Services Division") & (combined["branch"]
+            == "Kamloops"),
+            "division",
+        ] = "Conservation and Recreation Division"
+        combined.loc[
+            (combined["division"]
+            == "Conservation and Recreation Division") | (combined["division"]
+            == "BC Parks, Recreation Sites and Trails Division") & (combined["branch"]
+            == "Regional Operations Branch"),
             "branch",
-        ] = "Regional Operations Branch"
+        ] = "BC Parks - Regional Operations Branch"
 
     elif sheet_name.lower() == "group shares":
         combined.columns = ["sharename", "server", "datausage", "ministry", "date"]
