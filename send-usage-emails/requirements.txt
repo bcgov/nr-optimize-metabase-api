@@ -1,3 +1,4 @@
+numpy==1.23.2
 ldap3==2.9.1
 matplotlib==3.4.2
 nslookup==1.4.0
