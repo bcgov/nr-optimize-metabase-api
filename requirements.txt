@@ -1,3 +1,4 @@
+numpy==1.23.2
 python-dotenv==0.17.1
 seaborn==0.11.1
 pyad==0.6.0
