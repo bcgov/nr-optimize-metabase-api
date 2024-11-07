@@ -48,14 +48,16 @@ def get_sample(gb, sample_datetime: datetime, ministry):
     # if cost < 0:
     #    cost = 0
     # METHOD 2: Calculate and Format $ cost by GB, with 1.5gb discount applied at ministry level
-    cost = round((gb - 1.5) * 2.7, 2)  # cost updated to account for the first 1.5 GB being $0 charge, anything after that is $2.70 per GB
+    cost = round(
+        (gb - 1.5) * 2.7, 2
+    )  # cost updated to account for the first 1.5 GB being $0 charge, anything after that is $2.70 per GB
 
     return {
         "gb": gb,
         "sample_datetime": sample_datetime,
         "month": calendar.month_name[sample_datetime.month],
         "cost": cost,
-        "ministry": ministry
+        "ministry": ministry,
     }
 
 
@@ -72,12 +74,17 @@ def send_admin_email(message_detail):
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     host_name = socket.gethostname()
-    html = "<html><head></head><body><p>" \
-        + "A scheduled script send_usage_emails.py has sent an automated report email." \
-        + "<br />Server: " + str(host_name) \
-        + "<br />File Path: " + dir_path + "<br />" \
-        + str(message_detail) \
+    html = (
+        "<html><head></head><body><p>"
+        + "A scheduled script send_usage_emails.py has sent an automated report email."
+        + "<br />Server: "
+        + str(host_name)
+        + "<br />File Path: "
+        + dir_path
+        + "<br />"
+        + str(message_detail)
         + "</p></body></html>"
+    )
     msg.attach(MIMEText(html, "html"))
     s = smtplib.SMTP(constants.SMTP_SERVER)
     s.sendmail(msg["From"], msg["To"], msg.as_string())
@@ -94,12 +101,14 @@ def get_hdrive_data():
             host=constants.POSTGRES_HOST,
             database="metabase",
             user=constants.POSTGRES_USER,
-            password=constants.POSTGRES_PASSWORD
+            password=constants.POSTGRES_PASSWORD,
         )
         # create a cursor
         cur = conn.cursor()
 
-        LOGGER.debug("H Drive data from the last three months, but only for idirs which have data last month:")  # update from six to three months
+        LOGGER.debug(
+            "H Drive data from the last three months, but only for idirs which have data last month:"
+        )  # update from six to three months
         sql_expression = """
         SELECT idir, datausage, date, ministry FROM hdriveusage WHERE (date_trunc('month',
          CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now()
@@ -135,7 +144,7 @@ def get_hdrive_data():
     try:
         # Attempt to sign into AD using LDAP credentials
         ldap_util = ldap.LDAPUtil(constants.LDAP_USER, constants.LDAP_PASSWORD)
-    except (Exception) as error:
+    except Exception as error:
         LOGGER.info(error)
         message_detail = (
             "The send_usage_emails script failed to connect or log in to LDAP. "
@@ -204,7 +213,7 @@ def get_hdrive_data():
                         "idir": idir,
                         "samples": [get_sample(gb, sample_datetime, ministry)],
                         "mail": ad_info["mail"],
-                        "name": ad_info["givenName"]
+                        "name": ad_info["givenName"],
                     }
             else:
                 # Add sample to existing user data, handling edge case:
@@ -223,7 +232,7 @@ def get_hdrive_data():
     for idir in data:
         data[idir]["samples"].sort(key=lambda s: s["sample_datetime"])
         samples_length = len(data[idir]["samples"])
-        data[idir]["ministry"] = data[idir]["samples"][samples_length-1]["ministry"]
+        data[idir]["ministry"] = data[idir]["samples"][samples_length - 1]["ministry"]
 
     # If errors existed, email them to the admin.
     # (There will always be errors, due to service accounts or employees who have left during the month)
@@ -251,12 +260,12 @@ def get_h_drive_summary():
             host=constants.POSTGRES_HOST,
             database="metabase",
             user=constants.POSTGRES_USER,
-            password=constants.POSTGRES_PASSWORD
+            password=constants.POSTGRES_PASSWORD,
         )
         # create a cursor
         cur = conn.cursor()
 
-        LOGGER.debug('Get summarized H Drive counts by ministry from the last month:')
+        LOGGER.debug("Get summarized H Drive counts by ministry from the last month:")
         sql_expression = """
         SELECT count(*) AS "COUNT", sum(datausage) AS "DATAUSAGE", ministry AS "MINISTRY" FROM hdriveusage WHERE (date_trunc('month',
          CAST(date AS timestamp)) BETWEEN date_trunc('month', CAST((CAST(now()
@@ -323,7 +332,7 @@ def get_graph_bytes(idir_info):
     # For each month sample, add to data dictionaries
     for sample in samples:
         if sample["gb"] <= threshold:
-        # Users month was <= the bar, so the cost was zero    
+            # Users month was <= the bar, so the cost was zero
             gb_bar["gb"].append(sample["gb"])
             gb_bar["datetime"].append(sample["sample_datetime"])
             gb_bar["month"].append(sample["month"])
@@ -345,14 +354,14 @@ def get_graph_bytes(idir_info):
 
     # Give bars color and plot theme
     g = sns.barplot(x="month", y="gb", data=gb_bar, color=color_under)
-     
-    # label top of each bar with cost 
+
+    # label top of each bar with cost
     for i in g.containers:
         if sample["gb"] <= threshold:
             g.bar_label(i, labels=gb_bar_cost_label, color="#003366")
         else:
-            g.bar_label(i, labels=gb_bar_cost_label, color="#000000") 
-            
+            g.bar_label(i, labels=gb_bar_cost_label, color="#000000")
+
     # Add threshold bar
     g.axhline(threshold, label="Limit of 1.5 GB", color=color_goal, linewidth=6)
 
@@ -367,7 +376,10 @@ def get_graph_bytes(idir_info):
     plt.ylabel("H Drive Size (GB)", fontsize=13)
     plt.xlabel("", fontsize=10)
     caption = "1.5 GB of Shared\nFile and H drive\nstorage is allocated\nfor each BCPS\nemployee."
-    caption = caption + "\n\nKeeping your digital\nstorage use under\n1.5 GB helps prevent\nadditional costs\nfor your ministry."
+    caption = (
+        caption
+        + "\n\nKeeping your digital\nstorage use under\n1.5 GB helps prevent\nadditional costs\nfor your ministry."
+    )
 
     fig.text(0.8, 0.34, caption, ha="left")
     plt.tight_layout()
@@ -393,9 +405,7 @@ def get_gold_star():
 
 
 # Send an email to the user containing usage information
-def send_idir_email(
-    idir_info, h_drive_count, total_gb, ministry_name, biggest_drop
-):
+def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_drop):
     # Variable Definitions:
     # idir_info         Dictionary of info for a user
     # h_drive_count     H drives for the users ministry
@@ -435,7 +445,9 @@ def send_idir_email(
     h_drive_count = int(math.floor(h_drive_count / 10) * 10)
 
     # Build email content and metadata
-    msg["Subject"] = f"Transitory: Your Personal Storage Report for {last_month_name} {year}"
+    msg["Subject"] = (
+        f"Transitory: Your Personal Storage Report for {last_month_name} {year}"
+    )
     msg["From"] = "NRIDS.Optimize@gov.bc.ca"
     msg["To"] = recipient
 
@@ -446,7 +458,7 @@ def send_idir_email(
 
         This report from the <a href="https://intranet.gov.bc.ca/nrids">Natural Resource Information and Digital Services Division</a> (NRIDS)
          shows the month-by-month storage costs of your "home" or (H:) drive <i>as it appeared on {last_month_name} 15th.</i>"""
-    
+
     # Reward the user with a gold star if data looks well managed
     if last_month_gb < 1.5 and month_before_last_sample is not None:
         if month_before_last_gb < 1.5:
@@ -515,7 +527,10 @@ def send_idir_email(
     if month_before_last_sample is not None:
         month_plural = "s"
     html_img = f"</ul>Below, you will find a graph highlighting your H Drive cost for the past {month_count}month{month_plural}:<br>"
-    html_img = html_img + """<br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">"""
+    html_img = (
+        html_img
+        + """<br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">"""
+    )
 
     # Provide solutions to the user to help with H Drive faqs/issues
     html_why_important = """
@@ -530,8 +545,8 @@ def send_idir_email(
         Empty</a> your Recycle Bin (time suggested: 1 min)</li>
     </ol>
     More suggestions can be found on our
-    <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage">
-    Managing and Reducing H Drive Data Storage page</a>.""" # noqa
+    <a href="https://apps.nrs.gov.bc.ca/int/confluence/display/OPTIMIZE/H+Drive+Migration+to+OneDrive?preview=/208735653/223974147/DIY%20-%20H%20Drive%20-%20Step%202%20-%20Sync%20Your%20Desktop%20to%20OneDrive%20V2.pdf">
+    Optimization Knowledge Base</a>."""  # noqa
 
     # Share the successes of peers
     html_kudos = f"""
@@ -555,7 +570,16 @@ def send_idir_email(
 
     # Merge html parts and attach to email
 
-    html = html_intro + check_h_drive_size_msg + html_why_data_important + html_personal_metrics + html_img + html_why_important + html_kudos + html_footer
+    html = (
+        html_intro
+        + check_h_drive_size_msg
+        + html_why_data_important
+        + html_personal_metrics
+        + html_img
+        + html_why_important
+        + html_kudos
+        + html_footer
+    )
     msg.attach(MIMEText(html, "html"))
 
     # Get and attach images to email
@@ -582,7 +606,7 @@ def send_idir_email(
 
     # Send email to recipient
     s = smtplib.SMTP(constants.SMTP_SERVER)
-    #s.sendmail(msg["From"], recipient, msg.as_string())
+    # s.sendmail(msg["From"], recipient, msg.as_string())
     s.sendmail(msg["From"], recipient, msg.as_string())
     s.quit()
 
@@ -639,7 +663,7 @@ def main(argv):
             "FLNR": "FOR",
             "FPRO": "FOR",
             "AFF": "AF",
-            "LWRS": "WLRS"
+            "LWRS": "WLRS",
         }
 
         for idir in data:
@@ -652,8 +676,12 @@ def main(argv):
             metrics = nrm_metrics[ministry_acronym]
             if ministry_acronym in ministry_renames:
                 new_acronym = ministry_renames[ministry_acronym]
-                nrm_metrics[new_acronym]['gb'] = nrm_metrics[new_acronym]['gb'] + metrics['gb']
-                nrm_metrics[new_acronym]['h_drive_count'] = nrm_metrics[new_acronym]['h_drive_count'] + metrics['h_drive_count']
+                nrm_metrics[new_acronym]["gb"] = (
+                    nrm_metrics[new_acronym]["gb"] + metrics["gb"]
+                )
+                nrm_metrics[new_acronym]["h_drive_count"] = (
+                    nrm_metrics[new_acronym]["h_drive_count"] + metrics["h_drive_count"]
+                )
                 ministry_acronyms_to_remove.append(ministry_acronym)
         for ministry_acronym in ministry_acronyms_to_remove:
             del nrm_metrics[ministry_acronym]
@@ -665,7 +693,7 @@ def main(argv):
             "ENV": "Environment and Climate Change Strategy",
             "FOR": "Forests",
             "WLRS": "Water, Land and Resource Stewardship",
-            "IRR": "Indigenous Relations & Reconciliation"
+            "IRR": "Indigenous Relations & Reconciliation",
         }
 
         # Get Biggest Drop (storage reduction) of the month
@@ -676,7 +704,9 @@ def main(argv):
             if len(samples) >= 2:
                 last_month = samples[len(samples) - 1]
                 month_before_last = samples[len(samples) - 2]
-                if last_month["sample_datetime"]-month_before_last["sample_datetime"] < timedelta(days=35):
+                if last_month["sample_datetime"] - month_before_last[
+                    "sample_datetime"
+                ] < timedelta(days=35):
                     last_month_gb = last_month["gb"]
                     month_before_last_gb = month_before_last["gb"]
                     drop = month_before_last_gb - last_month_gb
