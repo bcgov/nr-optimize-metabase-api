@@ -545,7 +545,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         Empty</a> your Recycle Bin (time suggested: 1 min)</li>
     </ol>
     More suggestions can be found on our
-    <a href="https://apps.nrs.gov.bc.ca/int/confluence/display/OPTIMIZE/H+Drive+Migration+to+OneDrive?preview=/208735653/223974147/DIY%20-%20H%20Drive%20-%20Step%202%20-%20Sync%20Your%20Desktop%20to%20OneDrive%20V2.pdf">
+    <a href="https://apps.nrs.gov.bc.ca/int/confluence/display/OPTIMIZE/H+Drive+Migration+to+OneDrive">
     Optimization Knowledge Base</a>."""  # noqa
 
     # Share the successes of peers
