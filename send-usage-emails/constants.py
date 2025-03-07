@@ -20,6 +20,7 @@ if os.path.exists(envPath):
     POSTGRES_PASSWORD=database_password
     POSTGRES_HOST=localhost
 
+    LDAP_DOMAIN=AD domain controller
     LDAP_USER=AD username
     LDAP_PASSWORD=AD password
 
@@ -42,6 +43,7 @@ POSTGRES_USER = os.environ['POSTGRES_USER']
 POSTGRES_PASSWORD = os.environ['POSTGRES_PASSWORD']
 POSTGRES_HOST = os.environ['POSTGRES_HOST']
 
+LDAP_DOMAIN = os.environ['LDAP_DOMAIN']
 LDAP_USER = os.environ['LDAP_USER']
 LDAP_PASSWORD = os.environ['LDAP_PASSWORD']
 
