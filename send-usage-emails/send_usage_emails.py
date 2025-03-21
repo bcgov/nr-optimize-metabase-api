@@ -99,7 +99,6 @@ def get_hdrive_data():
         # Open a connection
         conn = psycopg2.connect(
             host=constants.POSTGRES_HOST,
-            port="5431",
             database="metabase",
             user=constants.POSTGRES_USER,
             password=constants.POSTGRES_PASSWORD,
@@ -259,7 +258,6 @@ def get_h_drive_summary():
         # Open a connection
         conn = psycopg2.connect(
             host=constants.POSTGRES_HOST,
-            port="5431",
             database="metabase",
             user=constants.POSTGRES_USER,
             password=constants.POSTGRES_PASSWORD,
