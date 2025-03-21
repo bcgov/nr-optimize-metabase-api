@@ -5,10 +5,10 @@
 #                    2.) Get emails and names from active directory
 #                    3.) Create a bar chart and send each user their html format report by email
 #
-# Author:      HHAY, JMONTEBE, PPLATTEN
+# Author:      HHAY, JMONTEBE, PPLATTEN, KMWILKIN
 #
 # Created:     2021
-# Copyright:   (c) Optimization Team 2024
+# Copyright:   (c) Optimization Team 2025
 # Licence:     mine
 #
 # usage: send_usage_emails.py
@@ -31,7 +31,7 @@ from datetime import datetime, timedelta
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import ldap_helper as ldap
+import ldap_helper_v2 as ldap
 import constants
 import matplotlib.ticker as mticker
 import matplotlib.pyplot as plt
@@ -99,6 +99,7 @@ def get_hdrive_data():
         # Open a connection
         conn = psycopg2.connect(
             host=constants.POSTGRES_HOST,
+            port="5431",
             database="metabase",
             user=constants.POSTGRES_USER,
             password=constants.POSTGRES_PASSWORD,
@@ -258,6 +259,7 @@ def get_h_drive_summary():
         # Open a connection
         conn = psycopg2.connect(
             host=constants.POSTGRES_HOST,
+            port="5431",
             database="metabase",
             user=constants.POSTGRES_USER,
             password=constants.POSTGRES_PASSWORD,
@@ -310,13 +312,12 @@ def get_graph_bytes(idir_info):
     idir = idir_info["name"]
 
     # Select plot theme, with seaborn
-    sns.set(rc={"figure.figsize": (9, 4.5)})
+    sns.set_theme(rc={"figure.figsize": (9, 4.5)})
     sns.set_theme(style="whitegrid")
     fig = plt.figure()
 
     # Set custom colour palette and build bar chart "#2E8540"  # green
     color_under = "#003366"  # blue
-    color_over = "#e3a82b"  # yellow
     color_goal = "#D8292F"  # red
 
     # Add sample dates to graph axis
@@ -375,10 +376,10 @@ def get_graph_bytes(idir_info):
     plt.title(f"{idir}'s H Drive Cost by Month", fontsize=14, color="#141414")
     plt.ylabel("H Drive Size (GB)", fontsize=13)
     plt.xlabel("", fontsize=10)
-    caption = "1.5 GB of Shared\nFile and H drive\nstorage is allocated\nfor each BCPS\nemployee."
+    caption = "BCPS employees are\nallocated 1.5 GB of\nH drive storage."
     caption = (
         caption
-        + "\n\nKeeping your digital\nstorage use under\n1.5 GB helps prevent\nadditional costs\nfor your ministry."
+        + "\n\nStaying under the limit\nreduces unnecessary\ncosts to your Ministry"
     )
 
     fig.text(0.8, 0.34, caption, ha="left")
@@ -429,15 +430,13 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     if len(samples) > 1:
         month_before_last_sample = samples[len(samples) - 2]
         month_before_last_gb = month_before_last_sample["gb"]
-        month_before_last_cost = max(0, month_before_last_sample["cost"])
-        month_before_last_name = month_before_last_sample["month"]
+        # month_before_last_cost = max(0, month_before_last_sample["cost"])
+        # month_before_last_name = month_before_last_sample["month"]
 
     total_gb = float(total_gb)
     h_drive_count = float(h_drive_count)
     # Get the cost of ministry H Drives and biggest drops
     total_h_drive_cost = (total_gb - (h_drive_count * 1.5)) * 2.7
-    biggest_drop_cost = biggest_drop * 2.7
-    # biggest_drops_cost = biggest_drops * 2.7
 
     # Round down to nearest thousand for legibility
     total_gb = int(math.floor(total_gb / 10) * 10)
@@ -446,140 +445,303 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
 
     # Build email content and metadata
     msg["Subject"] = (
-        f"Transitory: Your Personal Storage Report for {last_month_name} {year}"
+        f"Transitory: Your {last_month_name} 15th {year} Personal Storage Report"
     )
     msg["From"] = "NRIDS.Optimize@gov.bc.ca"
     msg["To"] = recipient
 
-    # Greet the user and provide introduction
-    html_intro = f"""
-    <html><head></head><body><p>
-        Hi {name},<br><br>
-
-        This report from the <a href="https://intranet.gov.bc.ca/nrids">Natural Resource Information and Digital Services Division</a> (NRIDS)
-         shows the month-by-month storage costs of your "home" or (H:) drive <i>as it appeared on {last_month_name} 15th.</i>"""
-
-    # Reward the user with a gold star if data looks well managed
-    if last_month_gb < 1.5 and month_before_last_sample is not None:
-        if month_before_last_gb < 1.5:
-            html_intro += """<br><br><img src="cid:image2" alt="Gold Star">&nbspCongratulations!
-                 You've kept your H Drive under 1.5 GB for two months (or more), keep up the great work! <img src="cid:image2" alt="Gold Star">"""
-
-    # Inform users of how the reports are generated
-    check_h_drive_size_msg = """<br><br><b>Report Accuracy</b>
-        <ol>
-        <li>The H Drive sizes shown are collected by the OCIO for ministry billing on the 15th of each month.</li>
-        <li>The Optimization team cannot see into or access your H Drive contents; we are provided with the total size from the OCIO's monthly data.</li>
-        <li>If you believe your H Drive report to be incorrect, confirm by checking the steps at the bottom of our
-          Managing and Reducing H Drive Data Storage page in the <a href='https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage#b8cd4c21818b8446ae475ee525376f70'> 
-          Check if your H Drive file cleanup worked</a> section.
-        </ol>"""
-
-    # Remind user why storage costs are important as a ministry
-    html_why_data_important = f"""<br><b>Why is knowing my data usage important?</b>
-        <ul>
-        <li>Responsible Use: Storing data on your H Drive over the 1.5 GB limit costs $2.70 per GB, per month. OneDrive is BCGOV's <b>zero-cost alternative</b> and has 1 terabyte (TB) of space. </li>
-        <li>Your effort makes a difference! Since the Personal Storage Report began in April 2022, the NRM's total H Drive cost has <u>lowered by over $82,000 per month</u>.</li>
-        <li>Knowledge is a motivator: There are approx. {h_drive_count:,} H Drives in the Ministry of {ministry_name}, totalling {total_gb:,} GB of data at a cost of ${total_h_drive_cost:,} for {last_month_name} {year}.
-        </ul>
-        """
-
-    # Inform user of personal metrics
-    html_personal_metrics = "<b>What are my personal metrics?</b><br><ul>"
-
-    if month_before_last_sample is None:
-        # Only one month of data
-        html_personal_metrics += f"<li>Your H drive size in {last_month_name} was {last_month_gb:,} GB, billed to Ministry of {ministry_name} at ${last_month_cost:,.2f}.</li>"
+    # Greet the user
+    if last_month_gb <= 1.5:
+        html_greeting = f"""<span style="font-family:Aptos; font-size: 16px">Hi {name},<br><br>
+        Your H drive is under the 1.5 GB limit - great job!<br><br>
+        <p><em>You will not receive this monthly report again unless you go over the 1.5 GB limit.</em></p></span>"""
     else:
-        difference = round(last_month_gb - month_before_last_gb, 2)
-        difference_cost = round((last_month_cost - month_before_last_cost), 2)
-        # The new elif statements work!
-        abs_difference = abs(difference)
-        abs_difference_cost = abs(difference_cost)
-        if difference == 0:
-            html_personal_metrics += f"""<li>Your H drive size in {last_month_name} was {last_month_gb:,} GB, billed to Ministry of {ministry_name} at ${last_month_cost:,.2f}."""
-        elif difference < 0 and last_month_gb < 1.5 and month_before_last_gb < 1.5:
-            # Cost was neutral
-            html_personal_metrics += f"""<li>Between {month_before_last_name} and {last_month_name} your consumption 
-            <span style="color:#2E8540;"><b>decreased</b></span> by <b>{abs_difference:,.3g} GB</b>, costing the Ministry of {ministry_name} ${last_month_cost:,.2f}."""
-        elif difference > 0 and last_month_gb < 1.5 and month_before_last_gb < 1.5:
-            # Cost was neutral
-            html_personal_metrics += f"""<li>Between {month_before_last_name} and {last_month_name} your consumption 
-            <span style="color:#D8292F;"><b>increased</b></span> by <b>{abs_difference:,.3g} GB</b>, costing the Ministry of {ministry_name} ${last_month_cost:,.2f}."""
-        else:
-            html_personal_metrics += f"""<li>In {last_month_name} your H Drive data usage billed to your ministry was {last_month_gb:,} GB,
-             costing ${last_month_cost:,.2f}.</li>"""
-            abs_difference = abs(difference)
-            abs_difference_cost = abs(difference_cost)
-            if difference > 0 and last_month_gb > 1.5:
-                # Cost went up
-                html_personal_metrics += f"""<li>Between {month_before_last_name} and {last_month_name} your consumption
-                <span style="color:#D8292F;"><b>increased</b></span> by <b>{abs_difference:,.3g} GB</b>,
-                costing an additional <b>${abs_difference_cost:,.2f}</b> per month.</li>"""
-            else:
-                # Cost went down
-                html_personal_metrics += f"""<li>Between {month_before_last_name} and {last_month_name} your consumption
-                <span style="color:#2E8540;"><b>decreased</b></span> by <b>{abs_difference:,.3g} GB</b>, saving <b>${abs_difference_cost:,.2f}</b> per month.</li>"""
+        html_greeting = f"""<span style="font-family:Aptos; font-size: 16px">Hi {name},</span><br><br>
+        <p><span style="background-color: #FFFF00; font-family:Aptos; font-size: 16px">You've exceeded the 1.5 GB H drive storage limit.</span></p>"""
+        
+    # Prepare user storage snapshot
+    difference = round(last_month_gb - month_before_last_gb, 2)
+    abs_difference = abs(difference)
+
+    if last_month_gb <= 1.5 and difference == 0:
+        html_snapshot = f"""<div>
+        <!--[if mso]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" 
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor="#666666" fill="t" strokeweight="1px" fillcolor="#E6F4DB">
+            <w:anchorlock/>
+            <left style="color:#000;font-family:Aptos;font-weight:light;">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+            <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt">Your storage has not changed since last month.</span>
+            </left>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="675" height="220" bgcolor="#E6F4DB" <a style="-webkit-border-radius5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></ u><br></span>
+            <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt; color: #000">Your storage has not changed since last month.span>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>"""
+    elif last_month_gb > 1.5 and difference == 0:
+        html_snapshot = f"""<div>
+        <!--[if mso]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" 
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor="#666666" fill="t" strokeweight="1px" fillcolor="#F4DDDB">
+            <w:anchorlock/>
+            <left style="color:#000;font-family:Aptos;font-weight:light;">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+            <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt">Your storage has not changed since last month.</span>
+            </left>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="675" height="220" bgcolor="#F4DDDB" <a style="-webkit-border-radius5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+            <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt; color: #000">Your storage has not changed since last month.span>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>"""
+    elif last_month_gb <= 1.5 and difference <= 0:
+        html_snapshot = f"""<div>
+        <!--[if mso]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" 
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#E6F4DB">
+            <w:anchorlock/>
+            <left style="color:#000;font-family:Aptos;font-weight:light;">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt">Your storage decreased by {abs_difference:,.3g} GB since last month.</span>
+            </left>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="675" height="220" bgcolor="#E6F4DB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt; color: #000">Your storage decreased by {abs_difference:,.3g} GB since last month.</span>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>"""
+    elif last_month_gb <= 1.5 and difference > 0:
+        html_snapshot = f"""<div>
+        <!--[if mso]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" 
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#E6F4DB">
+            <w:anchorlock/>
+            <left style="color:#000;font-family:Aptos;font-weight:light;">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt">Your storage increased by {abs_difference:,.3g} GB since last month.</span>
+            </left>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="675" height="220" bgcolor="#E6F4DB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt; color: #000">Your storage increased by {abs_difference:,.3g} GB since last month.</span>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>"""
+    elif last_month_gb > 1.5 and difference <= 0:
+        html_snapshot = html_snapshot = f"""<div>
+        <!--[if mso]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" 
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#F4DDDB">
+            <w:anchorlock/>
+            <left style="color:#000;font-family:Aptos;font-weight:light;">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><b><p>Storage used: <span style="color:red"></b>{last_month_gb:,} GB</span> of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = <span style="color:red">${last_month_cost:,.2f}</span></p></span>
+        	<span style="font-size:10pt">Your storage decreased by {abs_difference:,.3g} GB since last month.</span>
+            </left>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="675" height="220" bgcolor="#F4DDDB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><b><p>Storage used: <span style="color:red"></b>{last_month_gb:,} GB</span> of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = <span style="color:red">${last_month_cost:,.2f}</span></p></span>
+        	<span style="font-size:10pt; color: #000">Your storage decreased by {abs_difference:,.3g} GB since last month.</span>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>"""
+    elif last_month_gb > 1.5 and difference > 0:
+        html_snapshot = f"""<div>
+        <!--[if mso]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" 
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#F4DDDB">
+            <w:anchorlock/>
+            <left style="color:#000;font-family:Aptos;font-weight:light;">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><b><p>Storage used: <span style="color:red"></b>{last_month_gb:,} GB</span> of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = <span style="color:red">${last_month_cost:,.2f}</span></p></span>
+        	<span style="font-size:10pt">Your storage increased by {abs_difference:,.3g} GB since last month.</span>
+            </left>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="675" height="220" bgcolor="#F4DDDB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><b><p>Storage used: <span style="color:red"></b>{last_month_gb:,} GB</span> of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = <span style="color:red">${last_month_cost:,.2f}</span></p></span>
+        	<span style="font-size:10pt; color: #000">Your storage increased by {abs_difference:,.3g} GB since last month.</span>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>"""
+    elif last_month_gb > 1.5 and month_before_last_sample is None:
+        html_snapshot = html_snapshot = f"""<div>
+        <!--[if mso]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" 
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#F4DDDB">
+            <w:anchorlock/>
+            <left style="color:#000;font-family:Aptos;font-weight:light;">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><b><p>Storage used: <span style="color:red"></b>{last_month_gb:,} GB</span> of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = <span style="color:red">${last_month_cost:,.2f}</span></p></span>
+            </left>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="675" height="220" bgcolor="#F4DDDB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><b><p>Storage used: <span style="color:red"></b>{last_month_gb:,} GB</span> of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = <span style="color:red">${last_month_cost:,.2f}</span></p></span>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>"""
+    elif last_month_gb <= 1.5 and month_before_last_sample is None:
+        html_snapshot = f"""<div>
+        <!--[if mso]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" 
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#E6F4DB">
+            <w:anchorlock/>
+            <left style="color:#000;font-family:Aptos;font-weight:light;">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+            </left>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="675" height="220" bgcolor="#E6F4DB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>"""
+    else:
+        pass
 
     number_names = ["", "two ", "three ", "four ", "five ", "six ", "seven ", " eight"]
     month_count = number_names[len(samples) - 1]
     month_plural = ""
     if month_before_last_sample is not None:
         month_plural = "s"
-    html_img = f"</ul>Below, you will find a graph highlighting your H Drive cost for the past {month_count}month{month_plural}:<br>"
+    
     html_img = (
-        html_img
-        + """<br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">"""
+        """<br><img src="cid:image1" alt="Graph" style="width:250px;height:50px;">"""
     )
 
-    # Provide solutions to the user to help with H Drive faqs/issues
-    html_why_important = """
-    <br><br><b>Did the cost of your H Drive go up this month?</b><br>
-    These things sometimes happen! Here are three simple actions you can take to reduce your storage expense:
-    <ol>
-        <li>Move <a href="https://intranet.gov.bc.ca/nrids/products-services/data-services/one-drive/what-not-to-move-onto-onedrive">appropriate</a>
-         files to <a href="https://intranet.gov.bc.ca/nrids/products-services/data-services/one-drive">OneDrive</a> (time suggested: 20 mins)</li>
-        <li>Delete <a href="https://www2.gov.bc.ca/assets/gov/british-columbians-our-governments/services-policies-for-government/information-management-technology/records-management/guides/transitoryrecords.pdf">transitory</a> data, especially outdated <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage#039d7b73414d8b4aa4b7ac5bdfb2cdd7">USMT & WTRP Backup folders</a> (time suggested: 5-10 mins)</li>
-        <li>
-        <a href="https://intranet.gov.bc.ca/nrids/products-services/technical-support/data-storage-optimization/managing-and-reducing-h-drive-data-storage#Emptyyourrecycling">
-        Empty</a> your Recycle Bin (time suggested: 1 min)</li>
-    </ol>
-    More suggestions can be found on our
-    <a href="https://apps.nrs.gov.bc.ca/int/confluence/display/OPTIMIZE/H+Drive+Migration+to+OneDrive">
-    Optimization Knowledge Base</a>."""  # noqa
-
-    # Share the successes of peers
-    html_kudos = f"""
-    <br><br><b>Storage Saving Kudos:</b>
+    # Provide H drive reduction resources
+    html_resources = """<span style="font-family:Aptos; font-size: 16px"><br><p>The NRIDS Optimization Team is dedicated to getting H drive costs down to $0.<br><br>
+    For H drive reduction resource materials, including step-by-step guidance and demo session recordings, please visit our <a href="https://apps.nrs.gov.bc.ca/int/confluence/x/pQ1xD">Knowledge Base</a>.</p></span><br>"""
+    
+    # Display chart of 3 month trend
+    html_trend_chart = f"""<div>
+        <!--[if mso]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" 
+        style="height:40px; v-text-anchor:middle; width:1005px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#F4DDDB">
+            <w:anchorlock/>
+            <left style="color:#000;font-family:Aptos;font-size:16px;font-weight:light;">
+            If you recently updated to Windows 11 on your computer and saw a jump in your H drive storage, <a href="https://apps.nrs.gov.bc.ca/int/confluence/x/pQ1xD#HDrivemigrationtoOneDrive-Win11">learn what to do.</a>
+            </left>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="1005" height="40" bgcolor="#E6F4DB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; 16px; font-weight: light; font-family: Aptos; text-decoration: none; line-height:40px; width:100%; display:inline-block">
+            If you recently updated to Windows 11 on your computer and saw a jump in your H drive storage, <a href="https://apps.nrs.gov.bc.ca/int/confluence/x/pQ1xD#HDrivemigrationtoOneDrive-Win11">learn what to do.</a>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>
+        <br>
+        {html_img}<br><br>"""
+    
+    # Tell user where to find more PSR info
+    html_about = """<span style="font-family:Aptos; font-size: 18px"><b>About this report</b></span><br><br>
+    <span style="font-family:Aptos; font-size: 16px"><p>Visit our <a href="https://apps.nrs.gov.bc.ca/int/confluence/x/YxF2Dg">Knowledge Base (PSR) </a>to learn: </p>
     <ul>
-        <li>Last month the largest H Drive savings from a single NRM user was <b>{biggest_drop:,.3g} GB</b>, saving <b>${biggest_drop_cost:,.2f}</b> per month!</li>
+        <li>General PSR info</li>
+        <li>Why H drive storage reduction matters</li>
+        <li>How to reduce your storage</li>
     </ul>
-    """
+    <span style="color: #000435">This email is transitory and can be deleted when no longer needed. Thank you for taking the time to manage your digital storage.</span></span><br><br>"""
 
-    # Email sign-off
-    html_footer = """
-    This email is transitory and can be deleted when no longer needed. Thank you for taking the time to manage your digital storage!<br>
-    <br>
-    </p>
-    <p style="font-size: 10px">H Drive usage information is collected mid-month from the Office of the Chief Information Officer (OCIO).
-     To discontinue these monthly emails, please reply with the subject line "unsubscribe".
-     You can re-subscribe any time by contacting NRIDS.Optimize@gov.bc.ca with the subject line "PSR subscribe".</p>
-    </body>
-    </html>
-    """
+    # Email unsubscribe information
+    html_unsub = """<footer><span style="font-family:Aptos; font-size: 9px">To opt out of these monthly emails, reply with the subject line "unsubscribe".<br>
+    <em>Note:</em> by unsubscribing, you will not be notified if your H drive goes over the 1.5 GB limit in future.<br>
+    You can re-subscribe at any time by contacting <a href="mailto:NRIDS.Optimize@gov.bc.ca">NRIDSOptimize@gov.bc.ca</a></span></footer>"""
 
     # Merge html parts and attach to email
 
     html = (
-        html_intro
-        + check_h_drive_size_msg
-        + html_why_data_important
-        + html_personal_metrics
-        + html_img
-        + html_why_important
-        + html_kudos
-        + html_footer
+        html_greeting
+        + html_snapshot
+        + html_resources
+        + html_trend_chart
+        + html_about
+        + html_unsub
     )
+
     msg.attach(MIMEText(html, "html"))
 
     # Get and attach images to email
@@ -713,15 +875,6 @@ def main(argv):
                     # Get biggest drop
                     if drop > biggest_drop:
                         biggest_drop = drop
-                    # Get biggest 5 drops
-                    # if len(biggest_drops_list) < 5:
-                    #    biggest_drops_list.append(drop)
-                    #    biggest_drops_list.sort()
-                    # elif biggest_drops_list[0] < drop:
-                    #    biggest_drops_list[0] = drop
-                    #    biggest_drops_list.sort()
-        # Calculate the sum of the 5 biggest drops
-        # biggest_drops = sum(biggest_drops_list)
 
         # Split input idirs and email addresses, and handle address formatting
         email_send_list, idir_send_list = refine_sendlist()
@@ -741,8 +894,6 @@ def main(argv):
                 else:
                     filtered_data[idir] = idir_info
         data = filtered_data
-
-        # data = get_fake_idir_info()
 
         # Send email for each user
         omit_list = constants.EMAIL_OMITLIST.split(",")
@@ -787,7 +938,6 @@ def main(argv):
         # Report successful sends for tracking purposes, even if the script as a whole had an exception.
         message_detail = (
             "The send_usage_emails script sent emails to the following users: "
-            + "<br />"
             + ",".join(emails_sent_to)
         )
         LOGGER.info(message_detail)
