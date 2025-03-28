@@ -470,7 +470,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             <left style="color:#000;font-family:Aptos;font-weight:light;">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
             <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
         	<span style="font-size:10pt">Your storage has not changed since last month.</span>
             </left>
         </v:roundrect>
@@ -481,7 +481,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></ u><br></span>
             <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
         	<span style="font-size:10pt; color: #000">Your storage has not changed since last month.span>
             </a>
         </td>
@@ -726,7 +726,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
 
     # Email unsubscribe information
     html_unsub = """<footer><span style="font-family:Aptos; font-size: 9px">To opt out of these monthly emails, reply with the subject line "unsubscribe".<br>
-    <em>Note:</em> by unsubscribing, you will not be notified if your H drive goes over the 1.5 GB limit in future.<br>
+    <em>Note:</em> by unsubscribing, you will not be notified if your H drive goes over the 1.5 GB limit.<br>
     You can re-subscribe at any time by contacting <a href="mailto:NRIDS.Optimize@gov.bc.ca">NRIDSOptimize@gov.bc.ca</a></span></footer>"""
 
     # Merge html parts and attach to email
