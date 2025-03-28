@@ -469,8 +469,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             <w:anchorlock/>
             <left style="color:#000;font-family:Aptos;font-weight:light;">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-            <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
+            <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
         	<span style="font-size:10pt">Your storage has not changed since last month.</span>
             </left>
         </v:roundrect>
@@ -480,8 +480,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         <td align="left" width="675" height="220" bgcolor="#E6F4DB" <a style="-webkit-border-radius5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
             <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></ u><br></span>
-            <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
+            <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
         	<span style="font-size:10pt; color: #000">Your storage has not changed since last month.span>
             </a>
         </td>
@@ -496,8 +496,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             <w:anchorlock/>
             <left style="color:#000;font-family:Aptos;font-weight:light;">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-            <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+            <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
         	<span style="font-size:10pt">Your storage has not changed since last month.</span>
             </left>
         </v:roundrect>
@@ -507,8 +507,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         <td align="left" width="675" height="220" bgcolor="#F4DDDB" <a style="-webkit-border-radius5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
             <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-            <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+            <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
         	<span style="font-size:10pt; color: #000">Your storage has not changed since last month.span>
             </a>
         </td>
@@ -523,8 +523,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             <w:anchorlock/>
             <left style="color:#000;font-family:Aptos;font-weight:light;">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-		    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+		    <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
         	<span style="font-size:10pt">Your storage decreased by {abs_difference:,.3g} GB since last month.</span>
             </left>
         </v:roundrect>
@@ -534,8 +534,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         <td align="left" width="675" height="220" bgcolor="#E6F4DB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
             <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-		    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+		    <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
         	<span style="font-size:10pt; color: #000">Your storage decreased by {abs_difference:,.3g} GB since last month.</span>
             </a>
         </td>
@@ -550,8 +550,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             <w:anchorlock/>
             <left style="color:#000;font-family:Aptos;font-weight:light;">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-		    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+		    <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
         	<span style="font-size:10pt">Your storage increased by {abs_difference:,.3g} GB since last month.</span>
             </left>
         </v:roundrect>
@@ -561,8 +561,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         <td align="left" width="675" height="220" bgcolor="#E6F4DB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
             <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-		    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+		    <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
         	<span style="font-size:10pt; color: #000">Your storage increased by {abs_difference:,.3g} GB since last month.</span>
             </a>
         </td>
@@ -577,8 +577,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             <w:anchorlock/>
             <left style="color:#000;font-family:Aptos;font-weight:light;">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-		    <span style="font-size:16pt"><b><p>Storage used: <span style="color:red"></b>{last_month_gb:,} GB</span> of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = <span style="color:red">${last_month_cost:,.2f}</span></p></span>
+		    <span style="font-size:16pt"><p><b>Storage used: </b><span style="color:red">{last_month_gb:,} GB</span> of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b><span style="color:red">${last_month_cost:,.2f}</span></p></span>
         	<span style="font-size:10pt">Your storage decreased by {abs_difference:,.3g} GB since last month.</span>
             </left>
         </v:roundrect>
@@ -588,8 +588,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         <td align="left" width="675" height="220" bgcolor="#F4DDDB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
             <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-		    <span style="font-size:16pt"><b><p>Storage used: <span style="color:red"></b>{last_month_gb:,} GB</span> of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = <span style="color:red">${last_month_cost:,.2f}</span></p></span>
+		    <span style="font-size:16pt"><p><b>Storage used: </b><span style="color:red">{last_month_gb:,} GB</span> of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b><span style="color:red">${last_month_cost:,.2f}</span></p></span>
         	<span style="font-size:10pt; color: #000">Your storage decreased by {abs_difference:,.3g} GB since last month.</span>
             </a>
         </td>
@@ -604,8 +604,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             <w:anchorlock/>
             <left style="color:#000;font-family:Aptos;font-weight:light;">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-		    <span style="font-size:16pt"><b><p>Storage used: <span style="color:red"></b>{last_month_gb:,} GB</span> of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = <span style="color:red">${last_month_cost:,.2f}</span></p></span>
+		    <span style="font-size:16pt"><p><b>Storage used: </b><span style="color:red">{last_month_gb:,} GB</span> of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b><span style="color:red">${last_month_cost:,.2f}</span></p></span>
         	<span style="font-size:10pt">Your storage increased by {abs_difference:,.3g} GB since last month.</span>
             </left>
         </v:roundrect>
@@ -615,8 +615,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         <td align="left" width="675" height="220" bgcolor="#F4DDDB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
             <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-		    <span style="font-size:16pt"><b><p>Storage used: <span style="color:red"></b>{last_month_gb:,} GB</span> of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = <span style="color:red">${last_month_cost:,.2f}</span></p></span>
+		    <span style="font-size:16pt"><p><b>Storage used: </b><span style="color:red">{last_month_gb:,} GB</span> of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b><span style="color:red">${last_month_cost:,.2f}</span></p></span>
         	<span style="font-size:10pt; color: #000">Your storage increased by {abs_difference:,.3g} GB since last month.</span>
             </a>
         </td>
@@ -631,8 +631,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             <w:anchorlock/>
             <left style="color:#000;font-family:Aptos;font-weight:light;">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-		    <span style="font-size:16pt"><b><p>Storage used: <span style="color:red"></b>{last_month_gb:,} GB</span> of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = <span style="color:red">${last_month_cost:,.2f}</span></p></span>
+		    <span style="font-size:16pt"><b><p>Storage used: </b><span style="color:red">{last_month_gb:,} GB</span> of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b><span style="color:red">${last_month_cost:,.2f}</span></p></span>
             </left>
         </v:roundrect>
         <![endif]-->
@@ -641,8 +641,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         <td align="left" width="675" height="220" bgcolor="#F4DDDB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
             <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-		    <span style="font-size:16pt"><b><p>Storage used: <span style="color:red"></b>{last_month_gb:,} GB</span> of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = <span style="color:red">${last_month_cost:,.2f}</span></p></span>
+		    <span style="font-size:16pt"><b><p>Storage used: </b><span style="color:red">{last_month_gb:,} GB</span> of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b><span style="color:red">${last_month_cost:,.2f}</span></p></span>
             </a>
         </td>
         </tr> </table>
@@ -657,7 +657,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             <left style="color:#000;font-family:Aptos;font-weight:light;">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
 		    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:16pt"><b><p>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
             </left>
         </v:roundrect>
         <![endif]-->
@@ -666,8 +666,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         <td align="left" width="675" height="220" bgcolor="#E6F4DB" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
             <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-		    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b>{last_month_gb:,} GB at $2.70/GB per month = ${last_month_cost:,.2f}</p></span>
+		    <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
             </a>
         </td>
         </tr> </table>
