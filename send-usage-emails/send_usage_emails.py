@@ -430,6 +430,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         month_before_last_gb = month_before_last_sample["gb"]
         # month_before_last_cost = max(0, month_before_last_sample["cost"])
         # month_before_last_name = month_before_last_sample["month"]
+    else:
+        month_before_last_gb = None
 
     total_gb = float(total_gb)
     h_drive_count = float(h_drive_count)
@@ -456,9 +458,13 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     else:
         html_greeting = f"""<span style="font-family:Aptos; font-size: 16px">Hi {name},</span><br><br>
         <p><span style="background-color: #FFFF00; font-family:Aptos; font-size: 16px">You've exceeded the 1.5 GB H drive storage limit.</span></p>"""
-        
+       
     # Prepare user storage snapshot
-    difference = round(last_month_gb - month_before_last_gb, 2)
+    if month_before_last_gb is not None:
+        difference = round(last_month_gb - month_before_last_gb, 2)
+    else:
+        difference = 0
+
     abs_difference = abs(difference)
 
     if last_month_gb <= 1.5 and difference == 0:
@@ -854,6 +860,7 @@ def main(argv):
             "FOR": "Forests",
             "WLRS": "Water, Land and Resource Stewardship",
             "IRR": "Indigenous Relations & Reconciliation",
+            "MCM": "Mining and Critical Minerals",
         }
 
         # Get Biggest Drop (storage reduction) of the month
