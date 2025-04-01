@@ -41,6 +41,7 @@ ministry_renames = {
     "NATURAL RESOURCE MINISTRIES": "NRM",
     "LAND, WATER AND RESOURCE STEWARDSHIP": "WLRS",
     "WATER, LAND AND RESOURCE STEWARDSHIP": "WLRS",
+    "MINING AND CRITICAL MINERALS": "MCM",
 }
 
 delete_FY_before_insert = False
