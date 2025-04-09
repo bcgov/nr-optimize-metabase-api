@@ -477,8 +477,8 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
             <w:anchorlock/>
             <left style="color:#000;font-family:Aptos;font-weight:light;">
             <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
-            <span style="font-size:16pt"><p><b>Storage used: </b></b><span style="font-weight:bold">{last_month_gb:,} GB of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><p><b>Monthly cost: </b></b><span style="font-weight:bold">${last_month_cost:,.2f}</p></span>
+            <span style="font-size:16pt"><p><b>Storage used: {last_month_gb:,} GB of 1.5 GB</b></p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: ${last_month_cost:,.2f}</b></p></span>
         	<span style="font-size:10pt">Your storage has not changed since last month.</span>
             </left>
         </v:roundrect>
@@ -500,12 +500,12 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         html_snapshot = f"""<div>
         <!--[if gte mso 16]>
         <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" 
-        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" #strokeweight="1px" fillcolor="#EF5350">
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#EF5350">
             <w:anchorlock/>
             <left style="color:#000;font-family:Aptos;font-weight:light;">
-            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></#u><br></span>
-		    <span style="font-size:16pt"><p><b>Storage used: </b><span style="font-weight:bold">{last_month_gb:,} GB</span> of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><p><b>Monthly cost: </b><span style="font-weight:bold">${last_month_cost:,.2f}</span></p></span>
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><p><b>Storage used: {last_month_gb:,} GB of 1.5 GB</b></p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: ${last_month_cost:,.2f}</b></p></span>
         	<span style="font-size:10pt">Your storage decreased by {abs_difference:,.3g} GB since last month.</span>
             </left>
         </v:roundrect>
@@ -514,7 +514,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         <table cellspacing="0" cellpadding="0"> <tr>
         <td align="left" width="675" height="220" bgcolor="#EF5350" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
             <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
-            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></#u><br></span>
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
 		    <span style="font-size:16pt"><p><b>Storage used: </b><span style="font-weight:bold">{last_month_gb:,} GB</span> of 1.5 GB</p></span>
         	<span style="font-size:16pt"><p><b>Monthly cost: </b><span style="font-weight:bold">${last_month_cost:,.2f}</span></p></span>
         	<span style="font-size:10pt; color: #000">Your storage decreased by {abs_difference:,.3g} GB since last month.</span>
@@ -527,12 +527,12 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         html_snapshot = f"""<div>
         <!--[if gte mso 16]>
         <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" mlns:w="urn:schemas-microsoft-com:office:word" 
-        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" #strokeweight="1px" fillcolor="#EF5350">
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#EF5350">
             <w:anchorlock/>
             <left style="color:#000;font-family:Aptos;font-weight:light;">
-            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></#u><br></span>
-		    <span style="font-size:16pt"><p><b>Storage used: </b><span style="font-weight:bold">{last_month_gb:,} GB</span> of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><p><b>Monthly cost: </b><span style="font-weight:bold">${last_month_cost:,.2f}</span></p></span>
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><p><b>Storage used: {last_month_gb:,} GB of 1.5 GB</b></p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: ${last_month_cost:,.2f}</b></p></span>
         	<span style="font-size:10pt">Your storage increased by {abs_difference:,.3g} GB since last month.</span>
             </left>
         </v:roundrect>
@@ -541,7 +541,7 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         <table cellspacing="0" cellpadding="0"> <tr>
         <td align="left" width="675" height="220" bgcolor="#EF5350" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
             <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
-            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</></#u><br></span>
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</></u><br></span>
 		    <span style="font-size:16pt"><p><b>Storage used: </b><span style="font-weight:bold">{last_month_gb:,} GB</span> of 1.5 GB</p></span>
         	<span style="font-size:16pt"><p><b>Monthly cost: </b><span style="font-weight:bold">${last_month_cost:,.2f}</span></p></span>
         	<span style="font-size:10pt; color: #000">Your storage increased by {abs_difference:,.3g} GB since last month.</span>
@@ -554,12 +554,12 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         html_snapshot = f"""<div>
         <!--[if gte mso 16]>
         <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" 
-        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" #strokeweight="1px" fillcolor="#EF5350">
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#EF5350">
             <w:anchorlock/>
             <left style="color:#000;font-family:Aptos;font-weight:light;">
-            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></#u><br></span>
-		    <span style="font-size:16pt"><b><p>Storage used: </b><span style="font-weight:bold">{last_month_gb:,} GB</span> of 1.5 GB</p></span>
-        	<span style="font-size:16pt"><b><p>Monthly cost: </b><span style="font-weight:bold">${last_month_cost:,.2f}</span></p></span>
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+		    <span style="font-size:16pt"><p><b>Storage used: {last_month_gb:,} GB of 1.5 GB</b></p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: ${last_month_cost:,.2f}</b></p></span>
             </left>
         </v:roundrect>
         <![endif]-->
@@ -575,119 +575,116 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
         </tr> </table>
         <!-- <![endif]-->
         </div>"""
-    elif last_month_gb <= 1.5:
-        pass
+    elif last_month_gb <= 1.5 and difference == 0:
+        html_snapshot = f"""<div>
+        <!--[if gte mso 16]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor="#666666" fill="t" strokeweight="1px" fillcolor="#43A047">
+        <style type="text/css">
+            <w:anchorlock/>
+            <left style="color:#000 !important;font-family:Aptos;font-weight:light;">
+            <span style="font-size:16pt;"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+            <span style="font-size:16pt"><p>Storage used: {last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p>Monthly cost: ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt;">Your storage has not changed since last month.</span>
+            </left>
+        </v:roundrect>
+        </style>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="675" height="220" bgcolor="#43A047" <a style="-webkit-border-radius5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+            <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt; color: #000">Your storage has not changed since last month.span>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>"""
+    elif last_month_gb <= 1.5 and difference < 0:
+        html_snapshot = f"""<div>
+        <!--[if gte mso 16]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#43A047">
+            <w:anchorlock/>
+            <left style="color:#000;font-family:Aptos;font-weight:light;">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+     	    <span style="font-size:16pt"><p>Storage used: {last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p>Monthly cost: ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt">Your storage decreased by {abs_difference:,.3g} GB since last month.</span>
+            </left>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="675" height="220" bgcolor="#43A047" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+     	    <span style="font-size:16pt"><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt; color: #000">Your storage decreased by {abs_difference:,.3g} GB since last month.</span>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>"""
+    elif last_month_gb <= 1.5 and difference > 0:
+        html_snapshot = f"""<div>
+        <!--[if gte mso 16]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#43A047">
+            <w:anchorlock/>
+            <left style="color:#000;font-family:Aptos;font-weight:light;">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+     	    <span style="font-size:16pt"><p>Storage used: {last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p>Monthly cost: ${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt">Your storage increased by {abs_difference:,.3g} GB since last month.</span>
+            </left>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="675" height="220" bgcolor="#43A047" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+     	    <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
+        	<span style="font-size:10pt; color: #000">Your storage increased by {abs_difference:,.3g} GB since last month.</span>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>"""
+    elif last_month_gb <= 1.5 and month_before_last_sample is None:
+        html_snapshot = f"""<div>
+        <!--[if gte mso 16]>
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+        style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" strokeweight="1px" fillcolor="#43A047">
+            <w:anchorlock/>
+            <left style="color:#000;font-family:Aptos;font-weight:light;">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+     	    <span style="font-size:16pt"><p>Storage used: {last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p>Monthly cost: ${last_month_cost:,.2f}</p></span>
+            </left>
+        </v:roundrect>
+        <![endif]-->
+        <!--[if !mso]> <!-->
+        <table cellspacing="0" cellpadding="0"> <tr>
+        <td align="left" width="675" height="220" bgcolor="#43A047" <a style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
+            <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; text-decoration: none; line-height:220px; width:100%; display:inline-block">
+            <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></u><br></span>
+     	    <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
+        	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
+            </a>
+        </td>
+        </tr> </table>
+        <!-- <![endif]-->
+        </div>"""
     else:
         pass
-
-    # if last_month_gb <= 1.5 and difference == 0:
-    #    html_snapshot = f"""<div>
-    #    <!--[if gte mso 16]>
-    #    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-    #    style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor="#666666" fill="t" #strokeweight="1px" fillcolor="#43A047">
-    #    <style type="text/css">
-    #        <w:anchorlock/>
-    #        <left style="color:#000 !important;font-family:Aptos;font-weight:light;">
-    #        <span style="font-size:16pt;"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></#u><br></span>
-    #        <span style="font-size:16pt;"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-    #    	<span style="font-size:16pt;"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
-    #    	<span style="font-size:10pt;">Your storage has not changed since last month.</span>
-    #        </left>
-    #    </v:roundrect>
-    #    </style>
-    #    <![endif]-->
-    #    <!--[if !mso]> <!-->
-    #    <table cellspacing="0" cellpadding="0"> <tr>
-    #    <td align="left" width="675" height="220" bgcolor="#43A047" <a style="-webkit-border-radius5px; #-moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
-    #        <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; #text-decoration: none; line-height:220px; width:100%; display:inline-block">
-    #        <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></ #u><br></span>
-    #        <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-    #    	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
-    #    	<span style="font-size:10pt; color: #000">Your storage has not changed since last month.span>
-    #        </a>
-    #    </td>
-    #    </tr> </table>
-    #    <!-- <![endif]-->
-    #    </div>"""
-    # elif last_month_gb <= 1.5 and difference < 0:
-    #    html_snapshot = f"""<div>
-    #    <!--[if gte mso 16]>
-    #    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-    #    style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" #strokeweight="1px" fillcolor="#43A047">
-    #        <w:anchorlock/>
-    #        <left style="color:#000;font-family:Aptos;font-weight:light;">
-    #        <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></#u><br></span>
-    # 	    <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-    #    	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
-    #    	<span style="font-size:10pt">Your storage decreased by {abs_difference:,.3g} GB since last month.#</span>
-    #        </left>
-    #    </v:roundrect>
-    #    <![endif]-->
-    #    <!--[if !mso]> <!-->
-    #    <table cellspacing="0" cellpadding="0"> <tr>
-    #    <td align="left" width="675" height="220" bgcolor="#43A047" <a style="-webkit-border-radius: 5px; #-moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
-    #        <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; #text-decoration: none; line-height:220px; width:100%; display:inline-block">
-    #        <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></#u><br></span>
-    # 	    <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-    #    	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
-    #    	<span style="font-size:10pt; color: #000">Your storage decreased by {abs_difference:,.3g} GB #since last month.</span>
-    #        </a>
-    #    </td>
-    #    </tr> </table>
-    #    <!-- <![endif]-->
-    #    </div>"""
-    # elif last_month_gb <= 1.5 and difference > 0:
-    #    html_snapshot = f"""<div>
-    #    <!--[if gte mso 16]>
-    #    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-    #    style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" #strokeweight="1px" fillcolor="#43A047">
-    #        <w:anchorlock/>
-    #        <left style="color:#000;font-family:Aptos;font-weight:light;">
-    #        <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></#u><br></span>
-    # 	    <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-    #    	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
-    #    	<span style="font-size:10pt">Your storage increased by {abs_difference:,.3g} GB since last month.#</span>
-    #        </left>
-    #    </v:roundrect>
-    #    <![endif]-->
-    #    <!--[if !mso]> <!-->
-    #    <table cellspacing="0" cellpadding="0"> <tr>
-    #    <td align="left" width="675" height="220" bgcolor="#43A047" <a style="-webkit-border-radius: 5px; #-moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
-    #        <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; #text-decoration: none; line-height:220px; width:100%; display:inline-block">
-    #        <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></#u><br></span>
-    # 	    <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-    #    	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
-    #    	<span style="font-size:10pt; color: #000">Your storage increased by {abs_difference:,.3g} GB #since last month.</span>
-    #        </a>
-    #    </td>
-    #    </tr> </table>
-    #    <!-- <![endif]-->
-    #    </div>"""
-    # elif last_month_gb <= 1.5 and month_before_last_sample is None:
-    #    html_snapshot = f"""<div>
-    #    <!--[if gte mso 16]>
-    #    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-    #    style="height:220px; v-text-anchor:middle; width:675px;" arcsize="5%" strokecolor= "#666666" fill="t" #strokeweight="1px" fillcolor="#43A047">
-    #        <w:anchorlock/>
-    #        <left style="color:#000;font-family:Aptos;font-weight:light;">
-    #        <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></#u><br></span>
-    # 	    <span style="font-size:16pt"><b><p>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-    #    	<span style="font-size:16pt"><b><p>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
-    #        </left>
-    #    </v:roundrect>
-    #    <![endif]-->
-    #    <!--[if !mso]> <!-->
-    #    <table cellspacing="0" cellpadding="0"> <tr>
-    #    <td align="left" width="675" height="220" bgcolor="#43A047" <a style="-webkit-border-radius: 5px; #-moz-border-radius: 5px; border-radius: 5px; color: #000; display: block;">
-    #        <a style="color: #ffffff; font-size:18pt; font-weight: light; font-family: Aptos; #text-decoration: none; line-height:220px; width:100%; display:inline-block">
-    #        <span style="font-size:16pt"><b><u>Your storage snapshot for {last_month_name} 15th, {year}</b></#u><br></span>
-    # 	    <span style="font-size:16pt"><p><b>Storage used: </b>{last_month_gb:,} GB of 1.5 GB</p></span>
-    #    	<span style="font-size:16pt"><p><b>Monthly cost: </b>${last_month_cost:,.2f}</p></span>
-    #        </a>
-    #    </td>
-    #    </tr> </table>
-    #    <!-- <![endif]-->
-    #    </div>"""
 
     number_names = ["", "two ", "three ", "four ", "five ", "six ", "seven ", " eight"]
     month_count = number_names[len(samples) - 1]
@@ -781,8 +778,11 @@ def send_idir_email(idir_info, h_drive_count, total_gb, ministry_name, biggest_d
     # Send email to recipient
     s = smtplib.SMTP(constants.SMTP_SERVER)
     # s.sendmail(msg["From"], recipient, msg.as_string())
-    s.sendmail(msg["From"], recipient, msg.as_string())
-    s.quit()
+    if last_month_gb > 1.5:
+        s.sendmail(msg["From"], recipient, msg.as_string())
+        s.quit()
+    else:
+        pass
 
     # Following smtp server guidelines of max 30 emails/minute
     # time.sleep(2)
