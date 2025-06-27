@@ -36,7 +36,7 @@ from division_renames import (
     for_division_acronyms,
     wlrs_division_acronyms,
     env_division_acronyms,
-    emli_division_acronyms,
+    ecs_division_acronyms,
     af_division_acronyms,
     irr_division_acronyms,
 )
@@ -55,8 +55,6 @@ ministry_renames = {
     "ALC": "AF",
     "FLNR": "FOR",
     "BCWS": "FOR",
-    "EMPR": "EMLI",
-    "MEM": "EMLI",
     "ABR": "IRR",
     "LWRS": "WLRS",
     "EAO": "ENV",
@@ -140,6 +138,7 @@ def get_records_from_xlsx(sheet_name):
             "irr",
             "flnr",
             "emli",
+            "ecs",
             "aff",
             "mem",
             "abr",
@@ -148,6 +147,7 @@ def get_records_from_xlsx(sheet_name):
             "af",
             "for",
             "lwrs",
+            "mcm",
             "wlrs",
         ]
         for ministry_acronym in ministries:
@@ -228,12 +228,14 @@ def get_records_from_xlsx(sheet_name):
 
         # check mailbox org code for NRM assignment
         combined.loc[combined["mailboxcode"] == "AF", "ministry"] = "AF"
+        combined.loc[combined["mailboxcode"] == "ECS", "ministry"] = "ECS"
         combined.loc[combined["mailboxcode"] == "EMLI", "ministry"] = "EMLI"
         combined.loc[combined["mailboxcode"] == "ENV", "ministry"] = "ENV"
         combined.loc[combined["mailboxcode"] == "FOR", "ministry"] = "FOR"
         combined.loc[combined["mailboxcode"] == "BCWS", "ministry"] = "FOR"
         combined.loc[combined["mailboxcode"] == "IRR", "ministry"] = "IRR"
         combined.loc[combined["mailboxcode"] == "DAS", "ministry"] = "IRR"
+        combined.loc[combined["mailboxcode"] == "MCM", "ministry"] = "MCM"
         combined.loc[combined["mailboxcode"] == "WLRS", "ministry"] = "WLRS"
         combined.loc[combined["mailboxcode"] == "", "ministry"] = sheet_min
 
@@ -397,6 +399,7 @@ def get_records_from_xlsx(sheet_name):
 def get_conn():
     return psycopg2.connect(
         host="localhost",
+        port="5431",
         database=constants.POSTGRES_DB_NAME,
         user=constants.POSTGRES_USER,
         password=constants.POSTGRES_PASS,
@@ -518,7 +521,7 @@ def create_ministry_reports_simple(record_tuples):
         )
 
         assign_div_acronyms(df1, "AF", af_division_acronyms)
-        assign_div_acronyms(df1, "EMLI", emli_division_acronyms)
+        assign_div_acronyms(df1, "ECS", ecs_division_acronyms)
         assign_div_acronyms(df1, "ENV", env_division_acronyms)
         assign_div_acronyms(df1, "FOR", for_division_acronyms)
         assign_div_acronyms(df1, "IRR", irr_division_acronyms)
@@ -615,7 +618,7 @@ if __name__ == "__main__":
     if "-d" in sys.argv:
         delete_before_insert = True
     record_tuples = get_records_from_xlsx("home drives")
-    create_ministry_reports_simple(record_tuples)
+    #create_ministry_reports_simple(record_tuples)
     insert_h_drive_records_to_metabase(record_tuples)
 
     record_tuples = get_records_from_xlsx("group shares")
