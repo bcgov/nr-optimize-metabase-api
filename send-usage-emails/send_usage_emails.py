@@ -863,7 +863,7 @@ def main(argv):
         # Assign Ministry Names, in use they are prefixed with "Ministry of "
         long_ministry_names = {
             "AF": "Agriculture and Food",
-            "EMLI": "Energy, Mines and Low Carbon Innovation",
+            "ECS": "Energy and Climate Solutions",
             "ENV": "Environment and Climate Change Strategy",
             "FOR": "Forests",
             "WLRS": "Water, Land and Resource Stewardship",
