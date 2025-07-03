@@ -12,9 +12,10 @@ from division_renames import (
     for_division_acronyms,
     wlrs_division_acronyms,
     env_division_acronyms,
-    emli_division_acronyms,
+    ecs_division_acronyms,
     af_division_acronyms,
     irr_division_acronyms,
+    mcm_division_acronyms,
 )
 from dsr_functions import assign_div_acronyms
 
@@ -24,8 +25,6 @@ ministry_renames = {
     "ALC": "AF",
     "FLNR": "FOR",
     "BCWS": "FOR",
-    "EMPR": "EMLI",
-    "MEM": "EMLI",
     "ABR": "IRR",
     "LWRS": "WLRS",
     "EAO": "ENV",
@@ -65,11 +64,12 @@ def get_records_from_xlsx(sheet_name):
     for name in excel_names:
         # find the ministry based on the filename
         ministries = [
-            "env",
-            "irr",
-            "emli",
             "af",
+            "ecs",
+            "env",
             "for",
+            "irr",
+            "mcm",
             "wlrs",
         ]
         for ministry_acronym in ministries:
@@ -138,22 +138,19 @@ def get_records_from_xlsx(sheet_name):
         combined.loc[combined["idir"] == "Soft deleted Home Drives", "division"] = ""
         combined.loc[combined["idir"] == "Soft deleted Home Drives", "branch"] = ""
 
-        # check mailbox org code for non-NRM users, leaving CSNR as-is for now
-        combined.loc[combined["mailboxcode"] == "RBCM", "ministry"] = "NON STANDARD"
-        combined.loc[combined["mailboxcode"] == "CITZ", "ministry"] = "NON STANDARD"
-        combined.loc[combined["mailboxcode"] == "TACS", "ministry"] = "NON STANDARD"
-        combined.loc[combined["mailboxcode"] == "FIN", "ministry"] = "NON STANDARD"
-        combined.loc[combined["mailboxcode"] == "ECC", "ministry"] = "NON STANDARD"
+        # check mailbox org code for non-NRM users
+        combined.loc[combined["mailboxcode"] != ("AF", "ECS", "ENV", "FOR", "IRR", "MCM", "WLRS"), "ministry"] = "NON STANDARD"
 
         # check mailbox org code for NRM assignment
         combined.loc[combined["mailboxcode"] == "AF", "ministry"] = "AF"
-        combined.loc[combined["mailboxcode"] == "EMLI", "ministry"] = "EMLI"
+        combined.loc[combined["mailboxcode"] == "ECS", "ministry"] = "ECS"
         combined.loc[combined["mailboxcode"] == "ENV", "ministry"] = "ENV"
         combined.loc[combined["mailboxcode"] == "FOR", "ministry"] = "FOR"
         combined.loc[combined["mailboxcode"] == "BCWS", "ministry"] = "FOR"
         combined.loc[combined["mailboxcode"] == "IRR", "ministry"] = "IRR"
-        combined.loc[combined["mailboxcode"] == "DAS", "ministry"] = "IRR"
+        combined.loc[combined["mailboxcode"] == "MCM", "ministry"] = "MCM"
         combined.loc[combined["mailboxcode"] == "WLRS", "ministry"] = "WLRS"
+        combined.loc[combined["mailboxcode"] == "CSNR", "ministry"] = "WLRS"
         combined.loc[combined["mailboxcode"] == "", "ministry"] = sheet_min
 
         # add limit column
@@ -161,7 +158,7 @@ def get_records_from_xlsx(sheet_name):
         combined.loc[combined["datausage"] <= 1.5, "Over Limit (1.5gb)"] = "N"
         combined.loc[combined["datausage"] > 1.5, "Over Limit (1.5gb)"] = "Y"
 
-        # flatten data into tuples
+    # flatten data into tuples
     record_tuples = []
     for row in combined.values:
         if type(row[0]) == str:
@@ -209,10 +206,11 @@ def create_ministry_reports_simple(record_tuples):
         )
 
         assign_div_acronyms(df1, "AF", af_division_acronyms)
-        assign_div_acronyms(df1, "EMLI", emli_division_acronyms)
+        assign_div_acronyms(df1, "ECS", ecs_division_acronyms)
         assign_div_acronyms(df1, "ENV", env_division_acronyms)
         assign_div_acronyms(df1, "FOR", for_division_acronyms)
         assign_div_acronyms(df1, "IRR", irr_division_acronyms)
+        assign_div_acronyms(df1, "MCM", mcm_division_acronyms)
         assign_div_acronyms(df1, "WLRS", wlrs_division_acronyms)
 
         df1.drop("Ministry", axis=1, inplace=True)

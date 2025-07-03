@@ -39,6 +39,7 @@ from division_renames import (
     ecs_division_acronyms,
     af_division_acronyms,
     irr_division_acronyms,
+    mcm_division_acronyms,
 )
 from dsr_functions import assign_div_acronyms
 
@@ -132,21 +133,11 @@ def get_records_from_xlsx(sheet_name):
     for name in excel_names:
         # find the ministry based on the filename
         ministries = [
-            "agri",
-            "empr",
-            "env",
-            "irr",
-            "flnr",
-            "emli",
-            "ecs",
-            "aff",
-            "mem",
-            "abr",
-            "fpro",
-            "bcws",
             "af",
+            "ecs",
+            "env",
             "for",
-            "lwrs",
+            "irr",
             "mcm",
             "wlrs",
         ]
@@ -219,169 +210,21 @@ def get_records_from_xlsx(sheet_name):
         combined.loc[combined["idir"] == "Soft deleted Home Drives", "division"] = ""
         combined.loc[combined["idir"] == "Soft deleted Home Drives", "branch"] = ""
 
-        # check mailbox org code for non-NRM users, leaving CSNR as-is for now
-        combined.loc[combined["mailboxcode"] == "RBCM", "ministry"] = "NON STANDARD"
-        combined.loc[combined["mailboxcode"] == "CITZ", "ministry"] = "NON STANDARD"
-        combined.loc[combined["mailboxcode"] == "TACS", "ministry"] = "NON STANDARD"
-        combined.loc[combined["mailboxcode"] == "FIN", "ministry"] = "NON STANDARD"
-        combined.loc[combined["mailboxcode"] == "ECC", "ministry"] = "NON STANDARD"
+        # check mailbox org code for non-NRM users
+        combined.loc[combined["mailboxcode"] != ("AF", "ECS", "ENV", "FOR", "IRR", "MCM", "WLRS"), "ministry"] = "NON STANDARD"
 
         # check mailbox org code for NRM assignment
         combined.loc[combined["mailboxcode"] == "AF", "ministry"] = "AF"
         combined.loc[combined["mailboxcode"] == "ECS", "ministry"] = "ECS"
-        combined.loc[combined["mailboxcode"] == "EMLI", "ministry"] = "EMLI"
         combined.loc[combined["mailboxcode"] == "ENV", "ministry"] = "ENV"
         combined.loc[combined["mailboxcode"] == "FOR", "ministry"] = "FOR"
         combined.loc[combined["mailboxcode"] == "BCWS", "ministry"] = "FOR"
         combined.loc[combined["mailboxcode"] == "IRR", "ministry"] = "IRR"
-        combined.loc[combined["mailboxcode"] == "DAS", "ministry"] = "IRR"
         combined.loc[combined["mailboxcode"] == "MCM", "ministry"] = "MCM"
         combined.loc[combined["mailboxcode"] == "WLRS", "ministry"] = "WLRS"
+        combined.loc[combined["mailboxcode"] == "CSNR", "ministry"] = "WLRS"
         combined.loc[combined["mailboxcode"] == "", "ministry"] = sheet_min
 
-        # correct info for WLRS NRIDS
-        combined.loc[
-            combined["division"]
-            == "Natural Resource Information and Digital Service Division",
-            "division",
-        ] = "Natural Resource Information and Digital Services Division"
-        combined.loc[
-            combined["division"]
-            == "Natural Resource information and Digital Services Division",
-            "division",
-        ] = "Natural Resource Information and Digital Services Division"
-        combined.loc[
-            combined["branch"]
-            == "Chief Technology Officer and Delivery Management Branch",
-            "division",
-        ] = "Natural Resource Information and Digital Services Division"
-        combined.loc[
-            combined["branch"]
-            == "Chief Technology Officer and Delivery Management Branch",
-            "branch",
-        ] = "Business Delivery Branch"
-
-        # correct info for EMLI
-        combined.loc[
-            combined["division"]
-            == "Mines Health, Safety and Enfocement Division",
-            "division",
-        ] = "Mines Health, Safety & Enforcement Division"
-        combined.loc[
-            combined["division"]
-            == "Mines Health, Safety and Enforcement",
-            "division",
-        ] = "Mines Health, Safety & Enforcement Division"
-        combined.loc[
-            combined["division"]
-            == "Mines Health, Safety and Enforcement Division",
-            "division",
-        ] = "Mines Health, Safety & Enforcement Division"
-        combined.loc[
-            combined["division"]
-            == "Energy Resource Division",
-            "division",
-        ] = "Energy Resources Division"
-
-        # correct info for ENV EPD
-        combined.loc[
-            combined["branch"] == "Environmental Emergencies and Land Remediation",
-            "branch",
-        ] = "Environmental Emergencies and Land Remediation Branch"
-        combined.loc[
-            combined["branch"]
-            == "Environmental Emergencies And Land Remediation Branch",
-            "branch",
-        ] = "Environmental Emergencies and Land Remediation Branch"
-        combined.loc[
-            combined["branch"] == "Environmental Standards Branch ",
-            "branch",
-        ] = "Environmental Standards Branch"
-        combined.loc[
-            combined["branch"] == "Environment Protection Regional Operations Branch",
-            "branch",
-        ] = "Regional Operations Branch"
-        combined.loc[
-            combined["branch"] == "Environmental Protection Regional Operation Branch",
-            "branch",
-        ] = "Regional Operations Branch"
-        combined.loc[
-            combined["branch"] == "Environmental Protection Regional Operations Branch",
-            "branch",
-        ] = "Regional Operations Branch"
-        combined.loc[
-            combined["branch"] == "BC Parks, Recreation Sites and Trails Division",
-            "division",
-        ] = "Conservation and Recreation Division"
-        combined.loc[
-            combined["division"]
-            == "Environmental Sustainability Division",
-            "division",
-        ] = "Environmental Protection Division"
-        combined.loc[
-            combined["branch"]
-            == "Environmental Protection Division",
-            "division",
-        ] = "Environmental Protection Division"
-        combined.loc[
-            (combined["division"]
-            == "Strategic Policy Division") & (combined["branch"]
-            == "Knowledge Management Branch"),
-            "division",
-        ] = "Strategic Services Division"
-        combined.loc[
-            (combined["division"]
-            == "ENV - Environment and Climate Change Strategy") | (combined["division"]
-            == "BC Parks Reg Ops"),
-            "division",
-        ] = "Conservation and Recreation Division"
-        combined.loc[
-            (combined["division"]
-            == "BC Parks and Conservation Officer Services Division") & (combined["branch"]
-            == "BC Parks Regional Operations") | (combined["branch"]
-            == "BC Parks Regional Operations - Coast/West Coast/Vancouver") | (combined["branch"]
-            == "BC Parks Regional Operations - Coast/West Coast/Vancouver Island") | (combined["branch"]
-            == "BC Parks Regional Operations - Interior - Kootenay/Okanagan") | (combined["branch"]
-            == "BC Parks Regional Operations - Interior - Thompson/Cariboo") | (combined["branch"]
-            == "BC Parks Regional Operations - Kamloops Thompson-Cariboo Region") | (combined["branch"]
-            == "BC Parks Regional Operations - Northern") | (combined["branch"]
-            == "BC Parks Regional Operations - South Coast") | (combined["branch"]
-            == "BC Parks Regional Operations-Northern") | (combined["branch"]
-            == "BC Parks - Bella Coola"),
-            "division",
-        ] = "Conservation and Recreation Division"
-        combined.loc[
-            combined["division"]
-            == "Policy, Programs & Partnerships Division",
-            "division",
-        ] = "Climate Action Secretariat"
-        combined.loc[
-            (combined["division"]
-            == "BC Parks and Conservation Officer Services Division") & (combined["branch"]
-            == "ADM's Office") | (combined["branch"]
-            == "Provincial Services Branch"),
-            "division",
-        ] = "Conservation and Recreation Division"
-        combined.loc[
-            (combined["branch"]
-            == "Conservation Officer Service Branch") | (combined["branch"]
-            == "Conservation Officer Service") | (combined["branch"]
-            == "Conservation Officer Services"),
-            "division",
-        ] = "Conservation and Recreation Division"
-        combined.loc[
-            (combined["division"]
-            == "BC Parks and Conservation Officer Services Division") & (combined["branch"]
-            == "Kamloops"),
-            "division",
-        ] = "Conservation and Recreation Division"
-        combined.loc[
-            (combined["division"]
-            == "Conservation and Recreation Division") | (combined["division"]
-            == "BC Parks, Recreation Sites and Trails Division") & (combined["branch"]
-            == "Regional Operations Branch"),
-            "branch",
-        ] = "BC Parks - Regional Operations Branch"
 
     elif sheet_name.lower() == "group shares":
         combined.columns = ["sharename", "server", "datausage", "ministry", "date"]
@@ -526,6 +369,7 @@ def create_ministry_reports_simple(record_tuples):
         assign_div_acronyms(df1, "FOR", for_division_acronyms)
         assign_div_acronyms(df1, "IRR", irr_division_acronyms)
         assign_div_acronyms(df1, "WLRS", wlrs_division_acronyms)
+        assign_div_acronyms(df1, "MCM", mcm_division_acronyms)
 
         df1.drop("Ministry", axis=1, inplace=True)
         # drop rows where there is no display name (denoting a resource account)
@@ -618,7 +462,7 @@ if __name__ == "__main__":
     if "-d" in sys.argv:
         delete_before_insert = True
     record_tuples = get_records_from_xlsx("home drives")
-    #create_ministry_reports_simple(record_tuples)
+    create_ministry_reports_simple(record_tuples)
     insert_h_drive_records_to_metabase(record_tuples)
 
     record_tuples = get_records_from_xlsx("group shares")
