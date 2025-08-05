@@ -1,5 +1,8 @@
 all_division_renames = {
-    "": "",
+    "": "Non-Standard",
+    "Deputy Minister's Office": "DMO",
+    "Deputy Ministers Office": "DMO",
+    "Deputy Minister?s Office": "DMO",
 }
 
 for_division_acronyms = {
@@ -114,6 +117,8 @@ irr_division_acronyms = {
 mcm_division_acronyms = {
     "Deputy Minister's Office": "DMO",
     "Deputy Ministers Office": "DMO",
+    "Deputy Minister?s Office": "DMO",
+    "Mine Competitiveness and Authorizations Division": "MCAD",
     "Mines Competitiveness and Authorizations Division": "MCAD",
     "Mines, Competitiveness and Authorizations Division": "MCAD",
     "Mines Competitiveness & Authorizations Division": "MCAD",

@@ -79,7 +79,7 @@ def get_records_from_xlsx(sheet_name):
 
         # find the date based on the filename
         pos = name.rfind("\\") + 1
-        datestamp = name[pos : pos + 7].strip() + "-15"
+        datestamp = name[pos: pos + 7].strip() + "-15"
 
         # find the ministry based on the filename so it can be assigned to soft-deleted home drives
         sheet_min = name[12:5]
@@ -118,15 +118,15 @@ def get_records_from_xlsx(sheet_name):
         ]
 
         # fill blank displaynames with idir
-        combined.displayname.fillna(combined.idir, inplace=True)
+        # combined.displayname.fillna(combined.idir, inplace=True)
+        combined["displayname"] = combined["displayname"].fillna(combined["idir"])
 
-        combined.loc[
-            combined["displayname"] == "NO IDIR USER RECORD FOUND", "branch"
-        ] = "Not Found"
-
-        # fill certain divisions with "Not Found"
+        # where display name is NO IDIR USER RECORD FOUND, fill division and branch with "Not Found"
         combined.loc[
             combined["displayname"] == "NO IDIR USER RECORD FOUND", "division"
+        ] = "Not Found"
+        combined.loc[
+            combined["displayname"] == "NO IDIR USER RECORD FOUND", "branch"
         ] = "Not Found"
 
         # handle EAO extensions that have no division
@@ -189,9 +189,9 @@ def create_ministry_reports_simple(record_tuples):
             df_array.append([tup[9], tup[5], tup[6], tup[1], tup[11]])
 
         # apply division renames to correct bad data in AD
-        for row in df_array:
-            if row[1] in all_division_renames:
-                row[1] = all_division_renames[row[1]]
+        #for row in df_array:
+        #    if row[1] in all_division_renames:
+        #        row[1] = all_division_renames[row[1]]
 
         # Convert to dataframe and add column names
         df1 = pd.DataFrame(
