@@ -1,140 +1,45 @@
-Category, Service Name
-Backup, Data Backup Services-Daily Backups
-Backup, Data Backup Services-Monthly Backups
+License, Adobe Acrobat Professional for MAC - Monthly
+License, Adobe Creative Suite Standard for MAC - Monthly
+License, Adobe Premier Professional for MAC - Monthly
 CustomORCitrixOROneTime, Application Enabling Services
 CustomORCitrixOROneTime, Application Hosting - Cancellation Costs
 CustomORCitrixOROneTime, Application Hosting Service for Virtual Windows
 CustomORCitrixOROneTime, Citrix Server Support Services
+License, Cognos 8 BI Administrator - Named License - Monthly
 CustomORCitrixOROneTime, Cross Connects Monthly
 CustomORCitrixOROneTime, Custom Hosting Request - Monthly
 CustomORCitrixOROneTime, Custom Hosting Request - One Time
 CustomORCitrixOROneTime, Custom Server - Monthly
+Backup, Data Backup Services - Extended Retention
+Backup, Data Backup Services-Daily Backups
+Backup, Data Backup Services-Monthly Backups
+License, Dynamics 365 Operations Subscription Per User - Monthly
+License, Dynamics 365 Operations Subscription Per User - Monthly
 CustomORCitrixOROneTime, Explicit Agreement Monthly Charge - CAPS
+CustomORCitrixOROneTime, Explicit Agreement Monthly Charge - Data
+CustomORCitrixOROneTime, Explicit Agreement Monthly Charge - Hosting
 CustomORCitrixOROneTime, Explicit Agreement Monthly Charge - Voice
 CustomORCitrixOROneTime, Explicit Agreement Monthly Charge - Workstation
+CustomORCitrixOROneTime, Explicit Agreement One Time Charge
 CustomORCitrixOROneTime, Explicit Agreement One Time Charge - Voice
+CustomORCitrixOROneTime, Explicit Agreement One Time Charge - Workstation
 CustomORCitrixOROneTime, Forward Proxy Monthly
 CustomORCitrixOROneTime, Forward Proxy Onetime
+CustomORCitrixOROneTime, Hosting Consulting Services
 CustomORCitrixOROneTime, Hosting IP Subnet (VLAN) Service
 CustomORCitrixOROneTime, Hosting Load Balancing Service
 CustomORCitrixOROneTime, Hosting Professional Service One Time
 CustomORCitrixOROneTime, Hosting Services - Mainframe Consulting
 CustomORCitrixOROneTime, Hosting Upgrade Services - One-Time
 CustomORCitrixOROneTime, IAAS One Time Charge
-CustomORCitrixOROneTime, Mainframe Print Queue
-CustomORCitrixOROneTime, Other Server Software - Monthly
-CustomORCitrixOROneTime, Shared Database Services - Microsoft Production Site
-CustomORCitrixOROneTime, Shared Web Hosting Service
-CustomORCitrixOROneTime, Shared Web Hosting - Windows Static Production Site
-CustomORCitrixOROneTime, Shared Web Hosting - Windows Static Development Site
-CustomORCitrixOROneTime, Secure File Transfer Monthly
-CustomORCitrixOROneTime, Explicit Agreement Monthly Charge - Hosting
-CustomORCitrixOROneTime, Explicit Agreement Monthly Charge - Data
-CustomORCitrixOROneTime, Hosting Consulting Services
-CustomORCitrixOROneTime, Other Server Software - One Time
-CustomORCitrixOROneTime, Explicit Agreement One Time Charge - Workstation
-CustomORCitrixOROneTime, Explicit Agreement One Time Charge
-Incremental Storage, Incremental  Storage
-Incremental Storage, Incremental Managed Storage (Shared Web)
-Incremental Storage, Incremental Managed Storage (Shared Database)
-License, Adobe Acrobat Professional for MAC - Monthly
-License, Adobe Creative Suite Standard for MAC - Monthly
-License, Adobe Premier Professional for MAC - Monthly
-License, Cognos 8 BI Administrator - Named License - Monthly
-License, Dynamics 365 Operations Subscription Per User - Monthly
-License, Microsoft Dynamics 365 Customer Engagement Plan SL Per User 1-99 Users - Monthly
-License, Microsoft Dynamics 365 (On-Premise) Team Members User CAL - Monthly
-License, Microsoft Dynamics 365 (On-Premise) Team Members User CAL - One Time
-License, Microsoft Dynamics 365 Customer Service User SL - Monthly
-License, Microsoft Dynamics 365 (On-Premise) Customer Service User CAL - Monthly
-License, Microsoft Dynamics 365 Non-Production Instance - Monthly
-License, Microsoft Dynamics 365 Portal Add-On - Monthly
-License, Microsoft Dynamics 365 Team Members User SL - Monthly
-License, Microsoft Dynamics 365 Team Members User SL - One Time
-License, Dynamics 365 Operations Subscription Per User - Monthly
-License, Microsoft MSDN OS All Languages - VISTA - Monthly
-License, Microsoft Power BI Pro SL (Non-Prod) - Monthly
-License, Microsoft Project Server License - Monthly
-License, Microsoft SQL CAL License User CAL - Monthly
-License, Microsoft SQL Svr Enterprise Edtn 2 Core License - Monthly
-License, Microsoft SQL Svr Standard Edtn 1 Processor License - IA 64-bit - Monthly
-License, Microsoft SQL Svr Standard Edtn 1 Processor License - Monthly
-License, Microsoft SQL Svr Standard Edtn 1 Processor License 64-bit - Monthly
-License, Microsoft SQL Svr Standard Edtn License - Monthly
-License, Microsoft Visual Studio Team Ed Db License - Monthly
-License, Microsoft VStudio Pro W/MSDN Prem License - Monthly
-License, Oracle Database Enterprise Edition - Concurrent License - Monthly
-License, Oracle DB Advanced Security - Processor Licence - Monthly
-License, Oracle DB Advanced Security - Named Licence - Monthly
-License, Oracle Diag Mgmt Pack - Processor License - Monthly
-License, Oracle Directory Services Plus - Employee User Licence- Monthly
-License, Oracle Directory Services Plus - Processor Licence-Monthly
-License, Oracle Exadata Storage Server - Disk Drive Perpetual - Monthly
-License, Oracle IAS Enterprise Edition - Named License - Monthly
-License, Oracle IAS Enterprise Edition - Processor License - Monthly
-License, Oracle Internet Dev Suite - Named License - Monthly
-License, Oracle Multitenant - Processor Licence - Monthly
-License, Oracle Partitioning Option - Named License - Monthly
-License, Oracle Partitioning Option - Processor License - Monthly
-License, Oracle RDB - Concurrent License - Monthly
-License, Oracle Real Application Clusters - Processor License - Monthly
-License, Oracle Server Enterprise Edition Database - Processor License - Monthly
-License, Oracle Server Standard Edition Database - Processor License - Monthly
-License, Oracle SOA Management Pack EE - Processor Licence - Monthly
-License, Oracle SOA Suite - Processor License - Monthly
-License, Oracle Solaris Cluster Ent - Processor License - Monthly
-License, Oracle Spatial - Processor License - Monthly
-License, Oracle Standard Ed Deploy - Concurrent License - Monthly
-License, Oracle Tuning Mgmt Pack - Processor License - Monthly
-License, Oracle Unified Business Management Suite - Processor License - Monthly
-License, Oracle WebCenter Content - Processor Licence - Monthly
-License, Oracle Webcenter Content - Named License - Monthly
-License, Oracle WebLogic Server Management Pack EE - Processor  - Monthly
-License, Oracle WebLogic Suite - Processor Licence - Monthly
-License, Quest Foglight Base Cartridge NT - Monthly
-License, Quest Foglight Server - Monthly
-License, Quest LiteSpeed Enterprise for SQL Server - Monthly
-License, Quest Toad Expert with DBA - License - Monthly
-License, Quest Toad Expert with DBA - VISTA - Monthly
-License, Quest Toad Standard - Monthly
-License, Quest Toad Standard - VISTA - Monthly
-License, SAFE FME Licence - Monthly
-License, SAS Client GCPC 9.1.3 - Lincese - Montlhy
-License, SAS Client JMP License - Monthly
-License, SAS Client Named JMP 10.0 - License - One Time
-License, SAS Client Named JMP 10.0 - Monthly
-License, SAS Client Named JMP 7.0 - Monthly
-License, SAS Client Psds License - Monthly
-License, SAS Server License - Monthly
-License, Microsoft Windows Remote Desktop Svr CAL License User CAL - One Time
-License, Microsoft SQL Svr Developer Edtn - License
-License, Oracle Solaris Cluster Ent - Processor License - One Time
-License, SAFE FME Licence - One Time
-License, Microsoft Office User License - One Time
-License, Microsoft Excel User License - One Time
-License, Microsoft SQL Svr Standard Edtn 2 Core License - One Time
-License, Microsoft SQL Svr Standard Edtn 2 Core License - Monthly
-License, Oracle Directory Services Plus - Processor Licence- One Time
-License, Oracle Directory Services Plus - Employee User Licence- One Time
-License, Microsoft SQL Svr Enterprise Edtn 2 Core License - One Time
-License, Microsoft Power Apps Per User Plan - Monthly
-License, Microsoft Power Automate Per User Plan - Monthly
-License, Microsoft Power Apps Per App Plan - Monthly
-License, Microsoft Power BI Pro SL for Power BI Report Server - Monthly
-License, Power Apps Portal Login T1 Sub Add-on - Monthly
-Object Storage, Object Storage - One Time
-Object Storage, Object Storage - OneTime
-Object Storage, Object Storage - Monthly
-SAN Storage, Storage Data Replication Monthly
-SAN Storage, Tier 1 Storage
-SAN Storage, Tier 2 Storage
-SAN Storage, Tier 2 Storage Mirrored
-SAN Storage, Tier 3 Storage
-SAN Storage, Tier 2 - Business Priority
-SAN Storage, Tier 3 - General Business
-SAN Storage, Tier 1 Storage Mirrored
 Server, IIS Support Services
+Incremental Storage, Incremental  Storage
+Incremental Storage, Incremental Managed Storage (Shared Database)
+Incremental Storage, Incremental Managed Storage (Shared Web)
+Sharepoint, Incremental Managed Storage (SharePoint)
+Server, Large Linux Database Tier 2 Service
 Server, Large Solaris Database Tier 2 Service
+CustomORCitrixOROneTime, Mainframe Print Queue
 Server, Mainframe Services (MVS)
 Server, Medium Linux Application Tier 2 Service
 Server, Medium Linux Database Tier 2 Service
@@ -150,17 +55,115 @@ Server, Medium Windows Database Tier 2 Service
 Server, Medium Windows Test Tier 1 Service
 Server, Medium Windows Test Tier 2 Service
 Server, Medium Windows/Linux Cluster Management Service
+Server, Medium Windows/Linux Extended Remote Support-7x24 Service
 Server, Medium Windows/Linux Extended Support-7x24 Service
+License, Microsoft Dynamics 365 (On-Premise) Customer Service User CAL - Monthly
+License, Microsoft Dynamics 365 (On-Premise) Team Members User CAL - Monthly
+License, Microsoft Dynamics 365 (On-Premise) Team Members User CAL - One Time
+License, Microsoft Dynamics 365 Customer Engagement Plan SL Per User 1-99 Users - Monthly
+License, Microsoft Dynamics 365 Customer Service User SL - Monthly
+License, Microsoft Dynamics 365 Non-Production Instance - Monthly
+License, Microsoft Dynamics 365 Portal Add-On - Monthly
+License, Microsoft Dynamics 365 Team Members User SL - Monthly
+License, Microsoft Dynamics 365 Team Members User SL - One Time
+License, Microsoft Excel User License - One Time
+License, Microsoft MSDN OS All Languages - VISTA - Monthly
+Sharepoint, Microsoft Office SharePoint Server License - Monthly
+Sharepoint, Microsoft Office SharePoint Server License - One Time
+License, Microsoft Office User License - One Time
+License, Microsoft Power Apps Per App Plan - Monthly
+License, Microsoft Power Apps Per User Plan - Monthly
+License, Microsoft Power Automate Per User Plan - Monthly
+License, Microsoft Power BI Pro SL (Non-Prod) - Monthly
+License, Microsoft Power BI Pro SL for Power BI Report Server - Monthly
+License, Microsoft Power Pages - Anonymous User - Monthly
+License, Microsoft Power Pages - Authenticated User - Monthly
+License, Microsoft Project Server License - Monthly
+License, Microsoft SQL CAL License User CAL - Monthly
+License, Microsoft SQL Svr Developer Edtn - License
+License, Microsoft SQL Svr Enterprise Edtn 2 Core License - Monthly
+License, Microsoft SQL Svr Enterprise Edtn 2 Core License - One Time
+License, Microsoft SQL Svr Standard Edtn 1 Processor License - IA 64-bit - Monthly
+License, Microsoft SQL Svr Standard Edtn 1 Processor License - Monthly
+License, Microsoft SQL Svr Standard Edtn 1 Processor License 64-bit - Monthly
+License, Microsoft SQL Svr Standard Edtn 2 Core License - Monthly
+License, Microsoft SQL Svr Standard Edtn 2 Core License - One Time
+License, Microsoft SQL Svr Standard Edtn License - Monthly
+License, Microsoft Visual Studio Team Ed Db License - Monthly
+License, Microsoft VStudio Pro W/MSDN Prem License - Monthly
+License, Microsoft Windows Remote Desktop Svr CAL License User CAL - One Time
 Server, Net New Server Monthly Charge
+Server, New UNIX-Linux Hardware - Monthly Costs
+Server, New Windows Hardware - Monthly Costs
+Object Storage, Object Storage - Monthly
+Object Storage, Object Storage - One Time
+Object Storage, Object Storage - OneTime
 Server, OpenVMS Windows Service Rate
+License, Oracle Database Enterprise Edition - Concurrent License - Monthly
+License, Oracle DB Advanced Security - Named Licence - Monthly
+License, Oracle DB Advanced Security - Processor Licence - Monthly
+License, Oracle Diag Mgmt Pack - Processor License - Monthly
+License, Oracle Directory Services Plus - Employee User Licence- Monthly
+License, Oracle Directory Services Plus - Employee User Licence- One Time
+License, Oracle Directory Services Plus - Processor Licence- One Time
+License, Oracle Directory Services Plus - Processor Licence-Monthly
+License, Oracle Exadata Storage Server - Disk Drive Perpetual - Monthly
+License, Oracle IAS Enterprise Edition - Named License - Monthly
+License, Oracle IAS Enterprise Edition - Processor License - Monthly
+License, Oracle Internet Dev Suite - Named License - Monthly
+License, Oracle Multitenant - Processor Licence - Monthly
+License, Oracle Partitioning Option - Named License - Monthly
+License, Oracle Partitioning Option - Processor License - Monthly
+License, Oracle RDB - Concurrent License - Monthly
+License, Oracle Real Application Clusters - Processor License - Monthly
+License, Oracle Server Enterprise Edition Database - Processor License - Monthly
+License, Oracle Server Standard Edition Database - Processor License - Monthly
+License, Oracle SOA Management Pack EE - Processor Licence - Monthly
+License, Oracle SOA Suite - Processor License - Monthly
+License, Oracle Solaris Cluster Ent - Processor License - Monthly
+License, Oracle Solaris Cluster Ent - Processor License - One Time
+License, Oracle Spatial - Processor License - Monthly
+License, Oracle Standard Ed Deploy - Concurrent License - Monthly
+License, Oracle Tuning Mgmt Pack - Processor License - Monthly
+License, Oracle Unified Business Management Suite - Processor License - Monthly
+License, Oracle Webcenter Content - Named License - Monthly
+License, Oracle WebCenter Content - Processor Licence - Monthly
+License, Oracle WebLogic Server Management Pack EE - Processor  - Monthly
+License, Oracle WebLogic Suite - Processor Licence - Monthly
+CustomORCitrixOROneTime, Other Server Software - Monthly
+CustomORCitrixOROneTime, Other Server Software - One Time
 Server, Parallel Server Fee Monthly Charge
+Server, Parallel Server Fee One Time Charge
+License, Power Apps Portal Login T1 Sub Add-on - Monthly
+License, Quest Foglight Base Cartridge NT - Monthly
+License, Quest Foglight Server - Monthly
+License, Quest LiteSpeed Enterprise for SQL Server - Monthly
+License, Quest Toad Expert with DBA - License - Monthly
+License, Quest Toad Expert with DBA - VISTA - Monthly
+License, Quest Toad Standard - Monthly
+License, Quest Toad Standard - VISTA - Monthly
+License, SAFE FME Licence - Monthly
+License, SAFE FME Licence - One Time
+License, SAS Client GCPC 9.1.3 - Lincese - Montlhy
+License, SAS Client JMP License - Monthly
+License, SAS Client Named JMP 10.0 - License - One Time
+License, SAS Client Named JMP 10.0 - Monthly
+License, SAS Client Named JMP 7.0 - Monthly
+License, SAS Client Psds License - Monthly
+License, SAS Server License - Monthly
+CustomORCitrixOROneTime, Secure File Transfer Monthly
+Server, Server Application Migration One-Time
+Category, Service Name
+CustomORCitrixOROneTime, Shared Database Services - Microsoft Production Site
+CustomORCitrixOROneTime, Shared Web Hosting - Windows Static Development Site
+CustomORCitrixOROneTime, Shared Web Hosting - Windows Static Production Site
+CustomORCitrixOROneTime, Shared Web Hosting Service
 Server, Small Linux Application Tier 2 Service
 Server, Small Linux Database Tier 2 Service
 Server, Small Linux Test Tier 2 Service
 Server, Small Solaris Application Tier 2 Service
-Server, Large Linux Database Tier 2 Service
-Server, Small Solaris Test Tier 2 Service
 Server, Small Solaris Development Tier 2 Service
+Server, Small Solaris Test Tier 2 Service
 Server, Small Solaris/AIX Cluster Management Service
 Server, Small Solaris/AIX Extended Support-7x24 Service
 Server, Small Windows Application Tier 2 Service
@@ -168,29 +171,27 @@ Server, Small Windows Database Tier 2 Service
 Server, Small Windows Development Tier 2 Service
 Server, Small Windows Test Tier 2 Service
 Server, Small Windows Web Tier 2 Service
+Server, Small Windows/Linux Extended Remote Support-7x24 Service
 Server, Small Windows/Linux Extended Support-5x12 Service
 Server, Small Windows/Linux Extended Support-7x24 Service
+SAN Storage, Storage Data Replication Monthly
+SAN Storage, Tier 1 Storage
+SAN Storage, Tier 1 Storage Mirrored
+SAN Storage, Tier 2 - Business Priority
+SAN Storage, Tier 2 Storage
+SAN Storage, Tier 2 Storage Mirrored
+SAN Storage, Tier 3 - General Business
+SAN Storage, Tier 3 Storage
+Server, UNIX-Linux Hardware Upgrade-Monthly Costs
 Server, Virtual Linux Development Service
 Server, Virtual Linux Production Service
 Server, Virtual Linux Test Service
+Server, Virtual Solaris Development Service
 Server, Virtual Solaris Production Service
 Server, Virtual Solaris Test Service
-Server, Virtual Solaris Development Service
 Server, Virtual Windows Development Service
 Server, Virtual Windows Production Service
 Server, Virtual Windows Test Service
-Server, Small Windows/Linux Extended Remote Support-7x24 Service
-Server, New UNIX-Linux Hardware - Monthly Costs
-Server, Medium Windows/Linux Extended Remote Support-7x24 Service
-Server, UNIX-Linux Hardware Upgrade-Monthly Costs
-Server, New Windows Hardware - Monthly Costs
-Server, Parallel Server Fee One Time Charge
-Server, Server Application Migration One-Time
-Sharepoint, Incremental Managed Storage (SharePoint)
-Sharepoint, Microsoft Office SharePoint Server License - Monthly
-Sharepoint, Microsoft Office SharePoint Server License - One Time
-License, Microsoft Power Pages - Authenticated User - Monthly
-License, Microsoft Power Pages - Anonymous User - Monthly
-Backup, Data Backup Services - Extended Retention
 License,Microsoft Github Enterprise SL Per User - Monthly
 License,Microsoft Power Automate Premium - Monthly
+License,Microsoft VStudio Pro with MSDN - Monthly
