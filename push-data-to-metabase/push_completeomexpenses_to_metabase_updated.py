@@ -125,7 +125,7 @@ def get_records_from_xlsx():
             row[column_map["recovery period"]] = formatteddate
 
             # Add a new column value for category
-            servicecategory = determine_servicecategory(row[column_map["service name l2"]], row[column_map["service name"]])
+            servicecategory = determine_servicecategory(row[column_map["service name l2"]], row[column_map["service name"]], row[column_map["inventory item number"]])
 
             # Convert to tuple and add extra column data
             tup = tuple(row)
@@ -136,7 +136,8 @@ def get_records_from_xlsx():
     return record_tuples
 
 
-def determine_servicecategory(servicelevel2, servicename):
+
+def determine_servicecategory(servicelevel2, servicename, inventoryitem):
     infra_services = [
         "Hosting Network Services", "Custom Services", "Mainframe Services (MVS)",
         "Network Security Devices", "Optional Services", "Server/Client SW & Support"
@@ -150,6 +151,8 @@ def determine_servicecategory(servicelevel2, servicename):
         "Workstation Uplift", "Information Trees", "Explicit Agreement Mnthly Rate"
     ]
 
+    if inventoryitem == "PI-INCREMENTAL-STORAGE":
+        return "Storage"
     if servicelevel2 in infra_services:
         if servicelevel2 == "Custom Services" and servicename == "Object Storage - Monthly":
             return "Storage"
@@ -254,7 +257,7 @@ def insert_records_to_metabase(record_tuples):
         cur.executemany(
             """
             INSERT INTO completeomexprpt(ownerparty, accountcoding, fundingmodelstatus, ministry, servicename, reportingcustomer, servicelevel1, inventoryitem,
-              servicelevel2, omassettag, quantity, price, expenseamount, recoveryfrequency, recoverytype, recoveryperiod, glperiod, category)
+              servicelevel2, omassettag, quantity, price, expenseamount, recoveryfrequency, recoverytype, recoveryperiod, glperiod, servicecategory)
             VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
         """,
             record_tuples,
