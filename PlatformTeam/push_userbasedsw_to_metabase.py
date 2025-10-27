@@ -4,9 +4,10 @@
 #              Platform Team, so they can track user-based software licenses for MS Dynamics
 #              and Power Apps
 #              1.) Read in csv data
-#              2.) Transform the data using lookup tables & PowerShell script
-#              3.) Insert User Based Storage data to Metabase
-#              4.) Output formatted User Based Storage Reports as Excel file(s) to local machine
+#              2.) Create IDIR lookup table
+#              3.) Transform the data using lookup table
+#              4.) Output formatted user-based storage reports as Excel file(s) to local machine
+#              5.) Insert user-based storage data to Metabase 
 #
 # Author:      HHAY
 #
@@ -18,24 +19,81 @@
 # usage: push_userbasedsw_to_metabase.py
 # requirements:
 #              1.) Must have the RESE /AFIN csv file(s) in same folder as .py script
-#              2.) Must have text file of all IDIRs in the report to run .ps1 script
+#              2.) Keep your IDIR credentials in .env file current for successful Active Directory connection
 #              3.) Must have an open port to metabase database
 # -------------------------------------------------------------------------------
 
+from ldap3 import Server, Connection, ALL, NTLM
 import pandas as pd
+import csv
 from datetime import datetime
 from datetime import date
 import numpy as np
 import psycopg2
 import push_postgres_constants as constants
 
+# Connect to AD
+server1 = Server(constants.AD_SERVER, port=636, use_ssl=True, get_info=ALL)
+conn1 = Connection(
+    server1,
+    user=constants.AD_USER,
+    password=constants.AD_PASSWORD,
+    authentication=NTLM,
+    auto_bind=True,
+)
+
+
+if not conn1.bind():
+    print("Failed to bind to server:", conn1.result)
+    exit()
+
+
+# Load IDIRs
+df = pd.read_csv(
+    r"C:\Git_Repo\nr-optimize-metabase-api\PlatformTeam\RESE_UserBasedSoftware_Recoverable_AttributesFilter.csv"
+)
+idirs = df["IDIR Account"].dropna().unique()
+
+# Prepare output
+results = []
+
+for idir in idirs:
+    conn1.search(
+        search_base=constants.SEARCH_BASE,
+        search_filter=f"(sAMAccountName={idir})",
+        attributes=["sAMAccountName", "displayName", "mail"],
+    )
+    if conn1.entries:
+        entry = conn1.entries[0]
+        results.append(
+            {
+                "IDIR": entry.sAMAccountName.value,
+                "DisplayName": entry.displayName.value,
+                "Email": entry.mail.value,
+            }
+        )
+    else:
+        results.append({"IDIR": idir, "DisplayName": "Not Found", "Email": "Not Found"})
+
+# Save to CSV
+output_file = (
+    r"C:\Git_Repo\nr-optimize-metabase-api\PlatformTeam\PlatformTeam_LookupTable.csv"
+)
+with open(output_file, "w", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=["IDIR", "DisplayName", "Email"])
+    writer.writeheader()
+    writer.writerows(results)
+
+print(f"Saved {len(results)} entries to {output_file}")
+
+
 # read in the CAS report for AFIN user-based software
 main_df = pd.read_csv(
     r"C:\Git_Repo\nr-optimize-metabase-api\PlatformTeam\RESE_UserBasedSoftware_Recoverable_AttributesFilter.csv"
 )
 
-#rename column
-main_df.rename(columns={'IDIR Account':'IDIR'}, inplace=True)
+# rename column
+main_df.rename(columns={"IDIR Account": "IDIR"}, inplace=True)
 
 # read in the IDIR lookup table
 lookup_df = pd.read_csv(
@@ -56,8 +114,8 @@ main_df["Email"] = main_df.IDIR.map(dict(lookup_df[["IDIR", "Email"]].values))
 
 # remove any GL Period anomalies
 main_df["RESE GL Period"] = main_df["RESE GL Period"].replace(
-     to_replace="ADJ1-25", value="Jan-25"
- )
+    to_replace="ADJ1-25", value="Jan-25"
+)
 
 # match Assets to EA email addresses, recovery start & end dates
 main_df["Expense Authority"] = main_df["AFIN Asset"].map(
