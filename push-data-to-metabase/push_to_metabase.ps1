@@ -1,69 +1,83 @@
-# Script requires that user is already logged in to OC with appropriate credentials
-# Correct project must be selected
-# Arguments can be passed in like so: 
-# powershell .\push_to_metabase.ps1 push_objstor_to_metabase.py
-# powershell ./push_to_metabase.ps1 push_hostingexpenses_to_metabase.py dfy
-# powershell .\push_to_metabase.ps1 push_h_sfp_to_metabase_dsr.py d
-# powershell .\push_to_metabase.ps1 push_h_sfp_to_metabase_dsr.py d push_sfp_owners_to_metabase.py
-# powershell .\push_to_metabase.ps1 push_h_sfp_to_metabase_dsr.py push_sfp_owners_to_metabase.py
-
 
 param (
     [string]$scriptname,
     [string]$arg1,
     [string]$arg2
 )
-write-output $scriptname
-write-output $arg1
-write-output $arg2
 
+Write-Output "Primary script: $scriptname"
+Write-Output "Arg1: $arg1"
+Write-Output "Arg2: $arg2"
+
+# Initialize flags
 $delete = $false
+$deleteFlag = ""
 $secondScript = ""
 
-if ($arg1) {
-    if ($arg1 -eq 'd' -or $arg1 -eq 'dfy'){
-        $delete = $true
-        $deleteFlag = $arg1
-    } else {
-        $secondScript = $arg1
-    }
-}
-if ($arg2) {
-    if ($arg2 -eq 'd' -or $arg2 -eq 'dfy'){
-        $delete = $true
-        $deleteFlag = $arg2
-    } else {
-        $secondScript = $arg2
+# Argument parsing
+foreach ($arg in @($arg1, $arg2)) {
+    if ($arg) {
+        if ($arg -eq 'd' -or $arg -eq 'dfy') {
+            $delete = $true
+            $deleteFlag = $arg
+        } elseif (-not $secondScript) {
+            $secondScript = $arg
+        }
     }
 }
 
-# Clean up any open pot binds from previous runs
-taskkill /im oc.exe /f
+# Kill any previous oc.exe processes
+Write-Output "Cleaning up previous oc.exe processes..."
+taskkill /im oc.exe /f 2>$null
 
-# Get the data pod name from the current namespace
-$POSTGRES_DB_POD=oc get pods --selector name=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
-# Launch a new thread with a port bind
-$PATH=$Env:Path
-# Start-Process "oc-port-forward" cmd /k "SET PATH=$CD;$PATH & oc port-forward $POSTGRES_DB_POD 5432:5432"
-Start-Process -FilePath "oc.exe" -ArgumentList "port-forward",$POSTGRES_DB_POD,"5432:5432" -PassThru
+# Get PostgreSQL pod name
+Write-Output "Retrieving PostgreSQL pod name..."
+$POSTGRES_DB_POD = oc get pods --selector name=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
+if (-not $POSTGRES_DB_POD) {
+    Write-Error "No running PostgreSQL pod found. Exiting."
+    exit 1
+}
 
-# Run Bind Port script and wait for it to run
-timeout /t 50
+Write-Output "Found pod: $POSTGRES_DB_POD"
 
-# Push to Table using python script
-if ($delete){
-    write-output "Run: $scriptname with -$deleteFlag"
-    Start-Process -FilePath "python.exe" -ArgumentList $scriptname,-$deleteFlag -Wait
+# Start port-forward
+Write-Output "Starting port-forward on 5431 -> 5432..."
+$portForwardProcess = Start-Process -FilePath "oc.exe" -ArgumentList "port-forward", $POSTGRES_DB_POD, "5431:5432" -PassThru
+
+# Wait for port-forward to be ready
+Write-Output "Waiting for port-forward to establish..."
+$maxWait = 60
+$elapsed = 0
+while (-not (Test-NetConnection -ComputerName "localhost" -Port 5431).TcpTestSucceeded -and $elapsed -lt $maxWait) {
+    Start-Sleep -Seconds 5
+    $elapsed += 5
+    Write-Output "Checking port-forward... ($elapsed sec)"
+}
+
+if ($elapsed -ge $maxWait) {
+    Write-Error "Port-forward failed to establish within $maxWait seconds. Exiting."
+    Stop-Process -Id $portForwardProcess.Id -Force
+    exit 1
+}
+
+Write-Output "Port-forward established successfully."
+
+# Run primary Python script
+if ($delete) {
+    Write-Output "Running: python $scriptname -$deleteFlag"
+    Start-Process -FilePath "python.exe" -ArgumentList $scriptname, "-$deleteFlag" -Wait
 } else {
-    write-output "Run: $scriptname"
+    Write-Output "Running: python $scriptname"
     Start-Process -FilePath "python.exe" -ArgumentList $scriptname -Wait
 }
 
-# Run a second script after the first
-if ($secondScript){
-    write-output "Run: $secondScript"
+# Run second script if provided
+if ($secondScript) {
+    Write-Output "Running second script: python $secondScript"
     Start-Process -FilePath "python.exe" -ArgumentList $secondScript -Wait
 }
 
-# Clean up any open pot binds from previous runs
-taskkill /im oc.exe /f
+# Cleanup port-forward
+Write-Output "Cleaning up port-forward process..."
+Stop-Process -Id $portForwardProcess.Id -Force
+Write-Output "All tasks completed successfully."
