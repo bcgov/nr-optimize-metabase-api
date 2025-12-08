@@ -5,7 +5,7 @@
 **Optimization Team contacts:** [Heather Hay](mailto:heather.hay@gov.bc.ca) and [Peter Platten](mailto:peter.platten@gov.bc.ca). <br>
 
 **Main Script File(s):** push_userbasedsw_to_metabase.py <br>
-**Supporting Script File(s):** .env, push_postgres_constants.py <br>
+**Supporting Script File(s):** .env, push_postgres_constants.py, .push_to_metabase.py <br>
 
 **Data Required:** <br>
 - EAdetails_AFIN_UserBasedSoftware_Recoverable_AttributesFilter.csv <br>
@@ -43,12 +43,22 @@ SEARCH_BASE = 'DC=idir,DC=bcgov'
 oc login --token=sha256~1234567890acdefghijklmnopqrst --server=https://api.silver.devops.gov.bc.ca:6443
 ```
 
-6. Open a command prompt window in the PlatformTeam directory. Paste in and run the OpenShift login command. Confirm that you're using the TEST project, or run the following command to switch over to it:
+6. Open a PowerShell window in the PlatformTeam directory. Paste in and run the OpenShift login command. Confirm that you're using the TEST project, or run the following command to switch over to it:
 ```
 oc project 15be76-test
 ```
 
-7. From the same command prompt window, open a port to the OpenShift pod i.e.
+7. Go back to OpenShift and choose 15be76-test from Projects, then go to Workloads > Pods and select the postgresql pod. Go to the Terminal tab and log into the Metabase database, then delete the current fiscal year's data from the userbasedsw table i.e.:
+```
+psql -U postgres -d metabase
+delete from userbasedsw where reseglperiod > '2025-03-31';
+```
+
+8. Return to your open Powershell window in the PlatformTeam directory. Paste in and run the following command to load the new report to the userbasedsw table in Metabase:
+```
+powershell .\push_to_metabase push_userbasedsw_to_metabase.py
+```
+*Optional:* You can manually open a port to the OpenShift pod <u>prior to running the main script</u>, if you're not using push_to_metabase.ps1.
 ```
 # Get the data pod name from the current namespace
 $POSTGRES_DB_POD=oc get pods --selector name=postgresql --field-selector status.phase=Running -o custom-columns=POD:.metadata.name --no-headers
@@ -58,16 +68,5 @@ $PATH=$Env:Path
 Start-Process -FilePath "oc.exe" -ArgumentList "port-forward",$POSTGRES_DB_POD,"5431:5432" -PassThru
 ```
 
-8. Go back to OpenShift and choose 15be76-test from Projects, then go to Workloads > Pods and select the postgresql pod. Go to the Terminal tab and log into the Metabase database, then delete the current fiscal year's data from the userbasedsw table i.e.:
-```
-psql -U postgres -d metabase
-delete from userbasedsw where reseglperiod > '2025-03-31';
-```
-
-9. Return to your open command prompt window in the PlatformTeam directory. Paste in and run the following command to load the new report to the userbasedsw table in Metabase:
-```
-python .\push_userbasedsw_to_metabase.py
-```
-
-10. When script is complete, check the userbasedsw table in Metabase to confirm the latest month's data is there and then notify Eric.  <br>
+9. When script is complete, check the userbasedsw table in Metabase to confirm the latest month's data is there and then notify Eric.  <br>
 You can now remove/delete the .csv files in the PlatformTeam directory.
