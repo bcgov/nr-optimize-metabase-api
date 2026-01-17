@@ -158,6 +158,12 @@ def get_records_from_csv():
                             ministry = ministry_renames[ministry]
                     if "Branch" in tags.keys():
                         branch = tags["Branch"]
+                    if "Data Custodian" in tags.keys():
+                        custodian = tags["Data Custodian"]
+                    if "Data Steward" in tags.keys():
+                        steward = tags["Data Steward"]
+                    if "Credential Holder" in tags.keys():
+                        credentialholder = tags["Credential Holder"]
                     if "Project" in tags.keys():
                         project = tags["Project"]
                     if "Environment" in tags.keys():
@@ -176,7 +182,7 @@ def get_records_from_csv():
                         environment = match[0][1:].upper()
 
                 # Add back in the tags we care about
-                row.extend([ministry, branch, project, environment, file_date, geodrive])
+                row.extend([ministry, branch, project, environment, file_date, geodrive, custodian, steward, credentialholder])
                 value_tuples.append(tuple(row))
 
     return value_tuples
@@ -205,8 +211,8 @@ def insert_records_to_metabase(record_tuples):
         cur.executemany(
             """
             INSERT INTO objectstorage (bucket, owner, objectcount, uploadsize, newobjects, downloadsize, deletedobjects,
-              size, quota, ministry, branch, project, environment, reportdate, geodrive)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+              size, quota, ministry, branch, project, environment, reportdate, geodrive, datacustodian, datastewards, credentialholder)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
         """,
             record_tuples,
         )
