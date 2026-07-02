@@ -1,11 +1,11 @@
 # -------------------------------------------------------------------------------
 # Name:        push_h_sfp_to_metabase_v2.py
-# Purpose:     the purpose of the script is to ETL H drive and Group Share data into metabase, as well as produce
-#              Divisional Storage Reports based on the H Drive information for distribution to Ministry Executives.
-#              1.) Read in xlsx data
-#              2.) Transform the data
-#              3.) Insert H Drive and Group Share data to Metabase
-#              4.) Output formatted Divisional Storage Reports as Excel file(s) to local machine
+# Purpose:     ETL Home drive and Group Share data into OpenShift PostgreSQL table for viewing in Metabase
+#              Produce Divisional Storage Reports for distribution to Ministry Executives.
+#                   1.) Read in xlsx data
+#                   2.) Transform the data
+#                   3.) Insert H Drive and Group Share data to PostgreSQL table (hdriveusage)
+#                   4.) Output formatted Divisional Storage Reports as Excel file(s) to local machine
 #
 # Author:      PPLATTEN, HHAY
 #
@@ -410,7 +410,7 @@ if __name__ == "__main__":
     if "-d" in sys.argv:
         delete_before_insert = True
     record_tuples = get_records_from_xlsx("home drives")
-    # create_ministry_reports_simple(record_tuples)
+    create_ministry_reports_simple(record_tuples)
     insert_h_drive_records_to_metabase(record_tuples)
 
     record_tuples = get_records_from_xlsx("group shares")
