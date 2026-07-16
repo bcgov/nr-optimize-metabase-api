@@ -51,12 +51,12 @@ oc project 15be76-test
 7. Go back to OpenShift and choose 15be76-test from Projects, then go to Workloads > Pods and select the postgresql pod. Go to the Terminal tab and log into the Metabase database, then delete the current fiscal year's data from the userbasedsw table i.e.:
 ```
 psql -U postgres -d metabase
-delete from userbasedsw where reseglperiod > '2025-03-31';
+delete from userbasedsw where reseglperiod > '2026-03-31';
 ```
 
 8. Return to your open Powershell window in the PlatformTeam directory. Paste in and run the following command to load the new report to the userbasedsw table in Metabase:
 ```
-powershell .\push_to_metabase push_userbasedsw_to_metabase.py
+powershell .\push_to_metabase.ps1 push_userbasedsw_to_metabase.py
 ```
 *Optional:* You can manually open a port to the OpenShift pod <u>prior to running the main script</u>, if you're not using push_to_metabase.ps1.
 ```
